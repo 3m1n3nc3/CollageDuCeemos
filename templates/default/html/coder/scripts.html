@@ -1,0 +1,36 @@
+<script type="text/javascript">
+	// Show sideNav
+	$('.button-collapse').sideNav('show');
+	// Hide sideNav
+	$('.button-collapse').sideNav('hide'); 
+
+	new WOW().init(); 
+
+	// MDB Lightbox Init
+	$(function () {
+	    $("#mdb-lightbox-ui").load("{$template_url}/mdb-addons/mdb-lightbox-ui.html");
+	});
+
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip();
+		$('.datepicker').pickadate();
+	});
+
+	(function() {
+		'use strict';
+		window.addEventListener('load', function() {
+			// Fetch all the forms we want to apply custom Bootstrap validation styles to
+			var forms = document.getElementsByClassName('needs-validation');
+			// Loop over them and prevent submission
+			var validation = Array.prototype.filter.call(forms, function(form) {
+				form.addEventListener('submit', function(event) {
+					if (form.checkValidity() === false) {
+						event.preventDefault();
+						event.stopPropagation();
+					}
+					form.classList.add('was-validated');
+				}, false);
+			});
+		}, false);
+	})();  
+</script>

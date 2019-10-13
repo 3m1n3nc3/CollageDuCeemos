@@ -1,0 +1,118 @@
+            <div class="card"> 
+              <h5 class="card-header info-color white-text text-center py-4">
+                <strong><p class="h4 text-center">{$page_title}</p></strong>
+              </h5>
+      
+              <div class="card-body px-lg-5">
+                {$notification}
+                <form style="color: #757575;" method="post" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
+
+                  <label for="select">Post Category</label>
+                  <select class="browser-default custom-select mb-4" id="select" name="category">
+                    {$categories}
+                  </select>
+                  
+                  <div class="mb-4 mx-0">
+                    <label for="post_title">Post Title</label>   
+                    <input type="text" id="post_title" class="form-control" placeholder="Post Title" name="title" value="{$post_title}" required>   
+                    <div class="mt-0 invalid-feedback">
+                      Please provide a valid title.
+                    </div>
+                  </div>
+
+                  <div class="mb-4 mx-0">
+                    <label for="sub_title">Subtitle</label>
+                    <input type="text" id="sub_title" class="form-control" placeholder="Sub Title" name="sub_title" value="{$post_sub_title}" required>   
+                    <div class="mt-0 invalid-feedback">
+                      Please provide a valid Subtitle.
+                    </div>
+                  </div>
+                  
+                  <small id="helper" class="form-text text-info mt-0">{$lang->add_event_date_time}</small>
+                  <div class="row">
+                    <div class="col-sm-6 mb-4">
+                      <label for="date">Date</label>
+                      <input type="date" id="date" class="form-control" name="date" value="{$post_date}"> 
+                    </div>
+
+                    <div class="col-sm-6 mb-4">
+                      <label for="time">Time</label>
+                      <input type="time" id="time" class="form-control" name="time" value="{$post_time}"> 
+                    </div>
+                  </div>
+                  <div class="mb-4 mx-0">
+                    <label for="quote">Quote</label>
+                    <textarea id="quote" class="form-control" placeholder="Post Details..." row="5" name="quote" required>{$post_quote}</textarea>
+                    <div class="mt-0 invalid-feedback">
+                      Please provide a short quote.
+                    </div>
+                  </div>
+
+                  <div class="mb-4 mx-0">
+                    <label for="post_details">Post Details</label>
+                    <small id="helper" class="form-text text-info mt-0">{$lang->use_image_btn}</small>
+                    <textarea id="post_details" class="form-control" placeholder="Post Details..." name="post_details" required>{$post_details}</textarea>
+                    <div class="mt-0 invalid-feedback">
+                      Please write some descriptive content.
+                    </div>
+                  </div>
+
+                  <label for="upload-col">Upload Image</label>
+                  <div class="input-group mb-4" id="upload-col">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">Choose File</span>
+                    </div>
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="fileInput" aria-describedby="fileInput" name="image">
+                      <label class="custom-file-label" for="fileInput">File Name</label>
+                    </div>
+                  </div>
+                  
+                  <div class="d-flex">
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_public" name="public"{$public}>
+                      <label class="custom-control-label" for="checkbox_public">Make public</label>
+                    </div> 
+
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_feature" name="featured"{$featured}>
+                      <label class="custom-control-label" for="checkbox_feature">Featured Article</label>
+                    </div>
+
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_promote" name="promote"{$promote}>
+                      <label class="custom-control-label" for="checkbox_promote">Promoted Article</label>
+                    </div>
+                  </div>
+ 
+                  <div class="d-flex">
+                    <a href="{$return_btn}" class="btn btn-warning my-4 btn-block"><i class="fa fa-chevron-left"></i> Return</a>
+                    <button class="btn btn-info my-4 btn-block" type="submit" name="create_post">{$up_btn}</button>
+                  </div>
+                </form>
+
+              </div> 
+            </div>  
+
+            <script>
+              var myEditor;
+
+              ClassicEditor
+                .create( 
+                  document.querySelector( '#post_details, #details' ) , { 
+                    ckfinder: {
+                      uploadUrl: 'connection/uploader.php?action=ckeditor'
+                    },
+                    image: { 
+                      toolbar: [ 'imageTextAlternative', '|', 'imageStyle:alignLeft', 'imageStyle:full', 'imageStyle:alignRight' ], 
+                      styles: [ 'full', 'alignLeft', 'alignRight' ]
+                    }                    
+                  })
+                .then( editor => {
+                  console.log( 'Editor was initialized', editor );
+                  myEditor = editor;
+                })
+                .catch( err => {
+                  console.error( err.stack );
+                });
+            </script>

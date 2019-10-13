@@ -1,0 +1,115 @@
+            <div class="card"> 
+              <h5 class="card-header info-color white-text text-center py-4">
+                <strong><p class="h4 text-center">{$page_title}</p></strong>
+              </h5>
+      
+              <div class="card-body px-lg-5">
+                {$notification}
+                <form style="color: #757575;" method="post" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
+                  
+                  <div class="form-row">
+                    <div class="col-md-6">
+                      <div class="mb-4 mx-0">
+                        <label for="username">Username</label>   
+                        <input type="text" id="username" class="form-control" placeholder="Username" name="username" value="{$username}" required>   
+                        <div class="mt-0 invalid-feedback">
+                          Please provide a valid username.
+                        </div>
+                      </div>  
+                    </div>
+
+                    <div class="col-md-6">
+                      <div class="mb-4 mx-0">
+                        <label for="content_title">Password</label>   
+                        <input type="password" id="password" class="form-control" placeholder="Password" name="password" value="{$password}">  
+                      </div> 
+                    </div>
+                  </div>
+                  
+                  <div class="form-row">
+                    <div class="col-md-4">
+                      <div class="mb-4 mx-0">
+                        <label for="username">Facebook</label>   
+                        <input type="text" id="facebook" class="form-control" placeholder="Facebook" name="facebook" value="{$facebook}">   
+                      </div>  
+                    </div>
+
+                    <div class="col-md-4">
+                      <div class="mb-4 mx-0">
+                        <label for="content_title">Twitter</label>   
+                        <input type="text" id="twitter" class="form-control" placeholder="Twitter" name="twitter" value="{$twitter}">  
+                      </div> 
+                    </div>
+
+                    <div class="col-md-4">
+                      <div class="mb-4 mx-0">
+                        <label for="content_title">Instagram</label>   
+                        <input type="text" id="instagram" class="form-control" placeholder="Instagram" name="instagram" value="{$instagram}">  
+                      </div> 
+                    </div>
+                  </div>
+                  
+                  <div class="mb-4 mx-0">
+                    <label for="email">Email Address</label>   
+                    <input type="email" id="email" class="form-control" placeholder="Email Address" name="email" value="{$email}" required>   
+                    <div class="mt-0 invalid-feedback">
+                      Please provide a valid Email Address.
+                    </div>
+                  </div>  
+                  
+
+                  <div class="form-row">
+                    <div class="col-md-6">
+                      <div class="mb-4 mx-0">
+                        <label for="fname">First Name</label>   
+                        <input type="text" id="fname" class="form-control" placeholder="First Name" name="fname" value="{$fname}" required>
+                        <div class="mt-0 invalid-feedback">
+                          Please provide a valid First Name.
+                        </div>
+                      </div>  
+                    </div>
+                    
+                    <div class="col-md-6">  
+                      <div class="mb-4 mx-0">
+                        <label for="lname">Last Name</label>   
+                        <input type="text" id="lname" class="form-control" placeholder="Last Name" name="lname" value="{$lname}">  
+                      </div>  
+                    </div>
+                  </div>
+                  
+                  <div class="mb-4 mx-0">
+                    <label for="qualifications">Basic Introduction</label>
+                    <textarea id="qualification" class="form-control" placeholder="Qualifications..." row="5" name="qualification" required>{$qualification}</textarea>
+                    <div class="mt-0 invalid-feedback">
+                      Please enter your qualifications.
+                    </div>
+                  </div> 
+
+                  <div class="mb-4 mx-0">
+                    <label for="introduction">Basic Introduction</label>
+                    <textarea id="introduction" class="form-control" placeholder="Post Details..." row="5" name="introduction" required>{$introduction}</textarea>
+                    <div class="mt-0 invalid-feedback">
+                      Please provide a short introduction.
+                    </div>
+                  </div>
+
+                  <label for="upload-col">Profile Photo</label>
+                  <div class="input-group mb-4" id="upload-col">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">Choose File</span>
+                    </div>
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="fileInput" aria-describedby="fileInput" name="image">
+                      <label class="custom-file-label" for="fileInput">File Name</label>
+                    </div>
+                  </div>
+
+                  {$action}
+                  <div class="d-flex">
+                    <a href="{$return_btn}" class="btn btn-warning my-4 btn-block"><i class="fa fa-chevron-left"></i> Return</a>
+                    <button class="btn btn-info my-4 btn-block" type="submit" name="update">Save</button>
+                  </div>
+                </form>
+
+              </div> 
+            </div>  

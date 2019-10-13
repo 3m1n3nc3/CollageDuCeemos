@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Material Design Bootstrap</title>
+    <!-- Font Awesome -->
+    <link href="css/fa/font-awesome.css" rel="stylesheet">
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="css/mdb.min.css" rel="stylesheet">
+    <!-- Your custom styles (optional) -->
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+    <style>
+    html,
+    body,
+    header {
+    height: 100px;
+    }
+    </style>
+  </head>
+  <body class="black-skin">
+    <!-- Main Navigation -->
+    <header>
+      <!-- Navbar -->
+      <nav class="navbar fixed-top navbar-expand-lg navbar-dark black scrolling-navbar">
+        <div class="container smooth-scroll">
+          <a class="navbar-brand waves-effect" href="index.html" target="_blank">
+            <img src="img/logo-full.png" class="navbar-logo">
+          </a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent-7" aria-controls="navbarSupportedContent-7" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
+            <!-- Left -->
+            <ul class="navbar-nav font-weight-bold">
+              <li class="nav-item">
+                <a href="blog-list.html" class="nav-link waves-effect" href="index.html">Home
+                  <span class="sr-only">(current)</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link waves-effect" href="artist.html">Artist</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link waves-effect" href="events.html"
+                target="_blank">Art Events</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link waves-effect" href="exhibitions.html">Events</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link waves-effect" href="about.html">About</a>
+              </li>
+              <li class="nav-item active">
+                <a class="nav-link waves-effect" href="contact.html">Contact</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <!-- Main Navigation -->
+    <!-- Main Layout -->
+    <main>
+      <div class="container-fluid ">
+        <div class="row">
+
+          <div class="col-md-3">
+            
+            <hr class="mt-0">
+            <label for="list-group" class="font-weight-bold">Navigation</label>
+            <div class="list-group pb-5" id="list-group">
+              <a href="#!" class="list-group-item list-group-item-action active">
+                Create Post
+              </a>
+              <a href="#!" class="list-group-item list-group-item-action">Site Configuration</a>
+              <a href="#!" class="list-group-item list-group-item-action">Admin Details</a>
+              <a href="#!" class="list-group-item list-group-item-action">Static Pages</a>
+              <a href="#!" class="list-group-item list-group-item-action">Vestibulum at eros</a>
+            </div>
+            <hr class="mt-0 mb-4">
+
+            <!--Card Light-->
+            <label for="list-group" class="font-weight-bold">Featured Today</label>
+            <div class="card mb-4">
+              <!--Card image-->
+              <div class="view overlay">
+                <img src="img/spider.jpg" class="card-img-top"
+                alt="">
+                <a>
+                  <div class="mask"></div>
+                </a>
+              </div>
+              <!--/.Card image-->
+              <!--Card content-->
+              <div class="card-body">
+                <!--Social shares button-->
+                <a class="activator mr-3"><i class="fa fa-share-alt"></i></a>
+                <!--Title-->
+                <h4 class="card-title">Recent Post title</h4>
+                <hr>
+                <!--Text-->
+                <p class="card-text">Some quick example text to build on the Recent Post title and make up the bulk of the
+                card's content.</p>
+                <a class="link-text">
+                  <h5>Read more <i class="fa fa-chevron-right"></i></h5>
+                </a>
+              </div>
+              <!--/.Card content-->
+            </div>
+
+          </div>
+
+          <div class="col-md-9">
+            <div class="card">
+
+              <h5 class="card-header info-color white-text text-center py-4">
+                <strong><p class="h4 text-center">Create new post</p></strong>
+              </h5>
+
+              <div class="card-body px-lg-5">
+
+                <form style="color: #757575;">
+
+                  <label for="post_title">Post Title</label>
+                  <input type="text" id="post_title" class="form-control mb-4" placeholder="Post Title">
+
+                  <label for="post_author" class="mb-0">Post Author</label>
+                  <small id="helper" class="form-text text-muted mt-0">If the post author is not entered the the site  admin will be credited as post author</small>
+                  <input type="text" id="post_author" class="form-control mb-4" placeholder="Post Author">
+
+                  <label for="textarea">Post Details</label>
+                  <textarea id="textarea" class="form-control mb-4" placeholder="Post Details..."></textarea>
+
+                  <label for="upload-col">Upload Image</label>
+                  <div class="input-group mb-4" id="upload-col">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">Choose File</span>
+                    </div>
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="fileInput" aria-describedby="fileInput">
+                      <label class="custom-file-label" for="fileInput">File Name</label>
+                    </div>
+                  </div>
+
+                  <label for="select">Parent Page</label>
+                  <select class="browser-default custom-select mb-4" id="select">
+                    <option value="" disabled="" selected="">Choose your option</option>
+                    <option value="1">Homepage</option>
+                    <option value="2">Artists</option>
+                    <option value="3">Events</option>
+                  </select>
+                  
+                  <div class="d-flex">
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_public">
+                      <label class="custom-control-label" for="checkbox_public">Make Public</label>
+                    </div>
+
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_navigation">
+                      <label class="custom-control-label" for="checkbox_navigation">Link to Navigation</label>
+                    </div>
+
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_footer">
+                      <label class="custom-control-label" for="checkbox_footer">Link to Footer</label>
+                    </div>
+
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_footer">
+                      <label class="custom-control-label" for="checkbox_footer">Featured Today</label>
+                    </div>
+                  </div>
+
+                  <button class="btn btn-info my-4 btn-block" type="submit">Create Page</button>
+                </form>
+
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+    <!-- Main Layout -->
+    <!-- Footer -->
+    <footer class="page-footer pt-4 mt-4 text-center text-md-left">
+      <!-- Footer Links -->
+      <div class="container">
+        <div class="row">
+          <!-- First column -->
+          <div class="col-md-6">
+            <h6 class="text-uppercase font-weight-bold">Footer Content</h6>
+            <p>This will be used to hold some quick and important links within the site and other sites.</p>
+          </div>
+          <!-- First column -->
+          <!-- Second column -->
+          <div class="col-md-3">
+            <h6 class="text-uppercase font-weight-bold">Links</h6>
+            <ul class="list-unstyled">
+              <li><a href="#!">Link 1</a></li>
+              <li><a href="#!">Link 2</a></li>
+              <li><a href="#!">Link 3</a></li>
+            </ul>
+          </div>
+          <!-- Second column -->
+          <!-- Third column -->
+          <div class="col-md-3">
+            <h6 class="text-uppercase font-weight-bold">Links</h6>
+            <ul class="list-unstyled">
+              <li><a href="#!">Link 1</a></li>
+              <li><a href="#!">Link 2</a></li>
+              <li><a href="#!">Link 3</a></li>
+            </ul>
+          </div>
+          <!-- Third column -->
+        </div>
+      </div>
+      <!-- Footer Links -->
+      <!-- Copyright -->
+      <div class="footer-copyright py-3 text-center">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-6">
+              &copy; Copyright 2019 <a href="#">Collage du Ceemos</a> <a href="https://twitter.com/cceemos">@cceemos</a>
+            </div>
+            <div class="col-md-6">
+              Developed and maintained by <a href="#">Oracle Tech</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Copyright -->
+    </footer>
+    <!--/.Footer-->
+    
+    <!-- JQuery -->
+    <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+    <!-- Bootstrap tooltips -->
+    <script type="text/javascript" src="js/popper.min.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript" src="js/mdb.min.js"></script>
+    <script type="text/javascript">
+    // Show sideNav
+    $('.button-collapse').sideNav('show');
+    // Hide sideNav
+    $('.button-collapse').sideNav('hide');
+    new WOW().init();
+    // MDB Lightbox Init
+    $(function () {
+    $("#mdb-lightbox-ui").load("../mdb-addons/mdb-lightbox-ui.html");
+    });
+    </script>
+  </body>
+</html>
