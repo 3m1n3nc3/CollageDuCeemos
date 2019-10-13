@@ -374,7 +374,7 @@ function cleanUrls($url) {
         }  elseif (strpos($url, $pager['events'])) {
             $url = str_replace(array($pager['events'], '&view=', '&id'), array('events', '/', '/'), $url);
         } elseif (strpos($url, $pager['listing'])) {
-            $url = str_replace(array($pager['listing'], '&sorting=', '&id'), array('listing', '/sort/', '/'), $url);
+            $url = str_replace(array($pager['listing'], '&sorting=', '&type='), array('listing', '/sort/', '/'), $url);
         }
     }
     return $url;
