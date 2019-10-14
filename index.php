@@ -14,7 +14,7 @@ $PTMPL['site_slug'] = $configuration['slug'];
 $PTMPL['site_logo'] = getImage($configuration['logo']);
 $PTMPL['site_url'] = $SETT['url'];
 $PTMPL['template_url'] = $PTMPL['template_url'];
-$PTMPL['favicon'] = 'favicon.ico';
+$PTMPL['favicon'] = getImage($configuration['intro_logo']);
 
 $captcha_url = '/includes/vendor/goCaptcha/goCaptcha.php?gocache='.strtotime('now');
 $PTMPL['captcha_url'] = $SETT['url'].$captcha_url;
