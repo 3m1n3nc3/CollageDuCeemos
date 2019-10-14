@@ -6,6 +6,7 @@ RewriteRule ^(.*) 													$1															[L]
 RewriteRule ^(([^/]*)+)?$											index.php?page=$1											[L] 
 
 RewriteRule ^introduction/?$										index.php?page=introduction									[NC] 
+RewriteRule ^introduction/logout/([^/]+)/?$							index.php?page=introduction&logout=$1						[NC] 
 RewriteRule ^homepage/?$											index.php?page=homepage										[NC] 
 RewriteRule ^homepage/archive/([^/]+)/?$							index.php?page=homepage&archive=$1							[NC] 
 RewriteRule ^homepage/archive/([^/]+)/data/([^/]+)?$				index.php?page=homepage&archive=$1&data=$2					[NC] 
@@ -16,6 +17,10 @@ RewriteRule ^offline/?$												index.php?page=offline										[NC]
 
 RewriteRule ^post/?$												index.php?page=post											[NC] 
 RewriteRule ^post/([^/]+)/?$										index.php?page=post&post_id=$1								[NC] 
+
+RewriteRule ^profile/?$												index.php?page=profile										[NC] 
+RewriteRule ^profile/update/([^/]+)/?$								index.php?page=profile&update=$1							[NC] 
+RewriteRule ^profile/([^/]+)/?$										index.php?page=profile&id=$1								[NC] 
 
 RewriteRule ^static/?$												index.php?page=static										[NC] 
 RewriteRule ^static/([^/]+)/?$										index.php?page=static&view=$1								[NC] 

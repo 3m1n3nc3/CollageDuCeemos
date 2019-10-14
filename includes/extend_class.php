@@ -364,11 +364,12 @@ function cleanUrls($url) {
         $pager['listing'] = 'index.php?page=listing';
 
         $pager['moderate'] = 'index.php?page=moderate';
+        $pager['profile'] = 'index.php?page=profile';
 
         if (strpos($url, $pager['homepage'])) {
             $url = str_replace(array($pager['homepage'], '&archive=', '&data='), array('homepage', '/archive/', '/data/'), $url);
         } elseif (strpos($url, $pager['introduction'])) {
-            $url = str_replace(array($pager['introduction']), array('introduction'), $url);
+            $url = str_replace(array($pager['introduction'], '&logout='), array('introduction', '/logout/'), $url);
         } elseif (strpos($url, $pager['post'])) {
             $url = str_replace(array($pager['post'], '&post_id=', '&id'), array('post', '/', '/'), $url);
         } elseif (strpos($url, $pager['static'])) {
@@ -379,6 +380,8 @@ function cleanUrls($url) {
             $url = str_replace(array($pager['listing'], '&sorting=', '&type='), array('listing', '/sort/', '/'), $url);
         } elseif (strpos($url, $pager['moderate'])) {
             $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&delete=', '&pagination='), array('moderate', '/', '/', '/delete/', '/page/'), $url);
+        } elseif (strpos($url, $pager['profile'])) {
+            $url = str_replace(array($pager['profile'], '&update=', '&id='), array('profile', '/update/', '/'), $url);
         }
     }
     return $url;

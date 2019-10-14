@@ -24,6 +24,7 @@ function mainContent() {
 		} elseif ($_GET['logout'] == 'admin') {
 			$framework->sign_out(1, 1);
 		}
+		$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=introduction'), 1);
 	}
 
 	$scripts = new themer('coder/introduction-styles');
