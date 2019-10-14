@@ -363,6 +363,8 @@ function cleanUrls($url) {
         $pager['events'] = 'index.php?page=events';
         $pager['listing'] = 'index.php?page=listing';
 
+        $pager['moderate'] = 'index.php?page=moderate';
+
         if (strpos($url, $pager['homepage'])) {
             $url = str_replace(array($pager['homepage'], '&archive=', '&data='), array('homepage', '/archive/', '/data/'), $url);
         } elseif (strpos($url, $pager['introduction'])) {
@@ -375,6 +377,8 @@ function cleanUrls($url) {
             $url = str_replace(array($pager['events'], '&view=', '&id'), array('events', '/', '/'), $url);
         } elseif (strpos($url, $pager['listing'])) {
             $url = str_replace(array($pager['listing'], '&sorting=', '&type='), array('listing', '/sort/', '/'), $url);
+        } elseif (strpos($url, $pager['moderate'])) {
+            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&delete=', '&pagination='), array('moderate', '/', '/', '/delete/', '/page/'), $url);
         }
     }
     return $url;

@@ -1457,9 +1457,10 @@ class framework {
 		$navigation = '';
 		if ($endpage > 1) {
 			if ($curpage != $startpage) {
+				$pager = cleanUrls($page.'&pagination='.$startpage);
 				$navigation .= '
 					<li class="page-item">
-						<a class="page-link" aria-label="Previous" href="'.$page.'&pagination='.$startpage.'">
+						<a class="page-link" aria-label="Previous" href="'.$pager.'">
 							<span aria-hidden="true">&laquo;</span>
 							<span class="sr-only">Previous</span>
 						</a>
@@ -1468,29 +1469,33 @@ class framework {
 			}
 
 			if ($curpage >= 2) {
+				$pager = cleanUrls($page.'&pagination='.$previouspage);
 			    $navigation .= '
 					<li class="page-item">
-						<a class="page-link" href="'.$page.'&pagination='.$previouspage.'">Prev</a>
+						<a class="page-link" href="'.$pager.'">Prev</a>
 					</li>
 			    ';
 			}
 
+			$pager = cleanUrls($page.'&pagination='.$curpage);
 		    $navigation .= '
 				<li class="page-item active">
-					<a class="page-link" href="'.$page.'&pagination='.$curpage.'">'.$curpage.'</a>
+					<a class="page-link" href="'.$pager.'">'.$curpage.'</a>
 				</li>
 		    '; 
 
 			if($curpage != $endpage){
+				$pager = cleanUrls($page.'&pagination='.$nextpage);
 			    $navigation .= '
 					<li class="page-item">
-						<a class="page-link" href="'.$page.'&pagination='.$nextpage.'">Next</a>
+						<a class="page-link" href="'.$pager.'">Next</a>
 					</li>
 			    ';  
  
+				$pager = cleanUrls($page.'&pagination='.$endpage);
 			    $navigation .= '                
 					<li class="page-item">
-						<a class="page-link" aria-label="Next" href="'.$page.'&pagination='.$endpage.'">
+						<a class="page-link" aria-label="Next" href="'.$pager.'">
 							<span aria-hidden="true">&raquo;</span>
 							<span class="sr-only">Next</span>
 						</a>
