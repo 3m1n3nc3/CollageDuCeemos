@@ -9,6 +9,13 @@ if(isset($_GET['page']) && isset($action[$_GET['page']])) {
  
 require_once("controller/{$page_name}.php");
 
+$url = $SETT['url']; // 'http://admin.collageduceemos.te';
+if (strpos($url, 'admin') && (!$admin || !$user['founder'] || $user['role'] < 4)) {
+	if ($page_name != 'moderate') {
+		$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=moderate'), 1);
+	}
+}
+
 $PTMPL['site_title'] = $configuration['site_name']; 
 $PTMPL['site_slug'] = $configuration['slug'];
 $PTMPL['site_logo'] = getImage($configuration['logo']);
