@@ -10,8 +10,8 @@ if(isset($_GET['page']) && isset($action[$_GET['page']])) {
 require_once("controller/{$page_name}.php");
 
 $url = $SETT['url']; // 'http://admin.collageduceemos.te';
-if (strpos($url, 'admin') && (!$admin || !$user['founder'] || $user['role'] < 4)) {
-	if ($page_name != 'moderate') {
+if (strpos($url, 'admin') && (!isset($admin) && !isset($user))) {
+	if ($_GET['page'] != 'moderate') {
 		$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=moderate'), 1);
 	}
 }
