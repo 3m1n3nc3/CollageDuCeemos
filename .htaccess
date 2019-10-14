@@ -14,15 +14,20 @@ RewriteRule ^homepage/pagination/([^/]+)?$							index.php?page=homepage&paginat
 
 RewriteRule ^offline/?$												index.php?page=offline										[NC]
 
+RewriteRule ^post/?$												index.php?page=post											[NC] 
 RewriteRule ^post/([^/]+)/?$										index.php?page=post&post_id=$1								[NC] 
 
+RewriteRule ^static/?$												index.php?page=static										[NC] 
 RewriteRule ^static/([^/]+)/?$										index.php?page=static&view=$1								[NC] 
 
+RewriteRule ^events/?$												index.php?page=events 										[NC] 
 RewriteRule ^events/([^/]+)/?$										index.php?page=events&view=$1								[NC] 
 
+RewriteRule ^listing/?$												index.php?page=listing										[NC] 
 RewriteRule ^listing/sort/([^/]+)/?$								index.php?page=listing&sorting=$1							[NC] 
 RewriteRule ^listing/sort/([^/]+)/([^/]+)?$							index.php?page=listing&sorting=$1&type=$2					[NC] 
 
+RewriteRule ^moderate/?$											index.php?page=moderate										[NC] 
 RewriteRule ^moderate/([^/]+)/?$									index.php?page=moderate&view=$1								[NC]  
 RewriteRule ^moderate/([^/]+)/([^/]+)?$								index.php?page=moderate&view=$1&post_id=$2					[NC] 
 RewriteRule ^moderate/([^/]+)/page/([^/]+)?$						index.php?page=moderate&view=$1&pagination=$2				[NC]  

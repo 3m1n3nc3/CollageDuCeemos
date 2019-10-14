@@ -3,6 +3,12 @@
 function mainContent() {
 	global $PTMPL, $LANG, $SETT, $configuration, $admin, $user, $user_role, $framework, $collage, $marxTime; 
 
+	$url = $SETT['url']; // 'http://admin.collageduceemos.te';
+	if (strpos($url, 'admin') && (!$admin || !$user['founder'] || $user['role'] < 4)) {
+		if (isset($_GET['view']) && $_GET['view'] != 'access' || !isset($_GET['view'])) {
+			$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=moderate&view=access'), 1);
+		}
+	}
    	if ($admin || $user['founder'] || $user_role >= 4) {
    	 	$PTMPL['upload_script'] = $SETT['url'].'/connection/uploader.php?action=ckeditor';
 			
