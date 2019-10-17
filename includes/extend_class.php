@@ -905,37 +905,39 @@ function popularCard() {
     global $SETT, $PTMPL, $user, $framework, $collage, $marxTime; 
     $popular = $collage->fetchPopular(); 
     $card = '';
-    foreach ($popular as $key => $post) { 
-        $image = getImage($post['image'], 1);
-        $date = $marxTime->dateFormat($post['date'], 2);
-        $link = cleanUrls($SETT['url'].'/index.php?page=post&post_id='.$post['id']);
-        $card .= 
-            '<div class="single-post">
-                <div class="row mb-4">
-                    <div class="col-5">
-                        <div class="view overlay" style="max-height: 50px;">
-                            <img src="'.$image.'"
-                            class="img-fluid z-depth-1 rounded-0" alt="sample image">
-                            <a>
-                                <div class="mask rgba-white-slight"></div>
-                            </a>
+    if ($popular) {
+        foreach ($popular as $key => $post) { 
+            $image = getImage($post['image'], 1);
+            $date = $marxTime->dateFormat($post['date'], 2);
+            $link = cleanUrls($SETT['url'].'/index.php?page=post&post_id='.$post['id']);
+            $card .= 
+                '<div class="single-post">
+                    <div class="row mb-4">
+                        <div class="col-5">
+                            <div class="view overlay" style="max-height: 50px;">
+                                <img src="'.$image.'"
+                                class="img-fluid z-depth-1 rounded-0" alt="sample image">
+                                <a>
+                                    <div class="mask rgba-white-slight"></div>
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="col-7">
-                        <h6 class="mt-0 font-small">
-                        <a href="'.$link.'">
-                            <strong>'.$post['title'].'</strong>
-                        </a>
-                        </h6>
-                        <div class="post-data">
-                            <p class="font-small grey-text mb-0">
-                            <i class="far fa-clock-o"></i> '.$date.'</p>
+                        
+                        <div class="col-7">
+                            <h6 class="mt-0 font-small">
+                            <a href="'.$link.'">
+                                <strong>'.$post['title'].'</strong>
+                            </a>
+                            </h6>
+                            <div class="post-data">
+                                <p class="font-small grey-text mb-0">
+                                <i class="far fa-clock-o"></i> '.$date.'</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            ';
+                ';
+        }
     }
     return $card;
 }
@@ -1354,6 +1356,7 @@ function featuredPost($type = null) {
     global $SETT, $PTMPL, $configuration, $user, $framework, $collage; 
 
     $today = $framework->dbProcessor("SELECT * FROM posts WHERE date(`promo_date`) = CURDATE()", 1);
+    $post = '';
     if ($today) {
         $key = array_rand($today);
         $today = $today[$key];
@@ -1375,11 +1378,12 @@ function featuredPost($type = null) {
         // Update todays featured post
         $collage->promoted = 1;
         $rand = $collage->fetchPost(2);
-        $k = array_rand($rand);
-        $new_id = $rand[$k]['id'];
-        $framework->dbProcessor("UPDATE posts SET `promo_date` = CURDATE() WHERE `id` = '$new_id'", 0, 1);
-        $collage->promoted = null;
-        $post = '';
+        if ($rand) {
+            $k = array_rand($rand);
+            $new_id = $rand[$k]['id'];
+            $framework->dbProcessor("UPDATE posts SET `promo_date` = CURDATE() WHERE `id` = '$new_id'", 0, 1);
+            $collage->promoted = null;
+        }
     }
     return $post;
 }
