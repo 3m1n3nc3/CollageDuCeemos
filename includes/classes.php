@@ -1782,7 +1782,7 @@ class databaseCL extends framework {
 	}
 
 	function createPost() {
-		global $PTMPL, $LANG, $SETT, $user, $framework, $collage, $marxTime; 
+		global $PTMPL, $LANG, $SETT, $user, $admin, $framework, $collage, $marxTime; 
  
 		$post_ids = isset($_GET['post_id']) ? $framework->db_prepare_input($_GET['post_id']) : null;
 		$get_post = $collage->fetchPost(1, $post_ids)[0];
