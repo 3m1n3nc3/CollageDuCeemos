@@ -1787,6 +1787,11 @@ class databaseCL extends framework {
 		$post_ids = isset($_GET['post_id']) ? $framework->db_prepare_input($_GET['post_id']) : null;
 		$get_post = $collage->fetchPost(1, $post_ids)[0];
 
+		if ($user) {
+			$uids = $user['uid'];
+		} else {
+			$uids = $admin['id'];
+		}
 		$user_id = $framework->db_prepare_input($user['uid']);
 		$category = $framework->db_prepare_input($this->category);
 		$title = $framework->db_prepare_input($this->title);
