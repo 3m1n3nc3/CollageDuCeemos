@@ -1792,7 +1792,7 @@ class databaseCL extends framework {
 		} else {
 			$uids = $admin['id'];
 		}
-		$user_id = $framework->db_prepare_input($user['uid']);
+		$user_id = $framework->db_prepare_input($uids);
 		$category = $framework->db_prepare_input($this->category);
 		$title = $framework->db_prepare_input($this->title);
 		$sub_title = $framework->db_prepare_input($this->sub_title);
