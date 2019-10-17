@@ -118,8 +118,8 @@ body.cover {
 }
 
 .navbar-logo {
-  width: 100px;
-  height: 40px;
+  height: 55px;
+  width: auto;
 }
 
 body.starter {
