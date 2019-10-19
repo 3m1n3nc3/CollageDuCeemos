@@ -1248,14 +1248,14 @@ class framework {
 		if (isset($file['name'])) { 
 			$_FILE = $file;
 			$allowed = array('jpeg','jpg','png');
-			$size = 1597552; 
+			$size = 500000; 
 			$error = $file['name'] == '' ? "Please select a file to upload." : null;
 		    if ($type == 1) {
 		    	$w = 620; $h = 310;
 		    } else {
-				$w = 1200; $h = 800; 
+			$w = 1200; $h = 800; 
 		    }
-    		$size_format = $marxTime->numberFormater($size);
+    			$size_format = $marxTime->swissConverter($size);
 
 			$file_name = $_FILE['name'];
 			$file_size = $_FILE['size'];
@@ -1270,7 +1270,7 @@ class framework {
 			    $errors[] = 'File type not allowed, use a JPEG, JPG or PNG file.';
 			}
 			if($file_size > $size){
-	    		$errors[].= 'Upload should not be more than '.$size_format.'MB';
+	    		$errors[].= 'Upload should not be more than '.$size_format;
 			}
 
 			/*
