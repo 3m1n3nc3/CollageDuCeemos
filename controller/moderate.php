@@ -4,7 +4,8 @@ function mainContent() {
 	global $PTMPL, $LANG, $SETT, $configuration, $admin, $user, $user_role, $framework, $collage, $marxTime; 
 
    	if ($admin || $user['founder'] || $user_role >= 4) {
-   	 			 
+   	 	$PTMPL['upload_script'] = $SETT['url'].'/connection/uploader.php?action=ckeditor';
+			
 		$PTMPL['page_title'] = $LANG['homepage'];
 		$PTMPL['site_url'] = $SETT['url'];
 
