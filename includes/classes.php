@@ -188,7 +188,7 @@ class framework {
 	    	$passhash = hash('md5', $this->db_prepare_input($this->password));
 	        $password = " `password` = '$passhash', "; 
 	    }
-        $image = $this->imageUploader($this->image); 
+        $image = $this->imageUploader($this->image, 2); 
 	if (is_array($image)) { 
 		if ($data) {
 			deleteFile($data['photo'], 3);
@@ -1252,6 +1252,8 @@ class framework {
 			$error = $file['name'] == '' ? "Please select a file to upload." : null;
 		    if ($type == 1) {
 		    	$w = 620; $h = 310;
+		    } if ($type == 2) {
+		    	$w = 600; $h = 600;
 		    } else {
 			$w = 1200; $h = 800; 
 		    }
@@ -1297,7 +1299,7 @@ class framework {
 						// Create a new ImageResize object
 		                $image = new ImageResize($file_tmp);
 			        	// Manipulate the image
-			        	if ($type == 1) {
+			        	if ($type == 1 || $type == 2) {
 			        		$image->resizeToBestFit($w, $h);
 			        		$image->crop($w, $h);
 			        	} else {
