@@ -1248,7 +1248,7 @@ class framework {
 		if (isset($file['name'])) { 
 			$_FILE = $file;
 			$allowed = array('jpeg','jpg','png');
-			$size = 500000; 
+			$size = 2524000; 
 			$error = $file['name'] == '' ? "Please select a file to upload." : null;
 		    if ($type == 1) {
 		    	$w = 620; $h = 310;
