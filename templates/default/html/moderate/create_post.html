@@ -100,12 +100,12 @@
               ClassicEditor
                 .create( 
                   document.querySelector( '#post_details, #details' ) , { 
-                    ckfinder: {
-                      uploadUrl: '{$upload_script}'
-                    },
                     toolbar: [
                         'heading', '|', 'alignment:left', 'alignment:right', 'alignment:center', 'alignment:justify'
                     ],
+                    ckfinder: {
+                      uploadUrl: '{$upload_script}'
+                    },
                     image: { 
                       toolbar: [ 'imageTextAlternative', '|', 'imageStyle:alignLeft', 'imageStyle:full', 'imageStyle:alignRight' ], 
                       styles: [ 'full', 'alignLeft', 'alignRight' ]
