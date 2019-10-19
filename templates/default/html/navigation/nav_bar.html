@@ -1,36 +1,45 @@
-    <nav class="navbar fixed-top navbar-expand-lg scrolling-navbar navbar-dark black">
-      <div class="container justify-content-center align-items-center">
-        <a class="navbar-brand" href="#"><strong>Navbar</strong></a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+
+    <!-- Navbar -->
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light scrolling-navbar navbar-dark black">
+      <div class="container-fluid justify-content-center align-items-center">
+        <a href="{$introduction_url}" class="navbar-brand waves-effect" target="_blank" style="overflow: unset;">
+          <img src="{$site_logo}" class="navbar-logo">
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCeemos"
+          aria-controls="navbarCeemos" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Features</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Pricing</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Opinions</a>
-            </li>
-          </ul>
-          <ul class="navbar-nav nav-flex-icons">
-            <li class="nav-item">
-              <a class="nav-link"><i class="fab fa-facebook-f"></i></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link"><i class="fab fa-twitter"></i></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link"><i class="fab fa-instagram"></i></a>
-            </li>
+        <div class="collapse navbar-collapse justify-content-center" id="to navbarCeemos">
+          <ul class="navbar-nav">
+
+            <li class="nav-item ml-3 mb-0">
+              <a href="{$home_url}" class="nav-link waves-effect waves-light font-weight-bold" id="homeMenuLink"
+                aria-haspopup="true" aria-expanded="false"> HOMEPAGE
+              </a> 
+            </li> 
+            {$artist_drop}
+            <li class="nav-item ml-3 mb-0">
+              <a href="{$event_page_url}" class="nav-link waves-effect waves-light font-weight-bold" href="#">EVENTS AND EXHIBITIONS</a>
+            </li> 
+            {$content_menu_link}
+            <li class="nav-item ml-3 mb-0">
+              <a href="{$about_page_url}" class="nav-link waves-effect waves-light font-weight-bold" href="#">ABOUT US</a>
+            </li> 
+            <li class="nav-item ml-3 mb-0">
+              <a href="{$contact_page_url}" class="nav-link waves-effect waves-light font-weight-bold" href="#">CONTACT US</a>
+            </li> 
+
           </ul>
         </div>
+
+        <ul class="navbar-nav ml-auto nav-flex-icons">
+ 
+          {$social_links}
+
+        </ul>
+
       </div>
+
     </nav>
+    <!-- Navbar --> 
+<!-- Add fixed-top to the <nav class=""> -->
