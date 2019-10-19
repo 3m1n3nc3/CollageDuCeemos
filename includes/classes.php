@@ -189,18 +189,21 @@ class framework {
 	        $password = " `password` = '$passhash', "; 
 	    }
         $image = $this->imageUploader($this->image); 
-		if (is_array($image)) { 
-			if ($data) {
-				deleteFile($data['photo'], 3);
-			}
-			$set_image = $image[0];
-		} else {
-			if (isset($data['photo'])) {
-				$set_image = $data['photo'];
-			} else {
-				$set_image = null;
-			}
+	if (is_array($image)) { 
+		if ($data) {
+			deleteFile($data['photo'], 3);
 		}
+		$set_image = $image[0];
+	} else {
+		if (isset($data['photo'])) {
+			$set_image = $data['photo'];
+		} else {
+			$set_image = null;
+		}
+		if ($image) {
+			$errors = $image;
+		}
+	}
 
         $sql = sprintf("UPDATE " . TABLE_USERS . " SET `fname` = '%s', `lname` = '%s', " .
             "`email` = '%s',%s `username` = '%s', `facebook` = '%s', `twitter` = '%s', " . 
@@ -212,6 +215,9 @@ class framework {
         } else {
         	$msg = messageNotice($save);
         }
+	if (isset($errors)) {
+		$msg .= $errors;
+	}
         return $msg;
     }
 
