@@ -210,14 +210,14 @@ class framework {
             "`instagram` = '%s', `intro` = '%s', `qualification` = '%s', `photo` = '%s' WHERE `uid` = '%s'", 
             $fname, $lname, $email, $password, $username, $facebook, $twitter, $instagram, $intro, $qualification, $set_image, $uid);
         $save = $this->dbProcessor($sql, 0, 1);
+	if (isset($errors)) {
+		$msg .= $errors;
+	}
         if ($save == 1) {
         	$msg = messageNotice('Profile has been updated', 1);
         } else {
         	$msg = messageNotice($save);
         }
-	if (isset($errors)) {
-		$msg .= $errors;
-	}
         return $msg;
     }
 
