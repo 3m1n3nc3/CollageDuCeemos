@@ -1842,10 +1842,11 @@ class databaseCL extends framework {
 				$collage->dbProcessor("UPDATE posts SET `featured` = '0' WHERE `featured` = '1' AND `id` != '$post_ids'", 0, 1);
 			}
 			if ($post_ids) {
-				$sql = sprintf("UPDATE posts SET `category` = '%s', `image` = '%s', `title` = '%s', `sub_title` = '%s', 
+				$sql = sprintf("UPDATE posts SET `user_id` = '%s', `category` = '%s', `image` = '%s', `title` = '%s', `sub_title` = '%s', 
 					`quote` = '%s', `details` = '%s', `event_date` = '%s', `public` = '%s', `featured` = '%s', 
 					`promoted` = '%s' WHERE `id` = '%s'", 
-					$category, $set_image, $title, $sub_title, $quote, $details, $date_time, $public, $featured, $promote, $post_ids);
+					$user_id, $category, $set_image, $title, $sub_title, $quote, $details, 
+					$date_time, $public, $featured, $promote, $post_ids);
 				$post = $this->dbProcessor($sql, 0, 1);
 				$post = $post == 1 ? $post : messageNotice($post, 2);
 			} else {
