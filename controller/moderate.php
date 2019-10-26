@@ -190,7 +190,7 @@ function mainContent() {
 					} else {
 						$PTMPL['conf_value'] = $value = isset($_POST['value']) ? $_POST['value'] : $set_image;
 						if (isset($_POST['setting']) && $value != '' || !isset($set_image)) {
-							$sql = sprintf("UPDATE configuration SET `%s` = '%s'", $_POST['setting'], $framework->db_prepare_input($value));
+							$sql = sprintf("UPDATE configuration SET `%s` = '%s'", $_POST['setting'], addslashes($value));
 							$set = $collage->dbProcessor($sql, 0, 1);
 							$PTMPL['notification'] = $set == 1 ? messageNotice('Configuration Updated', 1) : messageNotice($set);
 						}
