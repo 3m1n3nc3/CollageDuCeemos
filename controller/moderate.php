@@ -201,8 +201,9 @@ function mainContent() {
 				if (isset($_POST['view']) || isset($_POST['update'])) { 
 
 					$cst = $PTMPL['conf_value'] == '0' ? 'Off' : $PTMPL['conf_value'] == '1' ? 'On' : $PTMPL['conf_value'];
+					$cst = $_POST['setting'] == 'tracking' ? '<code>'.htmlspecialchars($cst).'</code>' : $cst;
 					$PTMPL['current_setting'] = 
-					'<h4><div class="container border border-info p-3 rounded bg-success"> Current Setting: <span class="text-dark"> '.$cst.' </span></div></h4>';
+					'<h4><div class="container border border-warning p-3 rounded bg-success"> Current Setting: <span class="text-dark"> '.$cst.' </span></div></h4>';
 
 					if (isset($this_is_an_image)) {
 						$post_value = ucwords($marxTime->reconstructString($_POST['setting']));
