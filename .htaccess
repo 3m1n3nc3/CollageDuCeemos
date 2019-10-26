@@ -16,7 +16,7 @@ RewriteRule ^homepage/pagination/([^/]+)?$							index.php?page=homepage&paginat
 RewriteRule ^offline/?$												index.php?page=offline										[NC]
 
 RewriteRule ^post/?$												index.php?page=post											[NC] 
-RewriteRule ^post/([^/]+)/?$										index.php?page=post&post_id=$1								[NC] 
+RewriteRule ^post/([^/]+)/?$								 		index.php?page=post&post_id=$1								[NC] 
 
 RewriteRule ^profile/?$												index.php?page=profile										[NC] 
 RewriteRule ^profile/view/([^/]+)?$									index.php?page=profile&view=$1								[NC]  

@@ -80,25 +80,31 @@ function mainContent() {
 
 				$PTMPL['settings'] = $sett;
  
-				// Set variables to show that this update is an image
-				$so_update = $tr_update = $ads_update = $logo_update = $banner_update = $image_update = 0; 
-				if (isset($_POST['setting'])) {
-					str_ireplace('logo', '', $_POST['setting'], $logo_update); 
-					str_ireplace('banner', '', $_POST['setting'], $banner_update); 
-					str_ireplace('image', '', $_POST['setting'], $image_update); 
-					str_ireplace('site_office', '', $_POST['setting'], $so_update);
-					str_ireplace('tracking', '', $_POST['setting'], $tr_update);
-					str_ireplace('ads_', '', $_POST['setting'], $ads_update);
-				}
-
+				// Set variables to show that this update is an image 
 				$clear_image = '';
-				if ($logo_update>0 || $banner_update>0 || $image_update>0) {
-					$this_is_an_image = 1;
-					$clear_image = 
-					'<button class="btn btn-danger my-4 btn-block flex-grow-1" type="submit" name="clear_image">Clear Image</button>';
-				} elseif ($so_update > 0 || $tr_update > 0 || $ads_update > 0) {
-					$this_is_a_text_field = 1;
-				}
+				if (isset($_POST['setting'])) { 
+
+					$selectables = array(
+						'ads_off', 'allow_login', 'rave_mode', 'smtp_auth', 'sms', 
+						'smtp', 'smtp_secure', 'captcha', 'fbacc', 'clean_url'
+					);
+					$imageables = array(
+						'logo', 'intro_logo', 'banner', 'intro_banner', 'image'
+					);
+					$textareable = array(
+						'site_office', 'tracking', 'ads_1', 'ads_2', 'ads_3', 'ads_4'
+					);
+
+					if (in_array($_POST['setting'], $selectables)) {
+						$this_is_a_select = 1; 
+					} elseif (in_array($_POST['setting'], $imageables)) {
+						$this_is_an_image = 1;
+						$clear_image = 
+						'<button class="btn btn-danger my-4 btn-block flex-grow-1" type="submit" name="clear_image">Clear Image</button>';
+					} elseif (in_array($_POST['setting'], $textareable)) {
+						$this_is_a_text_field = 1;
+					}
+				} 
 
 				// Buttons to show or update the configuration
 				$PTMPL['conf_btn'] = isset($_POST['view']) ? 
@@ -178,7 +184,7 @@ function mainContent() {
 							}
 						}
 					}
-
+ 
 					if (isset($errors)) {
 						$PTMPL['notification'] = $errors;
 					} else {
@@ -192,38 +198,68 @@ function mainContent() {
 				}
 
 				// Determine to show text field or upload form
-				if (isset($this_is_an_image)) {
-					$post_value = ucwords($marxTime->reconstructString($_POST['setting']));
-					$PTMPL['input_field'] = '
-					<label for="upload-col">Upload '.$post_value.' Image</label>
-					<div class="input-group mb-4" id="upload-col">
-						<div class="input-group-prepend">
-							<span class="input-group-text">Choose '.$post_value.' File</span>
-						</div>
-						<div class="custom-file">
-							<input type="file" class="custom-file-input" id="fileInput" aria-describedby="fileInput" name="image">
-							<label class="custom-file-label" for="fileInput">File Name</label>
-						</div>
-					</div>';
-				} elseif (isset($this_is_a_text_field)) {
-					$PTMPL['input_field'] = '
-					<div class="mb-4 mx-0">
-						<label for="content_title">New Value</label>
-						<textarea id="value" class="form-control" placeholder="New Value" name="value" row="3" required>'.$PTMPL['conf_value'].'</textarea>
-						<div class="mt-0 invalid-feedback">
-							Please provide a valid value.
-						</div>
-					</div>';
-				} else {
-					$PTMPL['input_field'] = '
-					<div class="mb-4 mx-0">
-						<label for="content_title">New Value</label>
-						<input type="text" id="value" class="form-control" placeholder="New Value" name="value" value="'.$PTMPL['conf_value'].'" required>
-						<div class="mt-0 invalid-feedback">
-							Please provide a valid value.
-						</div>
-					</div>';
-				} 
+				if (isset($_POST['view']) || isset($_POST['update'])) { 
+
+					$cst = $PTMPL['conf_value'] == '0' ? 'Off' : $PTMPL['conf_value'] == '1' ? 'On' : $PTMPL['conf_value'];
+					$PTMPL['current_setting'] = 
+					'<h4><span class="badge badge-pill badge-success"> Current Setting: <span class="text-dark"> '.$cst.' </span></span></h4>';
+
+					if (isset($this_is_an_image)) {
+						$post_value = ucwords($marxTime->reconstructString($_POST['setting']));
+						$PTMPL['input_field'] = '
+						<label for="upload-col">Upload '.$post_value.' Image</label>
+						<div class="input-group mb-4" id="upload-col">
+							<div class="input-group-prepend">
+								<span class="input-group-text">Choose '.$post_value.' File</span>
+							</div>
+							<div class="custom-file">
+								<input type="file" class="custom-file-input" id="fileInput" aria-describedby="fileInput" name="image">
+								<label class="custom-file-label" for="fileInput">File Name</label>
+							</div>
+						</div>';
+					} elseif (isset($this_is_a_text_field)) {
+						$PTMPL['input_field'] = '
+						<div class="mb-4 mx-0">
+							<label for="content_title">New Value</label>
+							<textarea id="value" class="form-control" placeholder="New Value" name="value" row="3" required>'.$PTMPL['conf_value'].'</textarea>
+							<div class="mt-0 invalid-feedback">
+								Please provide a valid value.
+							</div>
+						</div>';
+					} elseif (isset($this_is_a_select)) {
+						if ($_POST['setting'] == 'smtp_secure') {
+							$opts = '
+								<option value="0">Off</option>
+								<option value="ssl">SSL</option>
+								<option value="tls">TLS</option>
+							';
+						} else {
+							$opts = '
+								<option value="0">Off</option>
+								<option value="1">On</option>
+							';							
+						}
+						$PTMPL['input_field'] = '
+						<div class="mb-4 mx-0">
+							<label for="content_title">New Value</label>
+							<select id="value" class="form-control" name="value" required>
+								'.$opts.'
+							</select> 
+							<div class="mt-0 invalid-feedback">
+								Please provide a valid value.
+							</div>
+						</div>';						
+					} else {
+						$PTMPL['input_field'] = '
+						<div class="mb-4 mx-0">
+							<label for="content_title">New Value</label>
+							<input type="text" id="value" class="form-control" placeholder="New Value" name="value" value="'.$PTMPL['conf_value'].'" required>
+							<div class="mt-0 invalid-feedback">
+								Please provide a valid value.
+							</div>
+						</div>';
+					} 
+				}
 
 				$theme = new themer('moderate/config');
 
@@ -549,7 +585,7 @@ function mainContent() {
 				$theme = new themer('moderate/create_post');
 			}
 			$PTMPL['content'] = $theme->make();
-		} else {
+		} else { 
             $category =  array(
             	'create_post' 	=> 	'Create New blog post',
             	'posts' 		=> 	'View and manage post',
@@ -557,7 +593,8 @@ function mainContent() {
             	'static'		=>	'Manage Static content',
             	'categories'	=>	'Manage categories',
             	'config'		=> 	'Site Configuration',
-            	'admin'			=>	'Update Admin Details'
+            	'admin'			=>	'Update Admin Details',
+            	'filemanager'	=>	'File Manager'
             ); 
             $categories = '';$i = 280;$ii = 3;
             foreach ($category as $key => $row) {
@@ -569,7 +606,7 @@ function mainContent() {
                         <i class="fa '.icon(3, $i).' fa-2x '.$framework->mdbcolors($ii).'"></i> 
                     </div> 
                     <div class="col-10 col-md-9 col-lg-10 px-3 float-right"> 
-                        <a href="'.$link.'" class="btn '.$framework->mdbcolors($ii, 1).' btn-sm ml-0 p-4 px-0">'.$row.'</a>
+                        <a href="'.$link.'" class="btn '.$framework->mdbcolors($ii, 1).' btn-sm ml-0 p-4 px-0 font-weight-bold" style="min-height:85px; min-width: 150px;">'.$row.'</a>
                     </div>
                 </div>'; 
             }

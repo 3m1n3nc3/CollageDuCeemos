@@ -323,16 +323,16 @@ function userAction() {
         $logout_url = cleanUrls($SETT['url'] . '/index.php?page=introduction&logout=admin');
         $logout_user = cleanUrls($SETT['url'] . '/index.php?page=introduction&logout=user');
 
-        $user_link = cleanUrls($SETT['url'] . '/index.php?page=profile&user_id='.$user['uid']);
-        $user_update_link = cleanUrls($SETT['url'] . '/index.php?page=profile&update='.$user['uid']);
+        $user_link = cleanUrls($SETT['url'] . '/index.php?page=profile&user_id='.$user['uid'].'&set=profile');
+        $user_update_link = cleanUrls($SETT['url'] . '/index.php?page=profile&update='.$user['uid'].'&set=update');
         $admin_link = cleanUrls($SETT['url'] . '/index.php?page=moderate&view=admin');
 
         $admin_out = $admin ? '<a href="'.$logout_url.'" class="dropdown-item" href="#">Admin Logout</a>' : '';
         $user_out = $user ? '<a class="dropdown-item" href="'.$logout_user.'">Account Logout</a>' : '';        
 
         $admin_account = $admin ? '<a class="dropdown-item" href="'.$admin_link.'">Admin Details</a>' : '';
-        $user_account = $user ? '<a class="dropdown-item" href="'.$user_update_link.'&set=update">Update Profile</a>' : '';
-        $user_profile = $user ? '<a class="dropdown-item" href="'.$user_link.'&set=profile">View Profile</a>' : '';
+        $user_account = $user ? '<a class="dropdown-item" href="'.$user_update_link.'">Update Profile</a>' : '';
+        $user_profile = $user ? '<a class="dropdown-item" href="'.$user_link.'">View Profile</a>' : '';
 
         $dropdown = '
         <li class="nav-item dropdown">
@@ -371,7 +371,7 @@ function cleanUrls($url) {
         $pager['post'] = 'index.php?page=post';
         $pager['events'] = 'index.php?page=events';
         $pager['listing'] = 'index.php?page=listing';
-
+ 
         $pager['moderate'] = 'index.php?page=moderate';
         $pager['profile'] = 'index.php?page=profile';
 
