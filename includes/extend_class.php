@@ -364,7 +364,7 @@ function userAction() {
  **/
 function cleanUrls($url) {
     global $configuration; //$configuration['cleanurl'] = 1;
-    if (!$configuration['cleanurl']) {
+    if ($configuration['cleanurl']) {
         $pager['homepage'] = 'index.php?page=homepage';
         $pager['introduction'] = 'index.php?page=introduction';
         $pager['static'] = 'index.php?page=static';
