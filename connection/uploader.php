@@ -46,7 +46,8 @@ if(in_array($extension, $all_extensions) === false){
 
 // Check for error and return a response to the client
 if (!isset($error)) {
-    echo '{"uploaded": true, "url": "'.$SETT['url'].'/uploads/'.$path.'/'.$new_image.'" }';
+    $up_url = str_ireplace('admin.', '', $SETT['url']);
+    echo '{"uploaded": true, "url": "'.$up_url.'/uploads/'.$path.'/'.$new_image.'" }';
 } else { 
     echo '{"uploaded":false, "error":{ "message": "'.$error.'" } }';
     exit;
