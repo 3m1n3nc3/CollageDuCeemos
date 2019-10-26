@@ -18,10 +18,13 @@ if (strpos($url, 'admin') && (!isset($admin) && !isset($user))) {
 
 $PTMPL['site_title'] = $configuration['site_name']; 
 $PTMPL['site_slug'] = $configuration['slug'];
+$PTMPL['site_company'] = $configuration['company'];
+$PTMPL['site_company_url'] = $configuration['company_url'];
 $PTMPL['site_logo'] = getImage($configuration['logo']);
 $PTMPL['site_url'] = $SETT['url'];
 $PTMPL['template_url'] = $PTMPL['template_url'];
 $PTMPL['favicon'] = getImage($configuration['intro_logo']);
+$PTMPL['seo_meta'] = seo_plugin();
 
 $captcha_url = '/includes/vendor/goCaptcha/goCaptcha.php?gocache='.strtotime('now');
 $PTMPL['captcha_url'] = $SETT['url'].$captcha_url;

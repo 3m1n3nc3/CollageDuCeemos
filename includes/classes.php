@@ -191,7 +191,7 @@ class framework {
         $image = $this->imageUploader($this->image, 2); 
 	if (is_array($image)) { 
 		if ($data) {
-			deleteFile($data['photo'], 3);
+			deleteFiles($data['photo'], 3);
 		}
 		$set_image = $image[0];
 	} else {
@@ -201,7 +201,7 @@ class framework {
 			$set_image = null;
 		}
 		if ($image) {
-			$errors = $image;
+			$errors = 'Photo not updated: '.$image;
 		}
 	}
 
@@ -1620,7 +1620,7 @@ class databaseCL extends framework {
   	}
 
 	function fetchPost($type = null, $id = null) {
-		global $user, $configuration;	
+		global $admin, $user, $user_role, $configuration;	
 
 		$public = isset($this->public) ? ' AND `public` = \''.$this->public.'\'' : '';
 		$featured = isset($this->featured) ? ' AND `featured` = \''.$this->featured.'\'' : '';
@@ -1632,7 +1632,12 @@ class databaseCL extends framework {
 		if ($type == 1) {
 			$sql = sprintf("SELECT * FROM posts WHERE `id` = '%s' OR `post_id` = '%s' OR `safelink` = '%s'", $this->db_prepare_input($id), $this->db_prepare_input($id), $this->db_prepare_input($id));
 		} elseif ($type == 2) {
-			$sql = sprintf("SELECT * FROM posts WHERE 1%s%s%s%s%s%s", $featured, $promoted, $public, $sort, $archive, $limit);
+			if (isset($this->manage) && !$admin && !$user['founder'] && $user_role < 4) {
+				$restrict = ' AND `user_id` = \''.$user['uid'].'\'';
+			} else {
+				$restrict = '';
+			}
+			$sql = sprintf("SELECT * FROM posts WHERE 1%s%s%s%s%s%s", $restrict, $featured, $promoted, $public, $sort, $archive, $limit);
 		} else { 
 			$rev = isset($this->reverse) ? 'ASC' : 'DESC';
 
@@ -1729,7 +1734,7 @@ class databaseCL extends framework {
 
 		if (is_array($image)) { 
 			if ($post_ids) {
-				deleteFile($get_statics['jarallax'], 3);
+				deleteFiles($get_statics['jarallax'], 3);
 			}
 			$set_image = $image[0];
 		} else {
@@ -1778,11 +1783,11 @@ class databaseCL extends framework {
 		
 		if ($type == 1) {
 			$content = $this->fetchStatic($id)[0]; 
-			deleteFile($content['jarallax'], 3);
+			deleteFiles($content['jarallax'], 3);
 			$delete = $this->dbProcessor("DELETE FROM static_pages WHERE `id` = '$id'", 0, 2);
 		} else {
 			$content = $this->fetchPost(1, $id)[0]; 
-			deleteFile($content['image'], 3);
+			deleteFiles($content['image'], 3);
 			$this->dbProcessor("DELETE FROM views WHERE `post` = '$id'", 0, 2);
 			$delete = $this->dbProcessor("DELETE FROM posts WHERE `id` = '$id'", 0, 2);
 		}
@@ -1798,7 +1803,7 @@ class databaseCL extends framework {
 		if ($user) {
 			$uids = $user['uid'];
 		} else {
-			$uids = $admin['id'];
+			$uids = $admin['admin_user'];
 		}
 		$user_id = $framework->db_prepare_input($uids);
 		$category = $framework->db_prepare_input($this->category);
@@ -1819,7 +1824,7 @@ class databaseCL extends framework {
 
 		if (is_array($image)) { 
 			if ($post_ids) {
-				deleteFile($get_post['image'], 3);
+				deleteFiles($get_post['image'], 3);
 			}
 			$set_image = $image[0];
 		} else {
@@ -1863,6 +1868,65 @@ class databaseCL extends framework {
 			$msg = $post;
 		}	
 		return $msg;	
+	}
+
+	function postCategoryOptions($get_post = null) {
+		global $SETT, $framework;
+
+		// Set category select options for new posts
+		$option = '';
+		$category = $this->dbProcessor("SELECT id, title, value FROM categories", 1);
+		foreach ($category as $row) { 
+			$sel = (isset($_POST['category']) && $_POST['category'] == $row['value']) || ($get_post['category'] == $row['value']) ? ' selected="selected"' : ''; 
+			$option .= '<option value="'.$row['value'].'"'.$sel.'>'.$row['title'].'</option>';
+		}
+		return $option;
+	}
+
+	function managePostsList() {
+		global $SETT, $framework;
+
+		$this->manage = true;
+	    $framework->all_rows = $this->fetchPost(2);
+	    $PTMPL['pagination'] = $framework->pagination(1);
+		$list_posts = $this->fetchPost(2); 
+		
+		$table_row = ''; $i=0;
+		if ($list_posts) {
+			foreach ($list_posts as $post) {
+				$i++;
+				$page = $SETT['url'].$_SERVER['REQUEST_URI'];
+				if (isset($_GET['delete'])) {
+					$delete_link = cleanUrls(str_replace('&delete='.$_GET['delete'], '', $page).'&delete='.$post['id']);
+				} else {
+					$delete_link = cleanUrls($page.'&delete='.$post['id']);
+				} 
+				$edit_link = cleanUrls($SETT['url'].'/index.php?page='.$_GET['page'].'&view=create_post&post_id='.$post['id']);
+				$view_link = cleanUrls($SETT['url'].'/index.php?page=post&post_id='.$post['id']);
+				$set_status = $post['public'] == 1 ? 'Public' : 'Private';
+				$set_featured = $post['featured'] == 1 ? 'Yes' : 'Not Featured';
+				$set_promo = $post['featured'] == 1 ? 'Yes' : 'No';
+				$views = $this->fetchStatistics(1, $post['id'])[0];
+				$table_row .= '
+				<tr>
+					<th scope="row">'.$i.'</th>
+					<td><a href="'.$view_link.'" title="View Content">'.$post['title'].'</a></td>
+					<td>'.ucfirst($post['category']).'</td>
+					<td>'.$set_status.'</td>
+					<td>'.$set_featured.'</td>
+					<td>'.$set_promo.'</td>
+					<td>'.$views['total'].'</td>
+					<td class="d-flex justify-content-around">
+						<a href="'.$edit_link.'" title="Edit Content"><i class="fa fa-edit text-info hoverable"></i></a>
+						<a href="'.$delete_link.'" title="Delete Content"><i class="fa fa-trash text-danger hoverable"></i></a> 
+					</td>
+				</tr>';
+			}
+		} else {
+			$table_row .= '
+			<tr><td colspan="8">'.notAvailable('You have not created any posts', '', 1).'</td></tr>';
+		}		
+			return $table_row;
 	}
 }
 

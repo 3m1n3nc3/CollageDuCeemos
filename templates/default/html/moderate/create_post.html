@@ -31,13 +31,13 @@
                   <small id="helper" class="form-text text-info mt-0">{$lang->add_event_date_time}</small>
                   <div class="row">
                     <div class="col-sm-6 mb-4">
-                      <label for="date">Date</label>
-                      <input type="date" id="date" class="form-control" name="date" value="{$post_date}"> 
+                      <label for="datepicker">Date</label>
+                      <input type="text" id="datepicker" class="form-control" name="date" value="{$post_date}"> 
                     </div>
 
                     <div class="col-sm-6 mb-4">
-                      <label for="time">Time</label>
-                      <input type="time" id="time" class="form-control" name="time" value="{$post_time}"> 
+                      <label for="timepicker">Time</label>
+                      <input type="text" id="timepicker" class="form-control" name="time" value="{$post_time}"> 
                     </div>
                   </div>
                   <div class="mb-4 mx-0">
@@ -96,7 +96,6 @@
 
             <script>
               var myEditor;
-
               ClassicEditor
                 .create( 
                   document.querySelector( '#post_details, #details' ) , {  
@@ -109,6 +108,7 @@
                     }                    
                   })
                 .then( editor => {
+                  console.log(Array.from( editor.ui.componentFactory.names() ));
                   console.log( 'Editor was initialized', editor );
                   myEditor = editor;
                 })

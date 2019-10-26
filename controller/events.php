@@ -1,11 +1,20 @@
 <?php
 
 function mainContent() {
-	global $PTMPL, $LANG, $SETT, $framework, $marxTime, $collage; 
+	global $PTMPL, $LANG, $SETT, $configuration, $framework, $marxTime, $collage; 
 
-	$PTMPL['page_title'] = $LANG['homepage'];	 
-	
-	$PTMPL['site_url'] = $SETT['url']; 
+    $collage->parent = 'events'; 
+    $collage->priority = '3';
+    $intro =  $collage->fetchStatic(null, 1)[0];  
+    
+    $PTMPL['site_url'] = $SETT['url'];
+
+    $PTMPL['page_title'] = $intro['title'];  
+    $PTMPL['seo_meta'] = seo_plugin(getImage($intro['jarallax'], 1), $intro['content'], $intro['title']);
+
+    $PTMPL['main_title'] = $intro['title'];
+    $PTMPL['main_content'] = $framework->rip_tags($intro['content']);
+    $PTMPL['jarallax'] = $intro['jarallax'] ? jarallax($intro['jarallax']) : '';  
 
 	// This is a holder for the big col-12 cards
     $event_holder = 

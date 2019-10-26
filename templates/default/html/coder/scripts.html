@@ -33,4 +33,50 @@
 			});
 		}, false);
 	})();  
+ 
+  	jQuery(document).ready(function ($) { 
+		$('.iframe-btn').fancybox({
+		    'type' : 'iframe',
+		    'autoScale'   : false,
+		    iframe : {
+		        css : {
+		            width : '880px',
+		            height : '550px'
+		        }
+		    }
+		});    	
+	    //
+	    // Handles message from ResponsiveFilemanager
+	    //
+    	function OnMessage(e){
+      		var event = e.originalEvent;
+	       	// Make sure the sender of the event is trusted
+	       	if(event.data.sender === 'responsivefilemanager'){
+          		if(event.data.field_id){
+	            	var fieldID=event.data.field_id;
+	            	var url=event.data.url;
+	            	$('#'+fieldID).val(url).trigger('change');
+	            	$.fancybox.close();
+
+	            	// Delete handler of the message from ResponsiveFilemanager
+	            	$(window).off('message', OnMessage);
+          		}
+       		}
+    	}
+
+    	// Handler for a message from ResponsiveFilemanager
+    	$('.iframe-btn').on('click',function(){
+      		$(window).on('message', OnMessage);
+    	});
+
+		$('#timepicker').datetimepicker({
+		  datepicker:false,
+		  format:'H:i'
+		});   
+
+		$('#datepicker').datetimepicker({
+		  timepicker:false,
+		  format:'Y-m-d'
+		});    	
+  	});
 </script>

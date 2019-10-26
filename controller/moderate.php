@@ -16,19 +16,18 @@ function mainContent() {
 		$option = $option_var = $opt_var = $class = $PTMPL['notification'] = '';
 		$excess_['ap'] = $excess_['cp'] = 0;
 
-		// Set category select options for new posts
-		$category = $collage->dbProcessor("SELECT id, title, value FROM categories", 1);
-		foreach ($category as $row) { 
-			$sel = (isset($_POST['category']) && $_POST['category'] == $row['value']) || ($get_post['category'] == $row['value']) ? ' selected="selected"' : ''; 
-			$option .= '<option value="'.$row['value'].'"'.$sel.'>'.$row['title'].'</option>';
-		}
-		$PTMPL['categories'] = $option;
+		$PTMPL['categories'] = $collage->postCategoryOptions($get_post);
 		
 		$PTMPL['return_btn'] = cleanUrls($SETT['url'].'/index.php?page=moderate');
 		$delete_btn = '<button type="submit" name="delete" class="btn btn-danger my-4 btn-block"><i class="fa fa-trash"></i> Delete</a>';
 
 		// Set parents select options for static content
-		$parents = array('about' => 'About Page Section', 'contact' => 'Contact Page Section', 'static' => 'New static Page');
+		$parents = array(
+			'about' 	=> 	'About Page Section', 
+			'contact' 	=> 	'Contact Page Section', 
+			'static' 	=> 	'New static Page',
+			'events'	=>	'Event Header'
+		);
 		foreach ($parents as $key => $row) { 
 			$sel = (isset($_POST['parent']) && $_POST['parent'] == $key) || ($get_statics['parent'] == $key) ? ' selected="selected"' : ''; 
 			$option_var .= '<option value="'.$key.'"'.$sel.'>'.$row.'</option>';
@@ -156,7 +155,7 @@ function mainContent() {
 					$PTMPL['notification'] = messageNotice('Some settings have been disabled, due to their sensitivity and risk of breaking the site!', 2, 7);
 				}
 
-				$PTMPL['conf_value'] = '  ';
+				$PTMPL['conf_value'] = '';
 				if (isset($_POST['view'])) {
 					$PTMPL['conf_value'] = $configuration[$_POST['setting']]; 
 				} elseif (isset($_POST['update']) || isset($_POST['clear_image'])) {
@@ -166,7 +165,7 @@ function mainContent() {
 					} elseif (isset($_FILES['image'])) {
 						$image = $framework->imageUploader($_FILES['image'], 1);
 						if (is_array($image)) {  
-							deleteFile($configuration[$_POST['setting']], 2); 
+							deleteFiles($configuration[$_POST['setting']], 2); 
 							$set_image = $image[0];
 						} else {
 							if (isset($this_is_an_image) && isset($image)) {
@@ -246,42 +245,10 @@ function mainContent() {
 					}
 				}
 
-			    $framework->all_rows = $collage->fetchPost(2);
-			    $PTMPL['pagination'] = $framework->pagination(1);
-				$list_posts = $collage->fetchPost(2);
-				if ($list_posts) {
-					$table_row = ''; $i=0;
-					foreach ($list_posts as $post) {
-						$i++;
-	    				$page = $SETT['url'].$_SERVER['REQUEST_URI'];
-						if (isset($_GET['delete'])) {
-							$delete_link = cleanUrls(str_replace('&delete='.$_GET['delete'], '', $page).'&delete='.$post['id']);
-						} else {
-							$delete_link = cleanUrls($page.'&delete='.$post['id']);
-						} 
-						$edit_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=create_post&post_id='.$post['id']);
-						$view_link = cleanUrls($SETT['url'].'/index.php?page=post&post_id='.$post['id']);
-						$set_status = $post['public'] == 1 ? 'Public' : 'Private';
-						$set_featured = $post['featured'] == 1 ? 'Yes' : 'Not Featured';
-						$set_promo = $post['featured'] == 1 ? 'Yes' : 'No';
-						$views = $collage->fetchStatistics(1, $post['id'])[0];
-						$table_row .= '
-						<tr>
-							<th scope="row">'.$i.'</th>
-							<td><a href="'.$view_link.'" title="View Content">'.$post['title'].'</a></td>
-							<td>'.ucfirst($post['category']).'</td>
-							<td>'.$set_status.'</td>
-							<td>'.$set_featured.'</td>
-							<td>'.$set_promo.'</td>
-							<td>'.$views['total'].'</td>
-							<td class="d-flex justify-content-around">
-								<a href="'.$edit_link.'" title="Edit Content"><i class="fa fa-edit text-info hoverable"></i></a>
-								<a href="'.$delete_link.'" title="Delete Content"><i class="fa fa-trash text-danger hoverable"></i></a> 
-							</td>
-						</tr>';
-					}
-					$PTMPL['posts_list'] = $table_row;
-				}
+		        $create_post_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=create_post');
+		        $PTMPL['create_post_btn'] = '<a href="'.$create_post_link.'" class="btn btn-primary font-weight-bolder mb-2">Create new blog post</a>';
+
+				$PTMPL['posts_list'] = $collage->managePostsList();
 
 				$theme = new themer('moderate/posts_content');
 			} 
@@ -355,6 +322,9 @@ function mainContent() {
 					}
 					$PTMPL['static_list'] = $table_row_static;
 				}
+
+		        $create_static_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=create_static');
+		        $PTMPL['create_static_btn'] = '<a href="'.$create_static_link.'" class="btn btn-primary font-weight-bolder mb-2">Create new static content</a>';
 
 				$theme = new themer('moderate/static_content');
 			} elseif ($_GET['view'] == 'create_static') {
@@ -460,47 +430,93 @@ function mainContent() {
 				$this_admin = isset($admin) ? ' ('.$admin['username'].')' : '';
 				$PTMPL['page_title'] = 'Update Admin'.$this_admin; 
 				
+				$admin_user = $framework->userData($admin['admin_user'], 1);
+				$PTMPL['lusername'] = isset($_POST['lusername']) ? $_POST['lusername'] : $admin_user['username'];
+
 				$PTMPL['username'] = isset($_POST['username']) ? $_POST['username'] : $admin['username'];
 				$PTMPL['password'] = isset($_POST['password']) ? $_POST['password'] : '';
+				$PTMPL['re_password'] = isset($_POST['re_password']) ? $_POST['re_password'] : '';
+					
+				$na = '';
+				if (isset($_POST['admin_action'])) {
+					if ($_POST['admin_action'] == 'new_user') {
+						$PTMPL['nu'] = ' checked';
+					} elseif ($_POST['admin_action'] == 'new_admin') {
+						$na = ' checked';
+					} else {
+						$PTMPL['ua'] = ' checked';
+					}
+				} else {
+					$PTMPL['ua'] = ' checked';
+				}
 				if ($admin['level'] == 1) {
-					$checked = isset($_POST['new']) ? ' checked' : '';
 					$PTMPL['action'] = '
-					<div class="custom-control custom-checkbox mb-2 pr-5">
-						<input type="checkbox" class="custom-control-input" id="checkbox_new" name="new"'.$checked.'>
-						<label class="custom-control-label" for="checkbox_new">Create new admin user</label>
+					<div class="custom-control custom-radio">
+						<input type="radio" class="custom-control-input" id="new_admin" name="admin_action" value="new_admin"'.$na.'>
+						<label class="custom-control-label" for="new_admin">Create New Admin</label>
 					</div>
 					'; 
+				} 
+					
+				$admin_id = $admin['id'];
+				if (isset($_POST['link'])) {
+					$lusername = $framework->db_prepare_input($_POST['lusername']);
+					$set_admin_user = $framework->userData($lusername, 1);
+					$admin_user_id = $set_admin_user['uid'];
+					$do = $framework->dbProcessor("UPDATE admin SET `admin_user` = '$admin_user_id' WHERE `id` = '$admin_id'", 0, 1);
+					if ($do == 1) {
+						$msg = messageNotice(ucfirst($admin['username']).' Administrative account has been linked to '.ucfirst($lusername). ' User account', 1);
+					} else {
+						$msg = messageNotice($do);
+					}
+					$PTMPL['notification'] = $msg;
 				}
-
 				if (isset($_POST['update'])) { 
-					$username = $_POST['username'];
+					$username = $framework->db_prepare_input($_POST['username']);
 					$password = hash('md5', $_POST['password']);
+					$re_password = $_POST['re_password'];
 					$auth = $framework->generateToken(null, 1);
-					$admin_id = $admin['id'];
 
-	 				if ($admin && !isset($_POST['new'])) {
-	 					$sql = "UPDATE admin SET `username` = '$username', `password` = '$password' WHERE `id` = '$admin_id'";
-	 					$msg = messageNotice($username.' has been updated', 1);
-	 				} else {
-	 					$sql = "INSERT INTO admin (`username`, `password`, `auth_token`) VALUES ('$username', '$password', '$auth')";
-	 					$msg = messageNotice('New admin user created', 1);
+					if ($_POST['re_password'] !== $_POST['password']) {
+						$msg = messageNotice('Repeat password does not match with Password', 3);
+					} else {
+		 				if ($admin && $_POST['admin_action'] == 'update_admin') {
+		 					$sql = "UPDATE admin SET `username` = '$username', `password` = '$password' WHERE `id` = '$admin_id'";
+		 					$msg = messageNotice($username.' has been updated', 1);
+		 				} elseif ($admin && $_POST['admin_action'] == 'new_user') {
+		 					$auth_date = date('Y-m-d h:i:s', strtotime('now'));
+		 					$sql = "INSERT INTO users (`username`, `password`, `role`, `auth_token`, `token_date`) VALUES ('$username', '$password', 3, '$auth', date('$auth_date'))";
+		 					$msg = messageNotice('New user account created', 1);
+		 				} else {
+		 					$sql = "INSERT INTO admin (`username`, `password`, `auth_token`) VALUES ('$username', '$password', '$auth')";
+		 					$msg = messageNotice('New admin user created', 1);
+		 				}
+	 					if ($_POST['admin_action'] == 'update_admin' && $username !== $admin['username'] && $framework->administrator(2, $username)) {
+	 						$msg = messageNotice('This Username is already in use!');
+	 					} elseif ($_POST['admin_action'] == 'new_admin' && $framework->administrator(2, $username)) {
+	 						$msg = messageNotice('This Admin already exists!');
+	 					} elseif ($_POST['admin_action'] == 'new_user' && $framework->userData($username, 2)) {
+	 						$msg = messageNotice('This User already exists!');
+	 					} else {
+	 						$msg = $msg;
+	 						$do = $framework->dbProcessor($sql, 0, 1);
+	 						if ($do == 1) {
+	 							$msg = $msg;
+	 						} else {
+	 							$msg = messageNotice($do);
+	 						}
+	 					}
 	 				}
- 					if (isset($_POST['new']) && $framework->administrator(2, $username)) {
- 						$msg = messageNotice('This Admin already exists!');
- 					} else {
- 						$msg = $msg;
- 						$do = $framework->dbProcessor($sql, 0, 1);
- 						if ($do == 1) {
- 							$msg = $msg;
- 						} else {
- 							$msg = messageNotice($do);
- 						}
- 					}
 					$PTMPL['notification'] = $msg;
 				}
 
 				// Set the active landing page_title 
 				$theme = new themer('moderate/admin');
+			} elseif ($_GET['view'] == 'filemanager') {
+				$PTMPL['page_title'] = 'File Manager';
+
+				// Set the active landing page_title 
+				$theme = new themer('moderate/filemanager');
 			} else {
 				$PTMPL['up_btn'] = $get_post ? 'Update Post' : 'Create Post';
 				$PTMPL['page_title'] = $get_post ? 'Update '.$get_post['title'] : 'Create new post';
@@ -508,8 +524,8 @@ function mainContent() {
 				$PTMPL['post_sub_title'] = isset($_POST['sub_title']) ? $_POST['sub_title'] : $get_post['sub_title'];
 				$PTMPL['post_details'] = isset($_POST['post_details']) ? $_POST['post_details'] : $get_post['details']; 
 				$PTMPL['post_quote'] = isset($_POST['quote']) ? $_POST['quote'] : $get_post['quote'];
-				$PTMPL['post_date'] = isset($_POST['date']) ? $_POST['date'] : $get_post['event_date'] ? date('Y-m-d', strtotime($get_post['event_date'])) : '';
-				$PTMPL['post_time'] = isset($_POST['time']) ? $_POST['time'] : $get_post['event_date'] ? date('h:i', strtotime($get_post['event_date'])) : '';
+				$PTMPL['post_date'] = isset($_POST['date']) ? $_POST['date'] : ($get_post['event_date'] ? date('Y-m-d', strtotime($get_post['event_date'])) : '');
+				$PTMPL['post_time'] = isset($_POST['time']) ? $_POST['time'] : ($get_post['event_date'] ? date('h:i', strtotime($get_post['event_date'])) : '');
 				$PTMPL['public'] = isset($_POST['public']) || $get_post['public'] == 1 ? ' checked' : '';
 				$PTMPL['featured'] = isset($_POST['featured']) || $get_post['featured'] == 1 ? ' checked' : '';
 				$PTMPL['promote'] = isset($_POST['promote']) || $get_post['promoted'] == 1 ? ' checked' : '';
@@ -575,9 +591,16 @@ function mainContent() {
 			}
 		}
 
-		if (isset($_GET['view']) && $_GET['view'] == 'access') {
-			$PTMPL['page_title'] = 'Admin Login';
+		if (isset($_GET['view']) && $_GET['view'] == 'access') { 
 			$PTMPL['return_btn'] = cleanUrls($SETT['url'].'/index.php?page=homepage');
+
+			if (isset($_GET['login']) && $_GET['login'] == 'user') {
+				$PTMPL['page_title'] = 'User Login';
+				$PTMPL['user_login'] = ' checked';
+			} else {
+				$PTMPL['page_title'] = 'Admin Login';
+				$PTMPL['u_secret'] = '-secret';
+			}
 
 			if (isset($_POST['login'])) {
 				$PTMPL['username'] = $username = $framework->db_prepare_input($_POST['username']);
@@ -588,8 +611,8 @@ function mainContent() {
 					$framework->remember = 1;
 				}
 				$framework->username = $username;
-				$framework->password = hash('md5', $password);
-				if (isset($_POST['user_login'])) {
+				$framework->password = hash('md5', $password); 
+				if ((isset($_GET['login']) && $_GET['login'] == 'user') || isset($_POST['user_login'])) {
 					$PTMPL['user_login'] = ' checked';
 					$login = $framework->authenticateUser();
 				} else {
@@ -597,7 +620,11 @@ function mainContent() {
 				}
 				if (isset($login['username']) && $login['username'] == $username) {
 					$notice = messageNotice('Login Successful', 1);
-					$framework->redirect(cleanUrls('moderate'));
+					if ((isset($_GET['login']) && $_GET['login'] == 'user') || isset($_POST['user_login'])) {
+						$framework->redirect(cleanUrls('profile'));
+					} else {
+						$framework->redirect(cleanUrls('moderate'));
+					}
 				} else {
 					$notice = messageNotice($login, 3);
 				}

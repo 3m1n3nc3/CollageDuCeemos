@@ -17,7 +17,8 @@ $new_image = mt_rand().'_'.mt_rand().'_n.'.$extension;
 if (isset($user)) {
     $path = $user['username'].'_'.$user['uid'];
 } elseif (isset($admin)) {
-    $path = $admin['username'].'_'.$admin['id'];
+    $admin_user = $framework->userData($admin['admin_user'], 1);
+    $path = $admin_user['username'].'_'.$admin_user['uid'];
 }
 
 if(in_array($extension, $all_extensions) === false){

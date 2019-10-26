@@ -16,36 +16,35 @@
                         <h4 class="card-title">
                           <strong>{$post_title}</strong>
                         </h4>
+                        
+                        <div class="clearfix"></div>
+                        
                         <hr>  
 
                         <!-- Grid row -->
-                        <div class="ck-content mx-4 mt-3">
+                        <div class="ck-content mx-4 mt-3 text-justify">
 
                           <p class="dark-grey-text article">{$post_details}</p>
 
                         </div>
                         <!-- Grid row -->  
+                        
+                        <div class="clearfix"></div>
 
                         <hr>
-
                         <!-- Grid row -->
                         <div class="row mb-4">
 
                           <!-- Grid column -->
                           <div class="col-md-12 text-center">
+                            
+                            <h3><span class="badge badge-pill badge-light">{$count_views} Views</span></h3>
 
                             <h4 class="text-center font-weight-bold dark-grey-text mt-3 mb-3">
                               <strong>Share this post: </strong>
                             </h4>
-
-                            <button type="button" class="btn btn-fb btn-sm">
-                              <i class="fa fa-facebook-f left"></i> Facebook</button>
-                            <!-- Twitter -->
-                            <button type="button" class="btn btn-tw btn-sm">
-                              <i class="fa fa-twitter left"></i> Twitter</button>
-                            <!-- Google + -->
-                            <button type="button" class="btn btn-gplus btn-sm">
-                              <i class="fa fa-google-plus-g left"></i> Google +</button>
+                            
+                            {$sharing} 
 
                           </div>
                           <!-- Grid column -->

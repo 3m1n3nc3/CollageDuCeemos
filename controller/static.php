@@ -1,9 +1,7 @@
 <?php
 
 function mainContent() {
-	global $PTMPL, $LANG, $SETT, $configuration, $framework, $collage, $marxTime; 
-
-	$PTMPL['page_title'] = $LANG['homepage'];	 
+	global $PTMPL, $LANG, $SETT, $configuration, $framework, $collage, $marxTime;  
 	
 	$PTMPL['site_url'] = $SETT['url']; 
 
@@ -22,10 +20,13 @@ function mainContent() {
 				$collage->parent = 'about'; 
 				$collage->priority = 3;
 				$main_about =  $collage->fetchStatic(null, 1)[0]; 
-				if ($main_about) {
+				if ($main_about) { 
+					$PTMPL['page_title'] = 'About '.$configuration['site_name'];	
+					$PTMPL['seo_meta'] = seo_plugin(getImage($main_about['jarallax'], 1), $main_about['content'], $main_about['title']);
+
 					$PTMPL['main_title'] = '<h1 class="font-weight-bold text-center h1 my-5">'.$main_about['title'].'</h1>';
 					$PTMPL['main_content'] = '<div class="text-center grey-text mb-5 mx-auto w-responsive lead">'.$main_about['content'].'</div>';
-					$PTMPL['jarallax'] = jarallax($main_about['jarallax']);
+					$PTMPL['jarallax'] = $main_about['jarallax'] ? jarallax($main_about['jarallax']) : '';
 				}
 
  				$collage->priority = '2';
@@ -68,9 +69,13 @@ function mainContent() {
 				$collage->parent = 'contact'; 
 				$collage->priority = '3';
 				$intro =  $collage->fetchStatic(null, 1)[0];  
+
+				$PTMPL['page_title'] = 'Contact '.$configuration['site_name'];	
+				$PTMPL['seo_meta'] = seo_plugin(getImage($intro['jarallax'], 1), $intro['content'], $intro['title']);
+
 				$PTMPL['main_title'] = $intro['title'];
 				$PTMPL['main_content'] = $intro['content'];
-				$PTMPL['jarallax'] = jarallax($intro['jarallax']);
+				$PTMPL['jarallax'] = $intro['jarallax'] ? jarallax($intro['jarallax']) : '';
 				$PTMPL['main_address'] = $configuration['site_office'];
 				$PTMPL['social_links'] = fetchSocialInfo($configuration);
 			}
@@ -79,6 +84,10 @@ function mainContent() {
 		} else { 
 			$more_info = $collage->fetchStatic($_GET['view'])[0];   
 			if ($more_info) {
+
+				$PTMPL['page_title'] = $more_info['title'];	
+				$PTMPL['seo_meta'] = seo_plugin(getImage($more_info['jarallax'], 1), $more_info['content'], $more_info['title']);
+
 				$class = $founder = '';
 				if (stripos($more_info['title'], 'Founder') || stripos($more_info['title'], 'Creator') || stripos($more_info['title'], 'Admin')) {
 					$class = 'team-section pb-4 ';

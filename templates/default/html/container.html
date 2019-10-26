@@ -1,10 +1,13 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
 <html lang="en">
   <head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{$site_title} - {$page_title}</title> 
+    {$seo_meta}
+    <title>{$page_title} - {$site_title}</title> 
     <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900italic,900' rel='stylesheet' type='text/css'>
     
     <!-- Shortcut Icon -->
@@ -17,11 +20,13 @@
     <!-- Material Design Bootstrap -->
     <link href="{$full_template_url}/css/mdb.min.css" rel="stylesheet">
     <!-- Your custom styles (optional) -->
+    <link href="{$full_template_url}/css/jquery.fancybox.css" rel="stylesheet">
+    <link href="{$full_template_url}/css/addons/jquery.datetimepicker.min.css" rel="stylesheet">
     <link href="{$full_template_url}/css/style.css" rel="stylesheet"> 
 
     {$header_scripts}
       
-    <script type="text/javascript" src="{$full_template_url}/js/ckeditor.js"></script>  
+    <script type="text/javascript" src="{$full_template_url}/js/ckeditor/ckeditor.js"></script>   
   </head> 
   <body{$skin}>
 
@@ -42,7 +47,10 @@
     <script type="text/javascript" src="{$full_template_url}/js/bootstrap.min.js"></script>
     <!-- MDB core JavaScript -->
     <script type="text/javascript" src="{$full_template_url}/js/mdb.min.js"></script>
+    <!-- Your coustom JavaScript -->
+    <script type="text/javascript" src="{$full_template_url}/js/jquery.fancybox.js"></script>
+    <script type="text/javascript" src="{$full_template_url}/js/addons/jquery.datetimepicker.full.min.js"></script>
     <script type="text/javascript" src="{$full_template_url}/js/jquery.particleground.min.js"></script> 
-    {$body_scripts}
+    {$body_scripts} 
   </body>
 </html>

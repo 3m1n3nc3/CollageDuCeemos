@@ -70,25 +70,23 @@ function bigNotice($str, $type = null, $alt = null) {
     return $string;
 }
 
-function seo_plugin($image, $twitter, $facebook, $desc, $title) {
-    global $SETT, $PTMPL, $configuration, $site_image;
+function seo_plugin($image = null, $desc = null, $title = null) {
+    global $SETT, $PTMPL, $configuration, $framework, $site_image;
 
-    $twitter = ($twitter) ? $twitter : $configuration['site_name'];
-    $facebook = ($facebook) ? $facebook : $configuration['site_name'];
-    $title = ($title) ? $title . ' ' : '';
-    $titles = $title . 'On ' . $configuration['site_name'];
-    $image = ($image) ? $image : $site_image;
-    $alt = ($title) ? $title : $titles;
-    $desc = rip_tags(strip_tags(stripslashes($desc)));
-    $desc = strip_tags(myTruncate($desc, 350));
-    $url = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    $twitter = ($configuration['twitter']) ? $configuration['twitter'] : str_ireplace(' ', '', $configuration['site_name']); 
+    $facebook = ($configuration['facebook']) ? $configuration['facebook'] : str_ireplace(' ', '', $configuration['site_name']); 
+    $title = ($title) ? $title : $configuration['site_name'];   
+    $image = ($image) ? getImage($image, 1) : getImage($configuration['intro_banner']);
+    $alt = $title.' Banner Image';  
+    $desc = $desc ? $framework->myTruncate($framework->rip_tags($desc), 200, ' ', '') : $configuration['slug'];    
+    $url = $SETT['url'].$_SERVER['REQUEST_URI'];
 
     $plugin = '
     <meta name="description" content="' . $desc . '"/>
     <link rel="canonical" href="' . $url . '" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="' . $titles . '" />
+    <meta property="og:title" content="' . $title . '" />
     <meta property="og:url" content="' . $url . '"/>
     <meta property="og:description" content="' . $desc . '" />
     <meta property="og:site_name" content="' . $configuration['site_name'] . '" />
@@ -101,7 +99,7 @@ function seo_plugin($image, $twitter, $facebook, $desc, $title) {
     <meta property="og:image:alt" content="' . $alt . '" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:description" content="' . $desc . '" />
-    <meta name="twitter:title" content="' . $titles . '" />
+    <meta name="twitter:title" content="' . $title . '" />
     <meta name="twitter:site" content="@' . $configuration['site_name'] . '" />
     <meta name="twitter:image" content="' . $image . '" />
     <meta name="twitter:creator" content="@' . $twitter . '" />';
@@ -269,7 +267,7 @@ function fetchSocialInfo($profile, $type = null) {
                     </li>' : ''); 
                 } elseif ($type == 2) {
                     $links .= ((!empty($profile[$value])) ? '
-                    <a href="'.sprintf($url[0], $profile[$value]).'"  rel="nofllow" title="Find me on '.ucfirst($value).'" class="p-2 m-2 fa-lg '.$class.'"><i class="fa '.icon(3, $value).'"> </i></a>' : '');                        
+                    <a href="'.sprintf($url[0], $profile[$value]).'"  rel="nofllow" title="Follow me on '.ucfirst($value).'" class="p-2 m-2 fa-lg '.$class.'"><i class="fa '.icon(3, $value).'"> </i></a>' : '');                        
                 } else {   
                     $links .= ((!empty($profile[$value])) ? ' 
                     <li>
@@ -320,18 +318,21 @@ function fetchSocialInfo($profile, $type = null) {
 function userAction() {
     global $SETT, $configuration, $admin, $user, $user_role;
 
+    $dropdown = '';
     if ($admin || $user) {
         $logout_url = cleanUrls($SETT['url'] . '/index.php?page=introduction&logout=admin');
         $logout_user = cleanUrls($SETT['url'] . '/index.php?page=introduction&logout=user');
 
-        $user_link = cleanUrls($SETT['url'] . '/index.php?page=profile&update='.$user['uid']);
+        $user_link = cleanUrls($SETT['url'] . '/index.php?page=profile&user_id='.$user['uid']);
+        $user_update_link = cleanUrls($SETT['url'] . '/index.php?page=profile&update='.$user['uid']);
         $admin_link = cleanUrls($SETT['url'] . '/index.php?page=moderate&view=admin');
 
         $admin_out = $admin ? '<a href="'.$logout_url.'" class="dropdown-item" href="#">Admin Logout</a>' : '';
         $user_out = $user ? '<a class="dropdown-item" href="'.$logout_user.'">Account Logout</a>' : '';        
 
         $admin_account = $admin ? '<a class="dropdown-item" href="'.$admin_link.'">Admin Details</a>' : '';
-        $user_account = $user ? '<a class="dropdown-item" href="'.$user_link.'">Update Profile</a>' : '';
+        $user_account = $user ? '<a class="dropdown-item" href="'.$user_update_link.'&set=update">Update Profile</a>' : '';
+        $user_profile = $user ? '<a class="dropdown-item" href="'.$user_link.'&set=profile">View Profile</a>' : '';
 
         $dropdown = '
         <li class="nav-item dropdown">
@@ -339,6 +340,7 @@ function userAction() {
                 <i class="fa fa-user text-light"></i>
             </a>
             <div class="dropdown-menu dropdown-menu-right">
+                '.$user_profile.'
                 '.$user_account.'
                 '.$admin_account.'
                 <div class="dropdown-divider"></div> 
@@ -346,16 +348,23 @@ function userAction() {
                 '.$admin_out.'
             </div>
         </li>';
-        return $dropdown;  
+    } else {
+        $dropdown = $configuration['allow_login'] ? '
+        <li class="nav-item dropdown">
+            <a class="nav-link waves-effect waves-light" href="'.cleanUrls($SETT['url'] . '/index.php?page=moderate&view=access&login=user').'" rel="nofllow" title="Login">
+                <i class="fa fa-user-o text-light"></i>
+            </a>
+        </li>' : '';
     }
+    return $dropdown;  
 }
 
 /**
- * This function will convert your urls into cleaner urls
+ * This function will convert your urls with query strings into SEO friendly urls
  **/
 function cleanUrls($url) {
     global $configuration; //$configuration['cleanurl'] = 1;
-    if ($configuration['cleanurl']) {
+    if (!$configuration['cleanurl']) {
         $pager['homepage'] = 'index.php?page=homepage';
         $pager['introduction'] = 'index.php?page=introduction';
         $pager['static'] = 'index.php?page=static';
@@ -366,10 +375,14 @@ function cleanUrls($url) {
         $pager['moderate'] = 'index.php?page=moderate';
         $pager['profile'] = 'index.php?page=profile';
 
+        $pager['login'] = 'index.php?page=moderate&view=access';
+
         if (strpos($url, $pager['homepage'])) {
             $url = str_replace(array($pager['homepage'], '&archive=', '&data='), array('homepage', '/archive/', '/data/'), $url);
         } elseif (strpos($url, $pager['introduction'])) {
             $url = str_replace(array($pager['introduction'], '&logout='), array('introduction', '/logout/'), $url);
+        } elseif (strpos($url, $pager['login'])) {
+            $url = str_replace(array($pager['login'], '&login='), array('login', '/'), $url);
         } elseif (strpos($url, $pager['post'])) {
             $url = str_replace(array($pager['post'], '&post_id=', '&id'), array('post', '/', '/'), $url);
         } elseif (strpos($url, $pager['static'])) {
@@ -379,14 +392,46 @@ function cleanUrls($url) {
         } elseif (strpos($url, $pager['listing'])) {
             $url = str_replace(array($pager['listing'], '&sorting=', '&type='), array('listing', '/sort/', '/'), $url);
         } elseif (strpos($url, $pager['moderate'])) {
-            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&delete=', '&pagination='), array('moderate', '/', '/', '/delete/', '/page/'), $url);
+            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&delete=', '&pagination=', '&login='), array('moderate', '/', '/', '/delete/', '/page/', '/'), $url);
         } elseif (strpos($url, $pager['profile'])) {
-            $url = str_replace(array($pager['profile'], '&update=', '&id='), array('profile', '/update/', '/'), $url);
+            $url = str_replace(array($pager['profile'], '&update=', '&view=', '&set=', '&delete=', '&user_id=', '&post_id='), array('profile', '/update/', '/view/', '/set/', '/delete/', '/', '/'), $url);
         }
     }
     return $url;
 }
- 
+
+function sharingLinks($link = '', $content = '') {
+    global $LANG, $PTMPL, $SETT, $configuration;
+    $facebook = 'https://www.facebook.com/sharer/sharer.php?u='.$link;
+    $twitter = 'https://twitter.com/share?url='.$link.'&text='.$content.'&via='.$configuration['twitter'];
+    // 'https://twitter.com/home?status='.$link.' '.$content.'&hashtags=[hashtags]';
+    $pinterest = 'https://pinterest.com/pin/create/button/?url='.$link.'&media=&description='.$content;
+    $whatsapp = 'https://wa.me/?text='.$content.' '.$link;
+    $gplus = 'https://plus.google.com/share?url='.$link;
+
+    $link = '';
+    $link .= '<a href="'.$facebook.'" target="_blank" class="btn btn-fb btn-sm">
+        <i class="fa fa-facebook-f left"></i> Facebook
+    </a>';
+
+    $link .= '<a href="'.$twitter.'" target="_blank" class="btn btn-tw btn-sm">
+        <i class="fa fa-twitter left"></i> Twitter
+    </a>';
+
+    $link .= '<a href="'.$pinterest.'" target="_blank" class="btn btn-danger btn-sm">
+        <i class="fa fa-pinterest left"></i> Pinterest
+    </a>';
+
+    $link .= '<a href="'.$whatsapp.'" target="_blank" class="btn btn-light-green btn-sm">
+        <i class="fa fa-whatsapp left"></i> Whatsapp
+    </a>';
+
+    $link .= '<a href="'.$gplus.'" target="_blank" class="btn btn-light-green btn-sm">
+        <i class="fa fa-google-plus left"></i> Google +
+    </a>';
+    return $link;
+}
+
 function accountAccess($type = null) {
     global $LANG, $PTMPL, $SETT, $settings;
     if ($type == 0) {
@@ -480,7 +525,7 @@ function simpleButtons($class, $title, $link, $x = null) {
  * @param  [variable $fb is used as fallback when an ajax xhr request type is not possible for a ajax request
  * @return integer       1 if successful of 0 if failed
  */
-function deleteFile($name, $type = null, $fb = null) {
+function deleteFiles($name, $type = null, $fb = null) {
     global $SETT, $framework;
  
     if ($type == 1) {
@@ -603,12 +648,12 @@ function globalTemplate($type = null, $jar = null) {
     $PTMPL['contact_page_url'] = cleanUrls($SETT['url'] . '/index.php?page=static&view=contact'); 
 
     $PTMPL['social_links'] = fetchSocialInfo($configuration, 1);  
+    $PTMPL['social_links'] .= userAction();       
     $PTMPL['site_name'] = $configuration['site_name'];  
 
     if ($admin || $user['founder'] || $user_role >= 4) {
         $moderate = cleanUrls($SETT['url'] . '/index.php?page=moderate');
-        $PTMPL['admin_url'] = '<a href="'.$moderate.'" class="ml-3"><i class="fa fa-cog"></i> Site Admin </a>'; 
-        $PTMPL['social_links'] .= userAction();         
+        $PTMPL['admin_url'] = '<a href="'.$moderate.'" class="ml-3"><i class="fa fa-cog"></i> Site Admin </a>';   
     }
  
     // Set footer navigation links
@@ -706,85 +751,7 @@ function getPage($page = null) {
         $page = $page;
     }
     return $page;
-} 
-
-/**
- * Create the links for the navigation navbar nav of the distribution portal
-**/
-function superNavigation($user_id) {
-    global $SETT, $user, $framework, $databaseCL;  
-    $new_release = cleanUrls($SETT['url'] . '/index.php?page=distribution&action=new_release');
-    $all_releases = cleanUrls($SETT['url'] . '/index.php?page=distribution&action=releases');
-    $artist_services = cleanUrls($SETT['url'] . '/index.php?page=distribution&action=artist-services');
-    $reports = cleanUrls($SETT['url'] . '/index.php?page=distribution&action=reports');
-    $support = cleanUrls($SETT['url'] . '/index.php?page=distribution&action=support');
-
-    $linkers = array(
-        'new_release' => array('New Release',  $new_release), 
-        'releases' => array('Discography',  $all_releases),
-        'artist-services' => array('Artist Services',  $artist_services),
-        'support' => array('Community and Support',  $support),
-    );
-    
-    $rows = '';
-    foreach ($linkers as $key => $value) {
-        if ($key == $pager) {
-            $active = ' class="active"';
-        } else {
-            $active = '';
-        }
-        $rows .= '<li'.$active.'><a href="'.$value.'">'.strtoupper($key).'</a></li>';
-    }
-}
-
-/**
- * Create the links for the navigation navbar nav of the secondary user navigation
-**/
-function secondaryNavigation($user_id) {
-    global $SETT, $user, $framework, $databaseCL; 
-    $artist = $framework->userData($user_id, 1);
-    $followers = cleanUrls($SETT['url'] . '/index.php?page=follow&get=followers&artist='.$artist['uid']);
-    $tracks = cleanUrls($SETT['url'] . '/index.php?page=listen&to=tracks&artist='.$artist['uid']);
-    $albums = cleanUrls($SETT['url'] . '/index.php?page=listen&to=albums&artist='.$artist['uid']);
-    $artists = cleanUrls($SETT['url'] . '/index.php?page=view_artists&artist='.$artist['uid']);
-    $home = cleanUrls($SETT['url'] . '/index.php?page=artist&artist='.$artist['username']);
-    $playlists = cleanUrls($SETT['url'] . '/index.php?page=playlist&playlist=list&creator='.$artist['uid']);
-    $projects = cleanUrls($SETT['url'] . '/index.php?page=project&creator='.$artist['uid']);
-
-    $linkers = array('profile' => $home, 'projects' => $projects, 'albums' => $albums, 'tracks' => $tracks, 'playlist' => $playlists, 'artists' => $artists, 'followers' => $followers);
-    $pager = getPage($_GET['page']); 
-    $rows = '';
-    foreach ($linkers as $key => $value) {
-        if ($key == $pager) {
-            $active = ' class="active"';
-        } else {
-            $active = '';
-        }
-        $rows .= '<li'.$active.'><a href="'.$value.'">'.strtoupper($key).'</a></li>';
-    }
-
-    $card = '
-    <div class="custom-navigation">
-        <nav class="navbar navbar-default">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#passNavigation">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button> 
-                </div>
-                <div class="collapse navbar-collapse" id="passNavigation">
-                    <ul class="nav navbar-nav navbar-right">
-                        '.$rows.'
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </div>
-    ';
-    return $user ? $card : '';
-}  
+}   
 
 function archiveLinks() {
     global $SETT, $PTMPL, $user, $framework, $collage, $marxTime; 
@@ -984,7 +951,7 @@ function cardLayout($type = 0, $image = '', $title = '', $details = '', $author 
                         <strong>'.$title.'</strong>
                         </h4>
                         <hr> 
-                        <p class="dark-grey-text mb-4">'.$details.'</p>
+                        <p class="dark-grey-text mb-4 text-justify">'.$details.'</p>
                         <p class="text-right mb-0 text-uppercase font-small spacing font-weight-bold">
                             <a href="'.$link.'">read more
                                 <i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -1007,7 +974,7 @@ function cardLayout($type = 0, $image = '', $title = '', $details = '', $author 
                     <a class="activator mr-3"><i class="fa fa-share-alt"></i></a> 
                     <h4 class="card-title">'.$title.'</h4>
                     <hr>
-                    <p class="card-text">'.$details.'</p>
+                    <p class="card-text text-justify">'.$details.'</p>
                     <a class="link-text" href="'.$link.'">
                         <h5>Read more <i class="fa fa-chevron-right"></i></h5>
                     </a>
@@ -1029,7 +996,7 @@ function cardLayout($type = 0, $image = '', $title = '', $details = '', $author 
                         <strong>'.$title.'</strong>
                         </h4>
                         <hr> 
-                        <p class="dark-grey-text mb-3">'.$details.'</p>
+                        <p class="dark-grey-text mb-3 text-justify">'.$details.'</p>
                         <p class="font-small font-weight-bold blue-grey-text mb-1">
                             <i class="fa fa-clock-o"></i> '.$date.' - 
                             <a href="'.$ct_link.'" class="blue-grey-text">'.ucfirst($category['title']).'</a>
@@ -1242,14 +1209,21 @@ function site_sidebar() {
     $post_id = isset($_GET['post_id']) ? $_GET['post_id'] : null;
     $post = $collage->fetchPost(1, $post_id)[0];
     $update_id = '';
-    if ($post) {
+    if ($post && ($admin || $user['founder'] || $user_role >= 4 || $post['user_id'] == $user['uid'])) {
         // $PTMPL['user_card'] = userCard($post['user_id']);
         $update_id = '&post_id='.$post['id'];
+        $update_link_label = 'Update Post';
+    } else {
+        $update_link_label = 'Create new blog post';
     }
 
-    if ($admin || $user['founder'] || $user_role >= 4) {
-        $create_post_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=create_post'.$update_id);
-        $PTMPL['create_post_btn'] = '<a href="'.$create_post_link.'" class="btn btn-primary font-weight-bolder btn-block mb-2">Create new blog post</a>';
+    if ($admin || $user['founder'] || $user_role >= 3) {
+        if ($admin || $user['founder'] || $user_role >= 4) {
+            $create_post_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=create_post'.$update_id); 
+        } elseif ($user_role == 3) {
+            $create_post_link = cleanUrls($SETT['url'].'/index.php?page=profile&view=create_post'.$update_id);
+        }
+        $PTMPL['create_post_btn'] = '<a href="'.$create_post_link.'" class="btn btn-primary font-weight-bolder btn-block mb-2">'.$update_link_label.'</a>';
     }
     $PTMPL['advert_unit_one'] = $configuration['ads_off'] == 0 && $configuration['ads_1'] ? '
     <section class="my-5">
@@ -1279,6 +1253,7 @@ function moderate_sidebar() {
     $PTMPL['posts_content_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=posts');
     $PTMPL['admin_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=admin');
     $PTMPL['cofiguration_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=config'); 
+    $PTMPL['filemanager_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=filemanager'); 
     $PTMPL['admin_url'] = cleanUrls($SETT['url'] . '/index.php?page=moderate'); 
 
     if (isset($_GET['view'])) {
@@ -1292,6 +1267,8 @@ function moderate_sidebar() {
             $PTMPL['c_active'] = ' active';
         } elseif ($_GET['view'] == 'static') {
             $PTMPL['s_active'] = ' active';
+        } elseif ($_GET['view'] == 'filemanager') {
+            $PTMPL['fm_active'] = ' active';
         }
     } else {
         $PTMPL['ss_active'] = ' active';
@@ -1317,24 +1294,30 @@ function profile_sidebar($id = null) {
     global $SETT, $PTMPL, $user, $framework, $collage; 
     $template = new themer('profile/sidebar'); $section = '';
 
-    $PTMPL['view_profile_link'] = cleanUrls($SETT['url'].'/index.php?page=profile&id='.$id); 
+    $PTMPL['view_profile_link'] = cleanUrls($SETT['url'].'/index.php?page=profile&user_id='.$id); 
     $PTMPL['edit_profile_link'] = cleanUrls($SETT['url'].'/index.php?page=profile&update='.$id); 
+    $PTMPL['posts_link'] = cleanUrls($SETT['url'].'/index.php?page=profile&view=posts');  
 
-    if (isset($_GET['view'])) {
-        if ($_GET['view'] == 'posts') {
-            $PTMPL['p_active'] = ' active';
-        } elseif ($_GET['view'] == 'config') {
-            $PTMPL['c_active'] = ' active';
-        } elseif ($_GET['view'] == 'admin') {
-            $PTMPL['a_active'] = ' active';
-        } elseif ($_GET['view'] == 'config') {
-            $PTMPL['c_active'] = ' active';
-        } elseif ($_GET['view'] == 'static') {
-            $PTMPL['s_active'] = ' active';
+    $linkers = array(
+        'Profile' => array('profile', 'user_id='.$id.'&set=profile'),
+        'Update Profile' => array('update', 'update='.$id.'&set=update'),
+        'Manage Posts' => array('post', 'view=posts&set=post')
+    );
+
+    if (!isset($_GET['user_id']) || isset($_GET['user_id']) && $_GET['user_id'] == $user['uid']) {
+        $links = '';
+        foreach ($linkers as $title => $url) { 
+            $active = (isset($_GET['set']) && $url[0] == $_GET['set']) ? ' active' : ''; 
+            $links .= '<a href="'.cleanUrls($SETT['url'].'/index.php?page=profile&'.$url[1]).'" class="list-group-item list-group-item-action'.$active.'">'.$title.'</a> ';
         }
-    } else {
-        $PTMPL['ss_active'] = ' active';
+        $links = '<hr class="mt-0">
+        <label for="list-group" class="font-weight-bold">Navigation</label>
+        <div class="list-group pb-5" id="list-group"> 
+            '.$links.'
+        </div>';
+        $PTMPL['sidebar_links'] = $links;
     }
+
     $collage->featured = 1;
     $featured_posts = $collage->fetchPost(2);
     if ($featured_posts) {

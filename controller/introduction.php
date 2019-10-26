@@ -1,7 +1,7 @@
 <?php
 
 function mainContent() {
-	global $PTMPL, $LANG, $SETT, $configuration, $framework; 
+	global $PTMPL, $LANG, $SETT, $configuration, $framework, $admin, $user; 
 
 	$PTMPL['page_title'] = $LANG['homepage'];	 
 	
@@ -17,6 +17,10 @@ function mainContent() {
 	$PTMPL['portfolio_page_url'] = cleanUrls($SETT['url'] . '/index.php?page=listing&sorting=portfolio');
 	$PTMPL['artists_page_url'] = cleanUrls($SETT['url'] . '/index.php?page=listing&sorting=catalog&type=artist');
 	$PTMPL['events_page_url'] = cleanUrls($SETT['url'] . '/index.php?page=events');
+
+	if (!$admin && !$user) {
+		$PTMPL['login_url'] = $configuration['allow_login'] ? '<a class="nav-link" href="'.cleanUrls($SETT['url'] . '/index.php?page=moderate&view=access&login=user').'">Login</a>' : '';
+	}
 
 	if (isset($_GET['logout'])) {
 		if ($_GET['logout'] == 'user') {
