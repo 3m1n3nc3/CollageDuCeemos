@@ -202,7 +202,7 @@ function mainContent() {
 
 					$cst = $PTMPL['conf_value'] == '0' ? 'Off' : $PTMPL['conf_value'] == '1' ? 'On' : $PTMPL['conf_value'];
 					$PTMPL['current_setting'] = 
-					'<div class="container"><h4><span class="badge badge-pill badge-success"> Current Setting: <span class="text-dark"> '.$cst.' </span></span></h4></div>';
+					'<div class="w-100"><h4><span class="badge badge-pill badge-success"> Current Setting: <span class="text-dark"> '.$cst.' </span></span></h4></div>';
 
 					if (isset($this_is_an_image)) {
 						$post_value = ucwords($marxTime->reconstructString($_POST['setting']));
