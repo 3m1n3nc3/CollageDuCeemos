@@ -10,4 +10,4 @@
 *.jpg
 *.JPG
 *.zip
-config.php
+includes/config.php
