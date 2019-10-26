@@ -86,7 +86,7 @@ function mainContent() {
 
 					$selectables = array(
 						'ads_off', 'allow_login', 'rave_mode', 'smtp_auth', 'sms', 
-						'smtp', 'smtp_secure', 'captcha', 'fbacc', 'clean_url'
+						'smtp', 'smtp_secure', 'captcha', 'fbacc', 'clean_url', 'cleanurl'
 					);
 					$imageables = array(
 						'logo', 'intro_logo', 'banner', 'intro_banner', 'image'
