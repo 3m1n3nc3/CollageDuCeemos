@@ -1812,8 +1812,8 @@ class databaseCL extends framework {
 		$quote = $framework->db_prepare_input($this->quote);
 		$details = $this->post_details;
 		$date = $framework->db_prepare_input($this->post_date);
-		$time = $framework->db_prepare_input($this->post_time);
-		$date_time = date('Y-m-d h:i:s', strtotime($date.' '.$time));
+		$time = $framework->db_prepare_input($this->post_time); 
+		$date_time = $marxTime->timemerger($date, $time, 1);
 		$public = $this->public;
 		$featured = $this->featured;
 		$promote = $this->promote;

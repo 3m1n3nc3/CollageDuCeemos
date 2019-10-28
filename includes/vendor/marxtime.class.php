@@ -209,11 +209,20 @@ class marxTime
         return $date;
     }
     // Combine two different date and time string to make a datetime stamp
-    function timemerger($date, $time) {
-        $event_dt = $date;
-        $event_tm = $time;
-        $event = date('Y-m-d h:i:s', strtotime("$event_dt $event_tm"));  
-        return $event;  
+    function timemerger($date, $time, $type = null) {
+        if ($type) {
+            $date = new DateTime($date);
+            $time = new DateTime($time);
+
+            //merge objects to new object:
+            $merge = new DateTime($date->format('Y-m-d') .' ' .$time->format('H:i:s'));
+            return $merge->format('Y-m-d H:i:s');       
+        } else {
+            $event_dt = $date;
+            $event_tm = $time;
+            $event = date('Y-m-d h:i:s', strtotime("$event_dt $event_tm"));  
+            return $event;
+        }
     }
 
     function get_percentage($event_date, $event_time) {
