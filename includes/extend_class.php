@@ -684,8 +684,8 @@ function globalTemplate($type = null, $jar = null) {
                  '.$nav_list.'
             </div>
         </li>' : ''; 
-        $PTMPL['footer_list'] = $PTMPL['contact_page_url'];
-        $PTMPL['footer_list_var'] = $PTMPL['contact_page_url'];
+        $PTMPL['footer_list'] = '<li><a href="'.$PTMPL['contact_page_url'].'">About Us</a></li>';
+        $PTMPL['footer_list_var'] = '<li><a href="'.$PTMPL['contact_page_url'].'">Contact Us</a></li>';
         $PTMPL['footer_list'] .= $foot_list;  
         $PTMPL['footer_list_var'] .= $foot_list_var;    
     } 
