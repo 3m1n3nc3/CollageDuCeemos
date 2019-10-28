@@ -689,8 +689,8 @@ function globalTemplate($type = null, $jar = null) {
         
         $foot_list .= $about;
         $foot_list_var .= $contact;
-        $foot_list .= $foot_lister;
-        $foot_list_var .= $foot_lister_var;
+        // $foot_list .= $foot_lister;
+        // $foot_list_var .= $foot_lister_var;
         $PTMPL['footer_list'] = $foot_list;
         $PTMPL['footer_list_var'] = $foot_list_var;    
     } 
