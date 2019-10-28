@@ -200,8 +200,15 @@ function mainContent() {
 
 				// Determine to show text field or upload form
 				if (isset($_POST['view']) || isset($_POST['update'])) { 
+ 
+					if ($PTMPL['conf_value'] == '0') {
+						$cst = 'Off';
+					} elseif ($PTMPL['conf_value'] == '1') {
+						$cst = 'On';
+					} else {
+						$cst = $PTMPL['conf_value'];
+					}
 
-					$cst = $PTMPL['conf_value'] == '0' ? 'Off' : $PTMPL['conf_value'] == '1' ? 'On' : $PTMPL['conf_value'];
 					$cst = $_POST['setting'] == 'tracking' ? '<br><code>'.htmlspecialchars($cst).'</code>' : $cst;
 					$PTMPL['current_setting'] = 
 					'<h4><div class="container border border-dark p-3 rounded bg-light"> Current Setting: <span class="text-dark"> '.$cst.' </span></div></h4>';
