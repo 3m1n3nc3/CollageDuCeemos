@@ -659,6 +659,9 @@ function globalTemplate($type = null, $jar = null) {
     $collage->parent = 'static'; 
     $collage->priority = null;
     $navis = $collage->fetchStatic( null, 1 );
+    
+    $foot_list .= $about;
+    $foot_list_var .= $contact;
     if ($navis) {
         $i = 1;
         foreach ($navis as $link) {
@@ -687,8 +690,6 @@ function globalTemplate($type = null, $jar = null) {
         $about = '<li><a href="'.$PTMPL['contact_page_url'].'">About Us</a></li>';
         $contact = '<li><a href="'.$PTMPL['contact_page_url'].'">Contact Us</a></li>';
         
-        $foot_list .= $about;
-        $foot_list_var .= $contact;
         $foot_list .= $foot_lister;
         $foot_list_var .= $foot_lister_var;
         $PTMPL['footer_list'] = $foot_list;
