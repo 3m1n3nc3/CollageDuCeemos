@@ -653,13 +653,13 @@ function globalTemplate($type = null, $jar = null) {
     }
  
     // Set footer navigation links
-    $nav_list = $foot_list = $foot_list_var = $foot_lister = $foot_lister_var = '';
+    $nav_list = $foot_list = $foot_list_var;
     $collage->limit = 10;
     $collage->start = 0;
     $collage->parent = 'static'; 
     $collage->priority = null;
     $navis = $collage->fetchStatic( null, 1 );
-     
+
     $foot_list .= '<li><a href="'.$PTMPL['contact_page_url'].'">About Us</a></li>';
     $foot_list_var .= '<li><a href="'.$PTMPL['contact_page_url'].'">Contact Us</a></li>';
     if ($navis) {
@@ -672,9 +672,9 @@ function globalTemplate($type = null, $jar = null) {
                 $nav_list .= '<a class="dropdown-item waves-effect waves-light font-weight-bold" href="'.$view_link.'">'.$link['title'].'</a>';
             } elseif ($link['footer'] == '1') {
                 if ($i > 6) {
-                    $foot_lister_var .= '<li><a href="'.$view_link.'">'.$link['title'].'</a></li>';
+                    $foot_list_var .= '<li><a href="'.$view_link.'">'.$link['title'].'</a></li>';
                 } else {
-                    $foot_lister .= '<li><a href="'.$view_link.'">'.$link['title'].'</a></li>';
+                    $foot_list .= '<li><a href="'.$view_link.'">'.$link['title'].'</a></li>';
                 }
             }
         }
@@ -686,13 +686,10 @@ function globalTemplate($type = null, $jar = null) {
             <div class="dropdown-menu dropdown-primary dropdown-menu-right" aria-labelledby="contentMenuLink">
                  '.$nav_list.'
             </div>
-        </li>' : ''; 
-        
-        $foot_list .= $foot_lister;
-        $foot_list_var .= $foot_lister_var;
-        $PTMPL['footer_list'] = $foot_list;
-        $PTMPL['footer_list_var'] = $foot_list_var;    
+        </li>' : '';   
     } 
+    $PTMPL['footer_list'] = $foot_list;
+    $PTMPL['footer_list_var'] = $foot_list_var;  
 
     $categ = $collage->fetchCategories(1); 
     if ($categ) {
