@@ -653,7 +653,7 @@ function globalTemplate($type = null, $jar = null) {
     }
  
     // Set footer navigation links
-    $nav_list = $foot_list = $foot_list_var;
+    $nav_list = $foot_list = $foot_list_var = '';
     $collage->limit = 10;
     $collage->start = 0;
     $collage->parent = 'static'; 
