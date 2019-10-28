@@ -683,9 +683,11 @@ function globalTemplate($type = null, $jar = null) {
             <div class="dropdown-menu dropdown-primary dropdown-menu-right" aria-labelledby="contentMenuLink">
                  '.$nav_list.'
             </div>
-        </li>' : '';
-        $PTMPL['footer_list'] = $foot_list;  
-        $PTMPL['footer_list_var'] = $foot_list_var;    
+        </li>' : ''; 
+        $PTMPL['footer_list'] = $PTMPL['contact_page_url'];
+        $PTMPL['footer_list_var'] = $PTMPL['contact_page_url'];
+        $PTMPL['footer_list'] .= $foot_list;  
+        $PTMPL['footer_list_var'] .= $foot_list_var;    
     } 
 
     $categ = $collage->fetchCategories(1); 
@@ -707,7 +709,7 @@ function globalTemplate($type = null, $jar = null) {
     }
     $collage->parent = 'footer'; 
     $collage->priority = '3';
-    $footro =  $collage->fetchStatic(null, 1)[0]; 
+    $footro =  $collage->fetchStatic(null, 1)[0];
     if ($footro) {
         $PTMPL['footer_text_title'] = $footro['title'];
         $PTMPL['footer_text'] = $framework->rip_tags($footro['content']);
