@@ -401,13 +401,13 @@ function cleanUrls($url) {
 }
 
 function sharingLinks($link = '', $content = '') {
-    global $LANG, $PTMPL, $SETT, $configuration;
+    global $LANG, $PTMPL, $SETT, $configuration, $framework;
+    $hashtags = urlencode($framework->hashTagger($content));
+
     $facebook = 'https://www.facebook.com/sharer/sharer.php?u='.$link;
-    $twitter = 'https://twitter.com/share?url='.$link.'&text='.$content.'&via='.$configuration['twitter'];
-    // 'https://twitter.com/home?status='.$link.' '.$content.'&hashtags=[hashtags]';
+    $twitter = 'https://twitter.com/share?url='.$link.'&text='.$content.'&via='.$configuration['twitter'].'&hashtags='.$hashtags; 
     $pinterest = 'https://pinterest.com/pin/create/button/?url='.$link.'&media=&description='.$content;
-    $whatsapp = 'https://wa.me/?text='.$content.' '.$link;
-    $gplus = 'https://plus.google.com/share?url='.$link;
+    $whatsapp = 'https://wa.me/?text='.$content.' '.$link; 
 
     $link = '';
     $link .= '<a href="'.$facebook.'" target="_blank" class="btn btn-fb btn-sm">
@@ -424,11 +424,7 @@ function sharingLinks($link = '', $content = '') {
 
     $link .= '<a href="'.$whatsapp.'" target="_blank" class="btn btn-light-green btn-sm">
         <i class="fa fa-whatsapp left"></i> Whatsapp
-    </a>';
-
-    $link .= '<a href="'.$gplus.'" target="_blank" class="btn btn-light-green btn-sm">
-        <i class="fa fa-google-plus left"></i> Google +
-    </a>';
+    </a>'; 
     return $link;
 }
 
@@ -708,6 +704,16 @@ function globalTemplate($type = null, $jar = null) {
                  '.$nav_li.'
             </div>
         </li>';           
+    }
+    $collage->parent = 'footer'; 
+    $collage->priority = '3';
+    $footro =  $collage->fetchStatic(null, 1)[0]; 
+    if ($footro) {
+        $PTMPL['footer_text_title'] = $footro['title'];
+        $PTMPL['footer_text'] = $framework->rip_tags($footro['content']);
+    } else {
+        $PTMPL['footer_text_title'] = $configuration['site_name'];
+        $PTMPL['footer_text'] = $framework->rip_tags($configuration['slug']);        
     }
 
     $collage->reverse = $collage->limit = $collage->start = $collage->parent = $collage->priority = null;

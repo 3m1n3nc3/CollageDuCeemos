@@ -26,7 +26,8 @@ function mainContent() {
 			'about' 	=> 	'About Page Section', 
 			'contact' 	=> 	'Contact Page Section', 
 			'static' 	=> 	'New static Page',
-			'events'	=>	'Event Header'
+			'events'	=>	'Event Header',
+			'footer'	=>	'Footer Text'
 		);
 		foreach ($parents as $key => $row) { 
 			$sel = (isset($_POST['parent']) && $_POST['parent'] == $key) || ($get_statics['parent'] == $key) ? ' selected="selected"' : ''; 
@@ -320,7 +321,7 @@ function mainContent() {
 
 				$PTMPL['page_title'] = 'Manage static content';
 			    $framework->all_rows = $collage->fetchStatic(null, 1);
-			    $PTMPL['pagination'] = $framework->pagination(1); 
+			    $PTMPL['pagination'] = $framework->pagination(); 
 				$list_statics = $collage->fetchStatic(null, 1);
 
 				if ($list_statics) {

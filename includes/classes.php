@@ -1049,6 +1049,24 @@ class framework {
 	    exit;
 	}
 
+	function hashTagger($string = null) {
+		global $marxTime;
+
+		$string = str_ireplace('.', '', urldecode($string));
+	    $marxTime->explode = ' ';
+	    $marxTime->get_array = true;
+	    $tags = $marxTime->reconstructString($string); 
+		$tag_array = [];  
+		if ($tags) {
+		  foreach ($tags as $key => $value) {
+		  	if (strlen($value) >= 5) {
+		  		$tag_array[] = '#'.ucfirst($value);
+		  	}
+		  }
+		}
+		return implode(' ', $tag_array); 
+	}
+
 	function autoComplete($_type = null, $preset = null) {
 		global $SETT, $configuration, $databaseCL, $marxTime;
 
@@ -1436,7 +1454,11 @@ class framework {
 		}
 
 		// Pagination Navigation settings
-		$perpage = 5;//$settings['per_explore'];
+		if ($type == 1) {
+			$perpage = $configuration['per_featured'];
+		} else {
+			$perpage = $configuration['per_page'];
+		}
 		if(isset($_GET['pagination']) && $_GET['pagination'] !== ''){
 		    $curpage = $_GET['pagination'];
 		} else{
@@ -1889,7 +1911,7 @@ class databaseCL extends framework {
 
 		$this->manage = true;
 	    $framework->all_rows = $this->fetchPost(2);
-	    $PTMPL['pagination'] = $framework->pagination(1);
+	    $PTMPL['pagination'] = $framework->pagination();
 		$list_posts = $this->fetchPost(2); 
 		
 		$table_row = ''; $i=0;
