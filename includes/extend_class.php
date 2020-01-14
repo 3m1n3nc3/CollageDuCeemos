@@ -699,7 +699,7 @@ function globalTemplate($type = null, $jar = null) {
     }
  
     // Set footer navigation links
-    $nav_list = $foot_list = $foot_list_var = $content_menu_link = $store_menu_link = '';
+    $nav_list = $foot_list = $foot_list_var = $content_menu_link = '';
     $collage->limit = 10;
     $collage->start = 0;
     $collage->parent = 'static'; 
@@ -708,6 +708,24 @@ function globalTemplate($type = null, $jar = null) {
 
     $foot_list .= '<li><a href="'.$PTMPL['contact_page_url'].'">About Us</a></li>';
     $foot_list_var .= '<li><a href="'.$PTMPL['contact_page_url'].'">Contact Us</a></li>';
+        
+    $store_page_url = cleanUrls($SETT['url'] . '/index.php?page=store');
+    $content_menu_link .= $configuration['enable_store'] ? '
+    <li class="nav-item ml-3 mb-0">
+        <a href="'.$store_page_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">STORE</a>
+    </li>' : '';
+
+    $cart_counter = $cd_session->userdata('cart') && !empty($cd_session->userdata('cart')) ? count($cd_session->userdata('cart')) : 0;
+    $cart_url = cleanUrls($SETT['url'] . '/index.php?page=store&view=cart');
+    $content_menu_link .= $cd_session->userdata('cart') ? '
+    <li class="nav-item ml-3 mb-0">
+        <a href="'.$cart_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">
+            <span class="badge danger-color">'.$cart_counter.'</span>
+            <i class="fa fa-shopping-cart"></i>
+            CART
+        </a>
+    </li>' : '';
+
     if ($navis) {
         $i = 1;
         foreach ($navis as $link) {
@@ -733,25 +751,8 @@ function globalTemplate($type = null, $jar = null) {
                  '.$nav_list.'
             </div>
         </li>' : '';   
-        
-        $store_page_url = cleanUrls($SETT['url'] . '/index.php?page=store');
-        $store_menu_link .= $configuration['enable_store'] ? '
-        <li class="nav-item ml-3 mb-0">
-            <a href="'.$store_page_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">STORE</a>
-        </li>' : '';
-
-        $cart_counter = $cd_session->userdata('cart') && !empty($cd_session->userdata('cart')) ? count($cd_session->userdata('cart')) : 0;
-        $cart_url = cleanUrls($SETT['url'] . '/index.php?page=store&view=cart');
-        $store_menu_link .= $cd_session->userdata('cart') ? '
-        <li class="nav-item ml-3 mb-0">
-            <a href="'.$cart_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">
-                <span class="badge danger-color">'.$cart_counter.'</span>
-                <i class="fa fa-shopping-cart"></i>
-                CART
-            </a>
-        </li>' : '';
     } 
-    $PTMPL['content_menu_link'] = $store_menu_link;
+ 
     $PTMPL['content_menu_link'] .= $content_menu_link;
 
     $PTMPL['footer_list'] = $foot_list;
