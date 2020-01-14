@@ -1,7 +1,7 @@
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 
-INSERT INTO `categories` (`id`, `title`, `value`, `info`) VALUES 
-(16, 'Store', 'store', 'Pick from beautifully crafted artworks, buy and get them delivered to you in the comfort of your home.');
+INSERT INTO `categories` (`title`, `value`, `info`) VALUES 
+('Store', 'store', 'Pick from beautifully crafted artworks, buy and get them delivered to you in the comfort of your home.');
 
 INSERT INTO `static_pages` (`title`, `jarallax`, `icon`, `content`, `parent`, `safelink`, `footer`, `header`, `priority`, `date`) VALUES
 ('Art Store', '', 'fa-shopping-cart', '<p>Shop beautiful artifacts created by we and our partners, buy and get it delivered to you in the comfort of your home</p>', 'store', 'art-store', '0', '0', '3', '2020-01-06 19:29:19');
@@ -63,5 +63,5 @@ CREATE TABLE IF NOT EXISTS `store` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 ALTER TABLE `store` ADD FULLTEXT KEY `description` (`description`);
-
-ALTER TABLE `configuration` ADD `enable_store` enum('0','1') NOT NULL DEFAULT '1',
+ 
+ALTER TABLE `configuration` ADD `enable_store` ENUM('0','1') NOT NULL DEFAULT '0' AFTER `mode`;
