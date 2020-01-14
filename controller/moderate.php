@@ -1,9 +1,11 @@
 <?php
 
 function mainContent() {
-	global $PTMPL, $LANG, $SETT, $configuration, $admin, $user, $user_role, $framework, $collage, $marxTime; 
+	global $PTMPL, $LANG, $SETT, $configuration, $admin, $user, $user_role, $framework, $collage, $marxTime, $cd_input, $cd_session; 
 
    	if ($admin || $user['founder'] || $user_role >= 4) {
+   		$notification = '';
+
    	 	$PTMPL['upload_script'] = $SETT['url'].'/connection/uploader.php?action=ckeditor';
 			
 		$PTMPL['page_title'] = $LANG['homepage'];
@@ -11,7 +13,11 @@ function mainContent() {
 
 		$post_id = $post_ids = isset($_GET['post_id']) && $_GET['post_id'] !== '' ? $_GET['post_id'] : null;
 		$get_post = $collage->fetchPost(1, $post_id)[0];
+
 		$get_statics = $collage->fetchStatic($post_id)[0];
+
+		$item_id = $item_ids = isset($_GET['item_id']) && $_GET['item_id'] !== '' ? $_GET['item_id'] : null;
+		$store_item = $collage->fetchStore(1, $item_id)[0];
 
 		$option = $option_var = $opt_var = $class = $PTMPL['notification'] = '';
 		$excess_['ap'] = $excess_['cp'] = 0;
@@ -25,7 +31,7 @@ function mainContent() {
 		$parents = array(
 			'about' 	=> 	'About Page Section', 
 			'contact' 	=> 	'Contact Page Section', 
-			'static' 	=> 	'New static Page',
+			'static' 	=> 	'New static Page', 
 			'events'	=>	'Event Header',
 			'footer'	=>	'Footer Text'
 		);
@@ -47,7 +53,8 @@ function mainContent() {
 		$set_icon = isset($_POST['icon']) ? $_POST['icon'] : $get_statics['icon'] ? $get_statics['icon'] : ''; 
 		$PTMPL['icons'] = icon(1, $set_icon);
 
-		if (isset($_GET['view'])) {
+		if (isset($_GET['view'])) 
+		{
 			if ($_GET['view'] == 'config') {
 				$PTMPL['page_title'] = 'Site Configuration'; 
 
@@ -171,6 +178,7 @@ function mainContent() {
 						$set_image = null;
 					} elseif (isset($_FILES['image'])) {
 						$image = $framework->imageUploader($_FILES['image'], 1);
+						$image_error = $collage->imageErrorHandler();
 						if (is_array($image)) {  
 							deleteFiles($configuration[$_POST['setting']], 2); 
 							$set_image = $image[0];
@@ -185,16 +193,21 @@ function mainContent() {
 							}
 						}
 					}
- 
+					if (isset($image_error)) {
+						$notification .= $image_error;
+					}
 					if (isset($errors)) {
-						$PTMPL['notification'] = $errors;
+						$notification .= $errors;
 					} else {
 						$PTMPL['conf_value'] = $value = isset($_POST['value']) ? $_POST['value'] : $set_image;
 						if (isset($_POST['setting']) && $value != '' || !isset($set_image)) {
 							$sql = sprintf("UPDATE configuration SET `%s` = '%s'", $_POST['setting'], addslashes($value));
 							$set = $collage->dbProcessor($sql, 0, 1);
-							$PTMPL['notification'] = $set == 1 ? messageNotice('Configuration Updated', 1) : messageNotice($set);
+							$notification = $set == 1 ? messageNotice('Configuration Updated', 1) : messageNotice($set);
 						}
+					}
+					if (isset($notification)) {
+						$PTMPL['notification'] = $notification;
 					}
 				}
 
@@ -273,7 +286,8 @@ function mainContent() {
 				$theme = new themer('moderate/config');
 
 			} 
-			elseif ($_GET['view'] == 'posts') {
+			elseif ($_GET['view'] == 'posts') 
+			{
 				// Show the list of created posts
 
 				$PTMPL['page_title'] = 'Manage posts';
@@ -297,7 +311,8 @@ function mainContent() {
 
 				$theme = new themer('moderate/posts_content');
 			} 
-			elseif ($_GET['view'] == 'static') {
+			elseif ($_GET['view'] == 'static') 
+			{
 				// Show the list of static pages
 				// 
 				$collage->parent = 'about'; $collage->priority = '3';
@@ -372,7 +387,9 @@ function mainContent() {
 		        $PTMPL['create_static_btn'] = '<a href="'.$create_static_link.'" class="btn btn-primary font-weight-bolder mb-2">Create new static content</a>';
 
 				$theme = new themer('moderate/static_content');
-			} elseif ($_GET['view'] == 'create_static') {
+			} 
+			elseif ($_GET['view'] == 'create_static') 
+			{
 				$PTMPL['up_btn'] = $get_statics ? 'Update Content' : 'Create Content';
 				$PTMPL['page_title'] = $get_statics ? 'Update '.$get_statics['title'] : 'Create new Static Content';
 				$PTMPL['content_title'] = isset($_POST['title']) ? $_POST['title'] : $get_statics['title']; 
@@ -395,7 +412,9 @@ function mainContent() {
 				}
 
 				$theme = new themer('moderate/create_static');
-			} elseif ($_GET['view'] == 'categories') {
+			} 
+			elseif ($_GET['view'] == 'categories') 
+			{
 	    		$page = $SETT['url'].$_SERVER['REQUEST_URI'];
 	    		$set_msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 	    		if (isset($_POST['select_category'])) {
@@ -471,7 +490,9 @@ function mainContent() {
 				}
 
 				$theme = new themer('moderate/categories');
-			} elseif ($_GET['view'] == 'admin') {
+			} 
+			elseif ($_GET['view'] == 'admin') 
+			{
 				$this_admin = isset($admin) ? ' ('.$admin['username'].')' : '';
 				$PTMPL['page_title'] = 'Update Admin'.$this_admin; 
 				
@@ -557,12 +578,168 @@ function mainContent() {
 
 				// Set the active landing page_title 
 				$theme = new themer('moderate/admin');
-			} elseif ($_GET['view'] == 'filemanager') {
+			} 
+			elseif ($_GET['view'] == 'filemanager') 
+			{
 				$PTMPL['page_title'] = 'File Manager';
 
 				// Set the active landing page_title 
 				$theme = new themer('moderate/filemanager');
-			} else {
+			} 
+			elseif ($_GET['view'] == 'store') 
+			{
+				// Show the list of created posts
+
+				$PTMPL['page_title'] = 'Manage posts';
+
+				if (isset($_GET['delete'])) {
+					$did = $collage->db_prepare_input($_GET['delete']);
+					$delete = $collage->deleteContent($did, 2);
+					if ($delete === 1) {
+						$PTMPL['notification'] = messageNotice('Store item deleted successfully', 1, 6);
+					} elseif ($delete === 0) {
+						$PTMPL['notification'] = messageNotice('Store item does not exist, or may have already been deleted', 2, 6);
+					} else {
+						$PTMPL['notification'] = messageNotice($delete, 3, 7);
+					}
+				}
+
+		        $create_item_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=add_store_item');
+		        $view_orders_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=store_orders');
+		        $create_item_btn = '<a href="'.$create_item_link.'" class="btn btn-primary font-weight-bolder mb-2">Add store Item</a>';
+		        $create_item_btn .= '<a href="'.$view_orders_link.'" class="btn btn-primary font-weight-bolder mb-2">View Orders</a>';
+		        $PTMPL['create_item_btn'] = $create_item_btn;
+
+				$PTMPL['currency'] = $configuration['currency'];
+				$PTMPL['item_list'] = $collage->manageStoreItems();
+
+				$theme = new themer('moderate/store_content');
+			} 
+			elseif ($_GET['view'] == 'store_orders') 
+			{
+				// Show the list of created posts
+				if ($cd_input->get('item_id')) {
+
+					$PTMPL['page_title'] = 'Order Details';
+
+					$order = $collage->fetchStore(3, $cd_input->get('item_id'))[0];
+
+					$PTMPL['customer'] 			= $order['fname'].' '.$order['lname'];
+					$PTMPL['order_id'] 			= $order['id'];
+					$PTMPL['order_reference'] 	= $order['reference'];
+					$PTMPL['username'] 			= $order['username'];
+					$PTMPL['email'] 			= $order['email'];
+					$PTMPL['address'] 			= $order['address'];
+					$PTMPL['order_total'] 		= currency(3, $configuration['currency']).number_format($order['total'], 2);
+					$PTMPL['order_status'] 		= $order['status'] == 2 ? 'Order Shipped' : ($order['status'] == 1 ? 'Payment Confirmed' : 'Payment Pending');
+					$PTMPL['order_date'] 		= date('Y-m-d', strtotime($order['date']));
+ 
+		            if ($collage->fetchStore(4, $cd_input->get('item_id'))) 
+		            {
+		                $store_cart = $collage->fetchStore(4, $cd_input->get('item_id'));
+
+		                $shopping_cart = '';
+		                foreach ($store_cart as $cart_item) {
+		                    $details = $collage->fetchStore(1, $cart_item['item_id'])[0];
+		                    $shopping_cart .= storeCartCard($details, 1); 
+
+		                    if ($details['discount']) {
+		                        $discount_per = $details['price'] * $details['discount'] / 100; 
+		                        $price_tag = $details['price'] - $discount_per;
+		                        $amount = ($price_tag+$details['shipping']); 
+		                    } else { 
+		                        $amount = ($details['price']+$details['shipping']); 
+		                    } 
+		                } 
+		            } 
+		            else 
+		            {
+		                $shopping_cart = '    
+		                <tr> 
+		                    <td colspan="7">'.notavailable('This Order has no products', '', 2).'</td> 
+		                </tr>'; 
+		            }
+		            $PTMPL['shopping_cart'] = $shopping_cart;
+
+		            if ($cd_input->post('status')) {
+		            	$update = $collage->update_order($order['id']);
+		            	if ($update) {
+		            		$PTMPL['notification'] = messageNotice($update, 3, 6); 
+		            	} else {
+		            		$PTMPL['notification'] = $cd_input->read_flashdata('msg'); 
+		            	}
+		            }
+
+					$theme = new themer('moderate/store_order_details');
+				} else {
+					$PTMPL['page_title'] = 'Manage Orders';
+
+					if (isset($_GET['delete'])) {
+						$did = $cd_input->get('delete');
+						$delete = $collage->deleteContent($did, 3);
+						if ($delete === 1) {
+							$PTMPL['notification'] = messageNotice('Order has been deleted successfully', 1, 6);
+						} elseif ($delete === 0) {
+							$PTMPL['notification'] = messageNotice('This order does not exist, or may have already been deleted', 2, 6);
+						} else {
+							$PTMPL['notification'] = messageNotice($delete, 3, 7);
+						}
+					}
+
+			        $create_item_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=add_store_item'); 	
+			        $create_item_btn = '<a href="'.$create_item_link.'" class="btn btn-primary font-weight-bolder mb-2">Add store Item</a>'; 
+			        $PTMPL['create_item_btn'] = $create_item_btn;
+
+					$PTMPL['currency'] = $configuration['currency'];
+					$PTMPL['item_list'] = $collage->manageStoreOrders();
+
+					$theme = new themer('moderate/store_orders');
+				}
+			} 
+			elseif ($_GET['view'] == 'add_store_item') 
+			{   
+				$PTMPL['page_title'] = 'New store entry'; 
+				$PTMPL['up_btn'] = $store_item ? 'Update Item' : 'Create Item';
+				
+				$PTMPL['currency'] 			= $configuration['currency'];
+				$PTMPL['title'] 			= isset($_POST['title']) ? $_POST['title'] : $store_item['title'];
+				$PTMPL['artist'] 			= isset($_POST['artist']) ? $_POST['artist'] : $store_item['artist'];
+				$PTMPL['price'] 			= isset($_POST['price']) ? $_POST['price'] : $store_item['price'];
+				$PTMPL['discount'] 			= isset($_POST['discount']) ? $_POST['discount'] : $store_item['discount'];
+				$PTMPL['shipping'] 			= isset($_POST['shipping']) ? $_POST['shipping'] : $store_item['shipping'];
+				$PTMPL['available_qty'] 	= isset($_POST['available_qty']) ? $_POST['available_qty'] : $store_item['available_qty'];
+				$PTMPL['tags'] 				= isset($_POST['tags']) ? $_POST['tags'] : $store_item['tags'];
+				$PTMPL['description'] 		= isset($_POST['description']) ? $_POST['description'] : $store_item['description'];
+				$PTMPL['public'] 			= isset($_POST['public']) || $store_item['public'] == 1 ? ' checked' : '';
+				$PTMPL['featured'] 			= isset($_POST['featured']) || $store_item['featured'] == 1 ? ' checked' : '';
+				$PTMPL['promoted'] 			= isset($_POST['promoted']) || $store_item['promoted'] == 1 ? ' checked' : '';
+
+				$PTMPL['store_image1'] 		= getImage($store_item['image1'], 1);
+				$PTMPL['store_image2'] 		= getImage($store_item['image2'], 1);
+				$PTMPL['store_image3'] 		= getImage($store_item['image3'], 1);
+
+				if (isset($_POST['create_item'])) {   
+					$collage->title 		= $cd_input->post('title');
+					$collage->artist 		= $cd_input->post('artist');
+					$collage->price 		= $cd_input->post('price');
+					$collage->discount 		= $cd_input->post('discount');
+					$collage->shipping 		= $cd_input->post('shipping') ? $cd_input->post('shipping') : '0.00';
+					$collage->available_qty = $cd_input->post('available_qty');
+					$collage->tags 			= $cd_input->post('tags'); 
+					$collage->description 	= $cd_input->post('description'); 
+					$collage->public 		= $cd_input->post('public') ? 1 : 0;
+					$collage->featured 		= $cd_input->post('featured') ? 1 : 0;
+					$collage->promoted 		= $cd_input->post('promoted') ? 1 : 0;
+					$collage->image 		= $_FILES['image'];
+
+					$create = $collage->addToStore();
+					$PTMPL['notification'] = $create;
+				}
+
+				$theme = new themer('moderate/create_store_entry');
+			} 
+			else 
+			{
 				$PTMPL['up_btn'] = $get_post ? 'Update Post' : 'Create Post';
 				$PTMPL['page_title'] = $get_post ? 'Update '.$get_post['title'] : 'Create new post';
 				$PTMPL['post_title'] = isset($_POST['title']) ? $_POST['title'] : $get_post['title'];
@@ -594,10 +771,13 @@ function mainContent() {
 				$theme = new themer('moderate/create_post');
 			}
 			$PTMPL['content'] = $theme->make();
-		} else { 
+		} 
+		else 
+		{ 
             $category =  array(
             	'create_post' 	=> 	'Create New blog post',
-            	'posts' 		=> 	'View and manage post',
+            	'posts' 		=> 	'Manage posts',
+            	'store' 		=> 	'Manage Store',
             	'create_static'	=>	'New static content',
             	'static'		=>	'Manage Static content',
             	'categories'	=>	'Manage categories',
@@ -605,7 +785,7 @@ function mainContent() {
             	'admin'			=>	'Update Admin Details',
             	'filemanager'	=>	'File Manager'
             ); 
-            $categories = '';$i = 280;$ii = 3;
+            $categories = '';$i = 30;$ii = 1;
             foreach ($category as $key => $row) {
                 $i++;$ii++; 
                 $link = cleanUrls($SETT['url'].'/index.php?page=moderate&view='.$key);  
@@ -629,56 +809,96 @@ function mainContent() {
 
 		// Set the active landing page_title 
 		$theme = new themer('moderate/container');
-	} else {	
+	} 
+	else 
+	{	
+		if (!$cd_session->userdata('redirect_to')) 
+		{
+			$page = $SETT['url'].$_SERVER['REQUEST_URI'];
+			$cd_session->set_userdata('redirect_to', $page);
+		}
+
 		$url = $SETT['url']; // 'http://admin.collageduceemos.te';
-		if (strpos($url, 'admin')) {
-			if (!isset($_GET['view']) || isset($_GET['view']) && $_GET['view'] != 'access') {
+		if (strpos($url, 'admin') !== NULL) 
+		{
+			if (!isset($_GET['view']) || isset($_GET['view']) && $_GET['view'] != 'access') 
+			{
 				$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=moderate&view=access'), 1);
 			}
 		}
 
-		if (isset($_GET['view']) && $_GET['view'] == 'access') { 
+		if (isset($_GET['view']) && $_GET['view'] == 'access') 
+		{ 
 			$PTMPL['return_btn'] = cleanUrls($SETT['url'].'/index.php?page=homepage');
 
-			if (isset($_GET['login']) && $_GET['login'] == 'user') {
+			if (isset($_GET['login']) && $_GET['login'] == 'user') 
+			{
 				$PTMPL['page_title'] = 'User Login';
 				$PTMPL['user_login'] = ' checked';
-			} else {
+			} 
+			else 
+			{
 				$PTMPL['page_title'] = 'Admin Login';
 				$PTMPL['u_secret'] = '-secret';
 			}
 
-			if (isset($_POST['login'])) {
+			if (isset($_POST['login'])) 
+			{
 				$PTMPL['username'] = $username = $framework->db_prepare_input($_POST['username']);
 				$PTMPL['password'] = $password = $framework->db_prepare_input($_POST['password']);
 
-				if (isset($_POST['remember']) && $_POST['remember'] == 'on') {
+				if (isset($_POST['remember']) && $_POST['remember'] == 'on') 
+				{
 					$PTMPL['remember'] = ' checked';
 					$framework->remember = 1;
 				}
+
 				$framework->username = $username;
 				$framework->password = hash('md5', $password); 
+
 				if ((isset($_GET['login']) && $_GET['login'] == 'user') || isset($_POST['user_login'])) {
 					$PTMPL['user_login'] = ' checked';
 					$login = $framework->authenticateUser();
 				} else {
 					$login = $framework->administrator(1);
 				}
-				if (isset($login['username']) && $login['username'] == $username) {
+				if (isset($login['username']) && $login['username'] == $username) 
+				{
 					$notice = messageNotice('Login Successful', 1);
-					if ((isset($_GET['login']) && $_GET['login'] == 'user') || isset($_POST['user_login'])) {
-						$framework->redirect(cleanUrls('profile'));
-					} else {
-						$framework->redirect(cleanUrls('moderate'));
+					if ((isset($_GET['login']) && $_GET['login'] == 'user') || isset($_POST['user_login'])) 
+					{
+						if ($cd_session->userdata('redirect_to')) 
+						{
+							$framework->redirect($cd_session->userdata('redirect_to'), 1);
+						} 
+						else 
+						{
+							$framework->redirect(cleanUrls('profile'));
+						}
+					} 
+					else 
+					{
+						if ($cd_session->userdata('redirect_to')) 
+						{
+							$framework->redirect($cd_session->userdata('redirect_to'), 1);
+						} 
+						else 
+						{
+							$framework->redirect(cleanUrls('moderate'));
+						}
 					}
-				} else {
+				}
+				 else 
+				{
 					$notice = messageNotice($login, 3);
 				}
 				$PTMPL['notification'] = $notice; 
 			}
 			$theme = new themer('moderate/admin_login');
 			$PTMPL['content'] = $theme->make();
-		} else {
+		} 
+		else 
+		{
         	$PTMPL['page_title'] = 'Error 403';
 			$PTMPL['content'] = notAvailable('', '', 403);
 		}

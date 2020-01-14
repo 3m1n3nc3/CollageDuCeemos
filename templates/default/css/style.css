@@ -80,3 +80,48 @@
 	font-size: .75em;
 	outline-offset: -1px;
 }
+
+.rating {
+  	color: #ffa000;
+  	list-style-type: none;
+  	padding: 0; 
+}
+
+.rating li {
+    display: inline-block; 
+}
+
+.card.card-ecommerce .card-footer {
+  	background-color: transparent; 
+}
+
+.card.card-ecommerce .card-footer .discount {
+    color: #9e9e9e; 
+}
+
+.card.card-ecommerce .card-footer a {
+    color: #757575;
+    transition: 0.4s; 
+}
+
+.card.card-ecommerce .card-footer a:hover {
+    color: #d50000;
+    transition: 0.4s; 
+}
+
+.card.card-ecommerce .card-footer a.active {
+    color: #d50000; 
+}
+
+.cart-v1 .btn.btn-sm,
+.cart-v1 .btn.wishlist,
+.cart-v2 .btn.btn-sm,
+.cart-v2 .btn.wishlist {
+	padding: .3rem .6rem!important; 
+}
+
+.cart-v1 [type=radio]:checked, .cart-v1 [type=radio]:not(:checked) {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}

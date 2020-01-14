@@ -5,7 +5,7 @@ function mainContent() {
 	
 	$PTMPL['site_url'] = $SETT['url']; 
 
-	$PTMPL['skin'] = ' class="black-skin"'; 
+	$PTMPL['skin'] = ' class="'.$configuration['skin'].'"'; 
 
 	if (isset($_GET['view'])) {
 		if ($_GET['view'] == 'about' || $_GET['view'] == 'contact') {

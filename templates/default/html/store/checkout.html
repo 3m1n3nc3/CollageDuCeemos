@@ -1,0 +1,93 @@
+            <!-- Section cart -->
+              <section class="section mb-5 pb-5 cart-v1">
+                <div class="card card-ecommerce">
+                  <div class="card-header info-color white-text">
+                    <span class="h4"><strong>Complete Order</strong></span>
+                  </div>
+
+                  <div class="card-body">
+                    <!-- Shopping Cart table -->
+                    {$notification}
+                    {$message}
+                    <div class="table-responsive">
+                      <form style="color: #757575;" id="f2" method="post" action="" class="needs-validation px-4 py-2" novalidate>
+                        
+                        <div class="row">
+                          <div class="col-sm-6 mb-4 mx-0">
+                            <label for="fname">First Name</label>   
+                            <input type="text" id="fname" class="form-control" placeholder="First Name" name="fname" value="{$fname}" required>   
+                            <div class="mt-0 invalid-feedback">
+                              Please provide a valid First Name.
+                            </div>
+                          </div>   
+                          
+                          <div class="col-sm-6 mb-4 mx-0">
+                            <label for="lname">Last Name</label>   
+                            <input type="text" id="lname" class="form-control" placeholder="Last Name" name="lname" value="{$lname}" required>   
+                            <div class="mt-0 invalid-feedback">
+                              Please provide a valid Last Name.
+                            </div>
+                          </div>   
+                        </div>
+                        
+                        <div class="mb-4 mx-0">
+                          <label for="email">Email Address</label>   
+                          <input type="text" id="email" class="form-control" placeholder="Email Address" name="email" value="{$email}" required>   
+                          <div class="mt-0 invalid-feedback">
+                            Please provide a valid Email Address.
+                          </div>
+                        </div>   
+                        
+                        <div class="mb-4 mx-0">
+                          <label for="phone">Phone Number</label>   
+                          <input type="text" id="phone" class="form-control" placeholder="Phone Number" name="phone" value="{$phone}" required>   
+                          <div class="mt-0 invalid-feedback">
+                            Please provide a valid Phone Number.
+                          </div>
+                        </div>   
+                        
+                        <div class="mb-4 mx-0">
+                          <label for="country">Country</label>   
+                          <small id="helper1" class="form-text text-info mt-0">For now we only attend to delivery addresses within Nigeria.</small>
+                          <select id="country" class="form-control" name="country">    
+                            {$country_options}
+                          </select>
+                        </div>    
+                        
+                        <div class="row">
+                          <div class="col-sm-6 mb-4 mx-0">
+                            <label for="state">State</label>   
+                            <input type="text" id="state" class="form-control" placeholder="State" name="state" value="{$state}" required>   
+                            <div class="mt-0 invalid-feedback">
+                              Please provide a valid State.
+                            </div>
+                          </div>   
+                          
+                          <div class="col-sm-6 mb-4 mx-0">
+                            <label for="city">City</label>   
+                            <input type="text" id="city" class="form-control" placeholder="City" name="city" value="{$city}" required>   
+                            <div class="mt-0 invalid-feedback">
+                              Please provide a valid City.
+                            </div>
+                          </div>  
+                        </div> 
+                        
+                        <div class="mb-4 mx-0">
+                          <label for="address">Delivery Address</label>    
+                          <small id="helper" class="form-text text-info mt-0">Make sure to be very descriptive.</small>
+                          <textarea id="address" class="form-control" placeholder="Address" name="address" required>{$address}</textarea> 
+                          <div class="mt-0 invalid-feedback">
+                            Please provide a valid Delivery Address.
+                          </div>
+                        </div>    
+
+                        <div class="d-flex">
+                          <a href="{$return_btn}" class="btn btn-warning btn-rounded my-4 btn-block"><i class="fa fa-chevron-left"></i> Return</a>
+                          <button class="btn btn-success btn-rounded my-4 btn-block font-weight-bold" type="submit" name="order"><i class="fa fa-cart-arrow-down"></i> Place Order</button>
+                        </div>
+                      </form>
+                    </div> 
+                  </div>
+                </div>
+              </section>
+              <!-- Section cart -->

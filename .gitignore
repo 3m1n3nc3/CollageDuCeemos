@@ -11,3 +11,4 @@
 *.JPG
 *.zip
 includes/config.php
+TEMP/

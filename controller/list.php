@@ -20,7 +20,7 @@ function mainContent() {
     }
 
     // Set the skin for the home page
-	$PTMPL['skin'] = ' class="black-skin homepage-v2';
+	$PTMPL['skin'] = ' class="'.$configuration['skin'].' homepage-v2';
 
     if (isset($_GET['sorting']) && $_GET['sorting'] == 'catalog') {
 	   $theme = new themer('listings/list_index');

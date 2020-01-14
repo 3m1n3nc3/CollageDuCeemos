@@ -39,6 +39,8 @@ $PTMPL['language'] = isset($_COOKIE['lang']) ? $_COOKIE['lang'] : '';
 $theme = new themer('navigation/carousel');
 $PTMPL['carousel'] = $theme->make();
  
+$PTMPL['country_options'] = countries(1, '');
+
 $PTMPL['page_sidebar'] = site_sidebar();
 $PTMPL['content_footer'] = postFooter();
 
@@ -62,7 +64,7 @@ $PTMPL['advert_unit_four'] = $configuration['ads_off'] == 0 && $configuration['a
 $PTMPL['content'] = mainContent();
 
 if ($page_name !== 'introduction') {
-	$PTMPL['skin'] = ' class="black-skin"'; 
+	$PTMPL['skin'] = ' class="'.$configuration['skin'].'"'; 
 	$scripts = new themer('coder/scripts');
 	$PTMPL['body_scripts'] = $scripts->make(); 
 	

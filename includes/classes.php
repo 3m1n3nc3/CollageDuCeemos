@@ -189,7 +189,8 @@ class framework {
 	        $password = " `password` = '$passhash', "; 
 	    }
         $image = $this->imageUploader($this->image, 2); 
-	if (is_array($image)) { 
+        $errors = $collage->imageErrorHandler();
+	if ($image) { 
 		if ($data) {
 			deleteFiles($data['photo'], 3);
 		}
@@ -199,10 +200,7 @@ class framework {
 			$set_image = $data['photo'];
 		} else {
 			$set_image = null;
-		}
-		if ($image) {
-			$errors = 'Photo not updated: '.$image;
-		}
+		} 
 	}
 
         $sql = sprintf("UPDATE " . TABLE_USERS . " SET `fname` = '%s', `lname` = '%s', " .
@@ -360,8 +358,7 @@ class framework {
 	function mailerDaemon($sender, $receiver, $subject) {
 		// Load up the site settings
 		global $SETT, $configuration, $user, $mail;
-
-		$user_data = $this->userData($this->user_id, 1);
+ 
 		$message = $this->message;
 
 		// show the message details if test_mode is on
@@ -386,9 +383,8 @@ class framework {
 	    	$return_response = successMessage('Test Email Sent');
 	    }
 
-		if ($user_data && $user_data['allow_emails'] == 0 && !isset($this->activation)) {
-			return false;
-		} else {
+		if (filter_var($sender, FILTER_VALIDATE_EMAIL) && filter_var($receiver, FILTER_VALIDATE_EMAIL)) {
+	
 			// If the SMTP emails option is enabled in the Admin Panel
 			if($configuration['smtp']) { 
  
@@ -800,7 +796,7 @@ class framework {
 	    } elseif ($type == 3) {
 	    	$rand_letter = substr(str_shuffle("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
 	    	$rand_sm = substr(str_shuffle("DEFGHOPQRSTUVWXYZ"), 0, 3);
-	    	return 'PCAUD-'.$rand_letter.$this->generateToken(10, 2).'-'.$rand_sm;
+	    	return 'CDCS-'.$rand_letter.$this->generateToken(10, 2).'-'.$rand_sm;
 	    } elseif ($type == 5) {
 	    	$key_one = substr(10000000000000000, 0, $length);
 	    	$key_two = substr(90000000000000000, 0, $length);
@@ -1253,29 +1249,110 @@ class framework {
 		return $color;
 	}
 
+	function storeCart($action = '', $data = array()) {
+		global $cd_session, $cd_post, $cd_input;
+
+		$dk = key($data);
+		$data_key = (isset($data[$dk]['item_id']) ? $data[$dk]['item_id'] : (isset($data['item_id']) ? $data['item_id'] : NULL)); 
+
+		$store_cart = $cd_session->userdata('cart');
+
+		switch ($action) {
+			case 'add':
+				if ($cd_session->has_userdata('cart')) {
+
+					// Fetch the item_ids
+					$items_arr = [];
+					foreach ($store_cart as $si) {
+						$items_arr[] = $si['item_id'];
+					}
+
+					if (in_array($data_key, $items_arr)) {
+						foreach ($store_cart as $key => $item) {
+							if ($data_key == $key) {
+								if (empty($store_cart['quantity'])) {
+									$store_cart['quantity'] = 0;
+								}
+								$store_cart['quantity'] += $data[$data_key]['quantity'];
+							}
+						}
+					} else {
+						$data_set = array_merge($store_cart, $data);
+						$cd_session->set_userdata('cart', $data_set); 
+					}
+
+				} else {
+					$cd_session->set_userdata('cart', $data); 
+				}
+				break;
+			
+			case 'remove':
+				if (!empty($store_cart)) {
+					foreach ($store_cart as $key => $item) {
+						if ($data['item_id'] == $item['item_id'])
+							unset($_SESSION['cart'][$key]);
+						if (empty($store_cart))
+							$cd_session->unset_userdata('cart');  
+					}
+				}
+				break;
+
+			case 'empty':
+				$cd_session->unset_userdata('cart');  
+				break;
+
+			default:
+				// code...
+				break;
+		}
+	} 
+
+	public function imageErrorHandler($error = '', $ld = '', $rd = '')
+	{	
+		if (!$ld) {
+			$ld = '<p>';
+		} 
+		if (!$rd) {
+			$rd = '</p>';
+		}
+		if (isset($this->image_error)) {
+			return $ld . $this->image_error . $rd;
+
+		}
+		return;
+	}
+
 	/**
 	/* this function controls file uploads	
 	 **/	
-	function imageUploader($file = null, $type = null, $eck = null) {
+	function imageUploader($file = null, $type = null, $direction = 'H') {
 		global $PTMPL, $LANG, $SETT, $user, $framework, $collage, $marxTime; 
 		// File arguments
-		$errors = array();
-		$uploade_type = ''; 
+		$errors = array(); 
+
+		$allowed = array('jpeg','jpg','png');
+		$size = 2524000; 
+
+	    if ($type == 1) {
+	    	if ($direction == 'H') {
+	    		$w = 620; $h = 310;
+	    	} else {
+	    		$h = 620; $w = 310;
+	    	}
+	    } if ($type == 2) {
+	    	$w = 600; $h = 600;
+	    } else {
+	    	if ($direction == 'H') {
+	    		$w = 1200; $h = 800; 
+	    	} else {
+	    		$h = 1200; $w = 800;
+	    	}
+	    }
+		$size_format = $marxTime->swissConverter($size);
 
 		// Generate the image properties  
 		if (isset($file['name'])) { 
 			$_FILE = $file;
-			$allowed = array('jpeg','jpg','png');
-			$size = 2524000; 
-			$error = $file['name'] == '' ? "Please select a file to upload." : null;
-		    if ($type == 1) {
-		    	$w = 620; $h = 310;
-		    } if ($type == 2) {
-		    	$w = 600; $h = 600;
-		    } else {
-			$w = 1200; $h = 800; 
-		    }
-    			$size_format = $marxTime->swissConverter($size);
 
 			$file_name = $_FILE['name'];
 			$file_size = $_FILE['size'];
@@ -1287,21 +1364,21 @@ class framework {
 
 		    // Check if file is allowed for upload type
 			if(in_array($file_ext,$allowed)=== false){
-			    $errors[] = 'File type not allowed, use a JPEG, JPG or PNG file.';
+			    $errors[] .= 'File type not allowed, use a JPEG, JPG or PNG file.';
 			}
 			if($file_size > $size){
-	    		$errors[].= 'Upload should not be more than '.$size_format;
+	    		$errors[] .= 'Upload should not be more than '.$size_format;
 			}
 
 			/*
 			// Check for errors in the file upload before uploading, 
 			// To avoid multiple waste of storage
 			 */
-			if ($eck) {
+			if (isset($this->eck)) {
 				if (empty($errors)==true) { 
 					return 0;
 				} else {
-					return $errors[0];
+					$this->image_error = $errors[0];
 				}
 			} else {
 			    $cd = $SETT['working_dir'];
@@ -1327,15 +1404,118 @@ class framework {
 						return array($new_image, 1);
 					} else  {
 						// chmod($dir.'/default.jpg', 0755);
-						return 'You do not have enough permissions to write this file';
+						$this->image_error = 'You do not have enough permissions to write this file';
 					}
 				} else {
-					return $errors[0];
+					$this->image_error = $errors[0];
 				}
 			}	
 		} else {
-			return 'Please select a file to upload';
+			$this->image_error = 'Please select a file to upload';
 		}	
+		$collage->image_error = $framework->image_error = $this->image_error;
+	}
+
+	public function multiImageUploader($files = null, $type = null, $direction = 'H', $skip_upload = FALSE) {
+		global $PTMPL, $LANG, $SETT, $user, $framework, $collage, $marxTime; 
+		
+		// Generate the image properties  
+
+		$this->image_error = '';
+		$errors = array(); 
+
+		$allowed = array('jpeg','jpg','png');
+		$size = 2524000; 
+	    if ($type == 1) {
+	    	if ($direction == 'H') {
+	    		$w = 620; $h = 310;
+	    	} else {
+	    		$h = 620; $w = 310;
+	    	}
+	    } if ($type == 2) {
+	    	$w = 600; $h = 600;
+	    } else {
+	    	if  ($direction == 'H') {
+	    		$w = 1200; $h = 800; 
+	    	} else {
+	    		$h = 1200; $w = 800;
+	    	}
+	    }
+		$size_format = $marxTime->swissConverter($size); 
+
+		$i = -1; $new_image_names = [];
+		foreach ($files['name'] as $file) {//echo $file;
+			$i++;
+ 
+			if (!empty($files['name'][$i])) { 
+				$_FILE = $files;
+
+				$file_name = $_FILE['name'][$i];
+				$file_size = $_FILE['size'][$i];
+				$file_tmp = $_FILE['tmp_name'][$i];
+				$file_type= $_FILE['type'][$i];  
+				$file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+				  
+			    $new_image = mt_rand().'_'.mt_rand().'_n.'.$file_ext; 
+			    $new_image_names[] = $new_image;
+
+			    // Check if file is allowed for upload type
+				if(in_array($file_ext,$allowed)=== false){
+				    $errors[] .= '<b>File ' . $i . ' Error:</b> File type not allowed, use a JPEG, JPG or PNG file.<br>';
+				}
+				if($file_size > $size){
+		    		$errors[] .= '<b>File ' . $i . ' Error:</b> Upload should not be more than '.$size_format.'<br>';
+				}
+
+				/*
+				// Check for errors in the file upload before uploading, 
+				// To avoid multiple waste of storage
+				 */
+				if (isset($this->eck)) {
+					if (empty($errors) !== true) {  
+						$this->image_error .= $errors[0];
+					}
+				} else {
+				    $cd = $SETT['working_dir'];
+				    if ($type == 1) {
+				    	$dir = $cd.'/'.$SETT['template_url'].'/img/';
+				    } else {
+				    	$dir = $cd.'/uploads/';
+				    }
+					// Crop and compress the image
+					if (empty($errors)==true) {
+						// Check for file permissions
+						if(is_writable($dir)) {
+							// Create a new ImageResize object
+			                $image = new ImageResize($file_tmp);
+				        	// Manipulate the image
+				        	if ($direction == 'V') {
+				        		$image->resizeToBestFit($w, $h);
+				        	} elseif ($type == 1 || $type == 2) {
+				        		$image->resizeToBestFit($w, $h);
+				        		$image->crop($w, $h);
+				        	} else {
+				        		$image->crop($w, $h);
+				        	}
+				        	$image->save($dir.$new_image);     
+						} else  {
+							// chmod($dir.'/default.jpg', 0755);
+							$this->image_error .= '<b>File ' . $i . ' Error:</b> You do not have enough permissions to write this file<br>';
+						}
+					} else {
+						$this->image_error .= $errors[0];
+					}
+				}	
+			} else {
+				$this->image_error .= '<b>File ' . $i . ' Error:</b> Please select a file to upload<br>';
+			}
+		}
+
+		if (count($new_image_names)>0 || !$this->image_error || (count($new_image_names)<1 && $skip_upload === TRUE)) {
+			return $new_image_names;
+		}
+
+		$collage->image_error = $framework->image_error = $this->image_error;
 	}
 
 	/**
@@ -1392,6 +1572,15 @@ class framework {
 	    return $msg; 
 	} 
 
+	public function dbProcessorErrors($error = '', $ld = '<p>', $rd = '</p>')
+	{	 
+		if (isset($this->db_processor_errors)) 
+		{
+			return $ld . $this->db_processor_errors . $rd;
+		}
+		return;
+	}
+
 	/**
 	/* Function to process all database calls
 	**/
@@ -1401,7 +1590,9 @@ class framework {
 		// Type 1 = Select 
 		// Type 2 = Just return the response
 		// Response 5 = Debug
-		// Response 1 = Return the response
+		// Response 1 = Return 1 on success or error notice on fail
+		// Response 2 = Return 0 on fail or 1 on success
+		// Response 3 = Return last insert id on success or 0 on fail
 
 		$data = null; 
 		if ($type == 2) {
@@ -1410,24 +1601,28 @@ class framework {
 			try {
 				$stmt = $DB->prepare($sql);	 	
 				$stmt->execute();
+				$last_id = $DB->lastInsertId();
 			} catch (Exception $ex) {
 			   $error = messageNotice($ex->getMessage(), 3);
 			}
 			if (isset($error)) {
+				$this->db_processor_errors = $error;
 			    $data = $error;
 			} else {
 				if ($type == 0) {
 					if ($stmt->rowCount() > 0) {  
 						if ($response == 2) {
 							$data = 1;
+						} elseif ($response == 3) {
+							$data = $last_id;
 						} else {
 							$data = $response;
 						}
 					} else {
-						if ($response == 2) {
+						if ($response == 2 || $response == 3) {
 							$data = 0;
 						} else {
-							$data = 'You did not make any changes!';
+							$data = 'No changes were made';
 						}
 					}		 
 				} elseif ($type == 1) {
@@ -1442,13 +1637,16 @@ class framework {
 			$data .= messageNotice('Debug is on, response is set to : '.$data, 2);
 			$data .= messageNotice('Query String: '.$sql);
 		}
+		$data = (isset($error) ? $error : $data);
 		return $data;
 	}
 
 	public function pagination($type = null) {
 		global $SETT, $LANG, $configuration, $collage;
 
-		$page = $SETT['url'].$_SERVER['REQUEST_URI'];
+		$url = parseURL($SETT['url'].$_SERVER['REQUEST_URI'], 1);
+		$page = $url['base'].$url['abs'];
+
 		if (isset($_GET['pagination'])) {
 			$page = str_replace('&pagination='.$_GET['pagination'], '', $page);
 		}
@@ -1668,16 +1866,54 @@ class databaseCL extends framework {
 		return $this->dbProcessor($sql, 1);
 	}
 
-	function fetchEvents($type = null) {
+	function fetchSpecialPosts($type = null, $category = 'event') {
 		$public = isset($this->public) ? ' AND `public` = \''.$this->public.'\'' : '';
 		$limit = isset($this->limit) ? sprintf(' ORDER BY `date` DESC LIMIT %s, %s', $this->start, $this->limit) : '';
 
-		$sql = sprintf("SELECT * FROM `posts` WHERE `category` = 'event'%s%s", $public, $limit);
+		$sql = sprintf("SELECT * FROM `posts` WHERE `category` = '$category'%s%s", $public, $limit);
 		return $this->dbProcessor($sql, 1);
 	}
 
 	function fetchPopular() {
 		$sql = sprintf("SELECT post, image, date, title, posts.id AS id, COUNT(post) AS views FROM views LEFT JOIN posts ON views.post = posts.id GROUP BY post ORDER BY views DESC LIMIT 10");
+		return $this->dbProcessor($sql, 1);
+	}
+
+	function fetchStore($type = null, $id = null) {
+		global $admin, $user, $user_role, $configuration;	
+
+		$public = isset($this->public) ? ' AND `public` = \''.$this->public.'\'' : '';
+		$featured = isset($this->featured) ? ' AND `featured` = \''.$this->featured.'\'' : '';
+		$promoted = isset($this->promoted) ? ' AND `promoted` = \''.$this->promoted.'\' OR `featured` = \'1\'' : ''; 
+		$archive = isset($this->archive) ? ' AND MONTH(added_date) = \''.date('m', strtotime($this->archive)).'\'' : '';
+		$limit = isset($this->limit) ? sprintf(' ORDER BY `added_date` DESC LIMIT %s, %s', $this->start, $this->limit) : '';
+
+		if ($type == 1) {
+			$sql = sprintf("SELECT * FROM store WHERE `id` = '%s' OR `safelink` = '%s'", $this->db_prepare_input($id), $this->db_prepare_input($id));
+		} elseif ($type == 2) {
+			if (isset($this->manage) && !$admin && !$user['founder'] && $user_role < 4) {
+				$restrict = ' AND `user_id` = \''.$user['uid'].'\'';
+			} else {
+				$restrict = '';
+			}
+			$sql = sprintf("SELECT * FROM store WHERE 1%s%s%s%s%s%s", $restrict, $featured, $promoted, $public, $archive, $limit);
+		} elseif ($type == 3) {
+			// Fetch Store Orders 
+			if ($id) {
+				$sql = sprintf("SELECT * FROM orders WHERE `id` = '%s'", $id);
+			} else {
+				$limit = isset($this->limit) ? sprintf(' ORDER BY `date` DESC LIMIT %s, %s', $this->start, $this->limit) : '';
+				$sql = sprintf("SELECT * FROM orders WHERE 1%s", $limit);
+			}
+		} elseif ($type == 4) {
+			// Fetch Store Order Items 
+			$limit = isset($this->limit) ? sprintf(' ORDER BY `id` DESC LIMIT %s, %s', $this->start, $this->limit) : '';
+			$sql = sprintf("SELECT (SELECT count(id) FROM order_item WHERE `order_id` = '%s') as count, item_id, order_id FROM order_item WHERE `order_id` = '%s'%s", $id, $id, $limit);
+		} else { 
+			$rev = isset($this->reverse) ? 'ASC' : 'DESC';
+
+			$sql = sprintf("SELECT * FROM store WHERE 1%s ORDER BY `date` %s", $public, $rev);
+		}
 		return $this->dbProcessor($sql, 1);
 	}
 
@@ -1698,7 +1934,7 @@ class databaseCL extends framework {
 		return $this->dbProcessor($sql, 1);
 	}
 
-	function fetchStatistics($type = null, $id = null) {
+	function fetchStatistics($type = null, $id = null, $set = '1') {
 		// $type == 1: Return stats for a particular post
 		// $type == 0 or null: Return stats for a list of posts  
 		if ($type == 1) {
@@ -1712,14 +1948,37 @@ class databaseCL extends framework {
 		return $this->dbProcessor($sql, 1);
 	}
 
-	function countViews($post) {
+	/**
+	 * [extendedStatistics get statistics from content, with more flexibility as you can easily define what to fetch]
+	 * @param  [integer] $type [stats depth to return. 1: Return stats for a particular item. 0 or null: Return stats for a list of items]
+	 * @param  [integer] $id   [if you are returning stats for a particular item, this will the the id of the item (set $type as 1)]
+	 * @param  [integer] $set  [defines the content for which to return stats, by this setup 1 == store items]
+	 * @return [array]         [an array containing the statistics data]
+	 */
+	function extendedStatistics($type = null, $id = null, $set = 1) { 
+		if ($type == 1) {
+			$sql = sprintf("SELECT (SELECT count(`item`) FROM `extend_views` WHERE `item` = '%s' AND `type` = '$set') as total, (SELECT count(`item`) FROM `extend_views` WHERE `item` = '%s' AND `type` = '$set' AND CURDATE() = date(`time`)) as today, (SELECT count(`item`) FROM `extend_views` WHERE `item` = '%s' AND `type` = '$set' AND CURDATE()-1 = date(`time`)) as yesterday, (SELECT count(`item`) FROM `extend_views` WHERE `item` = '%s' AND `type` = '$set' AND `time` BETWEEN DATE_SUB( CURDATE( ) ,INTERVAL 14 DAY ) AND DATE_SUB( CURDATE( ) ,INTERVAL 7 DAY )) as last_week", $this->db_prepare_input($id), $this->db_prepare_input($id), $this->db_prepare_input($id), $this->db_prepare_input($id));
+		} else {
+			if(!$this->item_list) {
+				return;
+			}
+			$sql = sprintf("SELECT (SELECT count(`item`) FROM `extend_views` WHERE `item` IN (%s) AND `type` = '$set') as total, (SELECT count(`item`) FROM `extend_views` WHERE `item` IN (%s) AND `type` = '$set' AND CURDATE() = date(`time`)) as today, (SELECT count(`item`) FROM `extend_views` WHERE `item` IN (%s) AND `type` = '$set' AND CURDATE()-1 = date(`time`)) as yesterday, (SELECT count(`item`) FROM `extend_views` WHERE `item` IN (%s) AND `type` = '$set' AND `time` BETWEEN DATE_SUB( CURDATE( ) ,INTERVAL 14 DAY ) AND DATE_SUB( CURDATE( ) ,INTERVAL 7 DAY )) as last_week, (SELECT count(`item`) FROM `extend_views` WHERE `item` IN (%s) AND `type` = '$set' AND `time` >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) as last_month", $this->item_list, $this->item_list, $this->item_list, $this->item_list, $this->item_list);
+		}
+		return $this->dbProcessor($sql, 1);
+	}
+
+	function countViews($post, $type = 0) {
 		global $PTMPL, $LANG, $SETT, $user, $framework, $collage, $marxTime; 
 		if ($user) {
 			$by = $user['uid'];
 		} else {
 			$by = 0;
 		}
-		$sql = sprintf("INSERT INTO views (`post`, `by`) VALUES ('%s', '%s')", $post, $by);
+		if ($type) {
+			$sql = sprintf("INSERT INTO extend_views (`item`, `by`, `type`) VALUES ('%s', '%s', '%s')", $post, $by, $type);
+		} else {
+			$sql = sprintf("INSERT INTO views (`post`, `by`) VALUES ('%s', '%s')", $post, $by);
+		}
 		return $this->dbProcessor($sql, 0, 1);
 	}
 
@@ -1732,7 +1991,7 @@ class databaseCL extends framework {
 		if ($id) {
 			return $this->dbProcessor(sprintf("SELECT id, title, value, info FROM categories WHERE `value` = '%s'", $id), 1); 
 		} else {
-			$event = $type == 1 ? ' WHERE (`value` != \'event\' AND `value` != \'exhibition\')' : '';
+			$event = $type == 1 ? ' WHERE (`value` != \'event\' AND `value` != \'exhibition\' AND `value` != \'store\')' : '';
 			return $this->dbProcessor(sprintf("SELECT id, title, value, info FROM categories%s", $event), 1); 
 		}
 	}
@@ -1751,6 +2010,7 @@ class databaseCL extends framework {
 		$footer = $this->footer;
 		$header = $this->header;
 		$image = $framework->imageUploader($this->image);
+		$image_errors = $collage->imageErrorHandler();
 
 		$safelink = $framework->checkSafeLinks($title);
 
@@ -1791,6 +2051,7 @@ class databaseCL extends framework {
 		} else {
 			$msg = $post;
 		}	
+		$msg .= $image_errors;
 		return $msg;	
 	}
 
@@ -1804,10 +2065,24 @@ class databaseCL extends framework {
 		global $PTMPL, $LANG, $SETT, $user, $framework, $collage; 
 		
 		if ($type == 1) {
+			// Delete Static Pages
 			$content = $this->fetchStatic($id)[0]; 
 			deleteFiles($content['jarallax'], 3);
 			$delete = $this->dbProcessor("DELETE FROM static_pages WHERE `id` = '$id'", 0, 2);
+		} elseif ($type == 2) {
+			// Delete Store Items
+			$content = $this->fetchStore(1, $id)[0]; 
+			deleteFiles($content['image1'], 3);
+			deleteFiles($content['image2'], 3);
+			deleteFiles($content['image3'], 3);
+			$this->dbProcessor("DELETE FROM extend_views WHERE `item` = '$id'", 0, 2);
+			$delete = $this->dbProcessor("DELETE FROM store WHERE `id` = '$id'", 0, 2);
+		} elseif ($type == 3) { 
+			// Delete Orders
+			$this->dbProcessor("DELETE FROM order_item WHERE `order_id` = '$id'", 0, 2);
+			$delete = $this->dbProcessor("DELETE FROM orders WHERE `id` = '$id'", 0, 2);
 		} else {
+			// Delete Blog Posts
 			$content = $this->fetchPost(1, $id)[0]; 
 			deleteFiles($content['image'], 3);
 			$this->dbProcessor("DELETE FROM views WHERE `post` = '$id'", 0, 2);
@@ -1840,11 +2115,12 @@ class databaseCL extends framework {
 		$featured = $this->featured;
 		$promote = $this->promote;
 		$image = $framework->imageUploader($this->image);
+		$image_errors = $collage->imageErrorHandler();
 		
 		$post_id = $framework->token_generator(null, 6);
 		$safelink = $framework->checkSafeLinks($title);
 
-		if (is_array($image)) { 
+		if ($image) { 
 			if ($post_ids) {
 				deleteFiles($get_post['image'], 3);
 			}
@@ -1881,7 +2157,7 @@ class databaseCL extends framework {
 					$post = $this->dbProcessor($sql, 0, 1);
 					$post = $post == 1 ? $post : messageNotice($post, 2);
 				} else {
-					$post = messageNotice($image, 3);
+					$post = $image_errors;
 				}
 			}
 		}
@@ -1891,6 +2167,216 @@ class databaseCL extends framework {
 			$msg = $post;
 		}	
 		return $msg;	
+	}
+
+	function addToStore() {
+		global $PTMPL, $LANG, $SETT, $user, $admin, $framework, $collage, $marxTime;  
+
+		$item_ids 	= isset($_GET['item_id']) ? $framework->db_prepare_input($_GET['item_id']) : null;
+		$store_item = $collage->fetchStore(1, $item_ids)[0];
+
+		if ($user) {
+			$uids = $user['uid'];
+		} else {
+			$uids = $admin['admin_user'];
+		}
+
+		$user_id 		= $framework->db_prepare_input($uids);
+		$title 			= $framework->db_prepare_input($this->title); 
+		$artist 		= $framework->db_prepare_input($this->artist); 
+		$price 			= $framework->db_prepare_input($this->price);
+		$discount 		= $framework->db_prepare_input($this->discount); 
+		$shipping 		= $framework->db_prepare_input($this->shipping); 
+		$available_qty 	= $framework->db_prepare_input($this->available_qty); 
+		$tags 			= $framework->db_prepare_input($this->tags);  
+		$description 	= $this->description;
+		$public 		= $framework->db_prepare_input($this->public);  
+		$featured 		= $framework->db_prepare_input($this->featured); 
+		$promoted 		= $framework->db_prepare_input($this->promoted);
+		$added_date		= date('Y-m-d H:i:s', strtotime('NOW'));
+		
+		$image 			= $framework->multiImageUploader($this->image, null, 'H', TRUE);
+
+		$image_errors 	= $collage->imageErrorHandler();
+
+		$safelink = $framework->checkSafeLinks($title);
+
+		$set_image = $set_image_val = null;
+
+		if ($image) 
+		{ 
+			$img_sql = $img_val_sql = $img_upd_sql = [];
+			$i = 0;
+			foreach ($image AS $_images) {
+				$i++;
+
+				if ($item_ids) 
+				{
+					deleteFiles($store_item['image'.$i], 3); 
+				}
+
+				$img_sql[] = ', `image'.$i.'`';
+				$img_val_sql[] = ', \''.$_images.'\''; 
+				$img_upd_sql[] .= ', `image'.$i.'` = \''.$_images.'\''; 
+			}
+			if ($item_ids) {
+				$set_image = implode('', $img_upd_sql);
+			} else {
+				$set_image = implode('', $img_sql);
+				$set_image_val = implode('', $img_val_sql);
+			}
+		} 
+		else 
+		{
+			if (isset($store_item['image1']) || isset($store_item['image2']) || isset($store_item['image3'])) {
+				if (isset($store_item['image1'])) {
+					$set_image .= ', `image1` = \''.$store_item['image1'].'\''; 
+				}
+				if (isset($store_item['image2'])) {
+					$set_image .= ', `image2` = \''.$store_item['image2'].'\''; 
+				}
+				if (isset($store_item['image3'])) {
+					$set_image .= ', `image3` = \''.$store_item['image3'].'\''; 
+				}
+			}
+		}
+
+		if ($featured == 1) {
+			$collage->dbProcessor("UPDATE store SET `featured` = '0' WHERE `featured` = '1' AND `id` != '$item_ids'", 0, 1);
+		}
+		if (!$image_errors) { 
+			if ($item_ids) {
+				$sql = sprintf("UPDATE store SET `user_id` = '%s', `title` = '%s', `artist` = '%s', `price` = '%s', 
+					`discount` = '%s', `shipping` = '%s', `available_qty` = '%s', `tags` = '%s', `description` = '%s', 
+					`public` = '%s', `featured` = '%s', `promoted` = '%s'%s WHERE `id` = '%s'", 
+					$user_id, $title, $artist, $price, $discount, $shipping, $available_qty, $tags, $description, $public, $featured, 
+					$promoted, $set_image, $item_ids);
+				$add = $this->dbProcessor($sql, 0, 1);
+				$store = $add == 1 ? $add : messageNotice($add, 2);
+			} else {
+				$sql = sprintf("INSERT INTO store (`user_id`, `title`, `artist`, `price`, `discount`, `shipping`, `available_qty`, 
+					`tags`, `description`, `public`, `featured`, `promoted`, `added_date`, `safelink`%s) VALUES 
+					('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s'%s)", 
+					$set_image, $user_id, $title, $artist, $price, $discount, $shipping, $available_qty, $tags, $description, $public, 
+					$featured, $promoted, $added_date, $safelink, $set_image_val);
+				$add = $this->dbProcessor($sql, 0, 1);
+				if ($add == 1) {
+					$store = $add;
+				} else {
+					$store = messageNotice($add, 2);
+				} 
+			} 
+		} else {
+			$store = $image_errors;
+		}
+
+		if ($store == 1) {
+			$msg = messageNotice('Your store item has been '.($item_ids ? 'updated' : 'created'), 1);
+		} else {
+			$msg = $store;
+		}	
+		return $msg;	
+	}
+
+	function update_order($id = null)
+	{
+		global $cd_input, $cd_session;
+		
+		$status = $cd_input->post('status');
+		if ($id) {
+			$sql = "UPDATE orders SET `status`	 = '$status' WHERE `id` = '$id'";
+	        
+	        $update = $this->dbProcessor($sql, 0, 1);
+	        if ($update && !$this->dbProcessorErrors()) 
+	        {
+	        	$msg = 'Order status updated successfully.'; 
+				$cd_input->write_flashdata('msg', '<script type="text/javascript"> sweetalert = \'success\';  sweet_title = \''.$msg.'\'</script>');
+			}
+	        elseif ($this->dbProcessorErrors()) 
+	        {
+	        	return $this->dbProcessorErrors();
+	        }
+		}
+	}
+
+	function placeOrder($items = array()) {
+		global $cd_input, $cd_session;
+
+        $fname    = $cd_input->post('fname');
+        $lname    = $cd_input->post('lname');
+        $username = $this->safeLinks($fname.' '.$lname, 1);
+        $email    = $cd_input->post('email');
+        $phone    = $cd_input->post('phone');
+
+        $reference = $cd_session->userdata('reference');
+
+        $country  = $cd_input->post('country');
+        $state    = $cd_input->post('state');
+        $city     = $cd_input->post('city');
+        $address  = $cd_input->post('address');
+
+        $date = date('Y-m-d H:i:s', strtotime('NOW'));
+
+        $address  = '
+        <b>Phone Number:<b> '.$phone.'<br> 
+        <b>City:<b> '.$city.'<br> 
+        <b>State:<b> '.$state.'<br>
+        <b>Country:<b> '.$country.'<br>
+        <b>Address:<b> '.$address.'<br>';
+
+        $cart_total = 0;
+        foreach ($items as $cart_item) 
+        {
+            $item = $this->fetchStore(1, $cart_item['item_id'])[0];
+            if ($item['discount']) {
+                $discount_per = $item['price'] * $item['discount'] / 100; 
+                $price_tag = $item['price'] - $discount_per;
+                $amount = ($price_tag+$item['shipping']); 
+            } else { 
+                $amount = ($item['price']+$item['shipping']); 
+            }
+            $cart_total += $amount;
+        } 
+
+        if ($reference && !$this->dbProcessor("SELECT reference FROM orders WHERE `reference` = '$reference'", 1)) {
+        	
+	        $sql = sprintf(
+	        	"INSERT INTO orders (`fname`, `lname`, `username`, `email`, `address`, `reference`, `total`, `date`, `status`)
+	        	VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+	        	$fname, $lname, $username, $email, $address, $reference, $cart_total, $date, 0
+	        );
+
+	        $insert = $this->dbProcessor($sql, 0, 3);
+	        if ($insert && !$this->dbProcessorErrors()) {
+		        foreach ($items as $cart_item) 
+		        {
+		        	$this->dbProcessor("INSERT INTO order_item (`order_id`, `item_id`) VALUES ('$insert', '{$cart_item['item_id']}')", 0, 3);
+		        }
+	        }
+	        if ($this->dbProcessorErrors()) {
+	        	return $this->dbProcessorErrors();
+	        } else {
+        		$msg = 'Your order has been placed successfully, we would contact you via email for payment information, here is your order reference: <b>'.$reference.'</b>, please note it down.';
+
+				$cd_input->write_flashdata('msg', '<script type="text/javascript"> sweetalert = \'success\';  sweet_title = \''.$msg.'\'</script>');
+
+        		return $store = bigNotice($msg, 1);
+
+	            // remove the payment reference from session
+	            if ($cd_session->has_userdata('reference')) 
+	            { 
+	                $cd_session->unset_userdata('reference');
+                	$this->storeCart('empty'); 
+	            }
+	        }
+        } else {
+        	$msg = 'Thank you, this order has already been placed.';
+
+            $this->storeCart('empty'); 
+			$cd_input->write_flashdata('msg', '<script type="text/javascript"> sweetalert = \'info\';  sweet_title = \''.$msg.'\'</script>');
+
+        	return $store = bigNotice($msg);
+        }
 	}
 
 	function postCategoryOptions($get_post = null) {
@@ -1917,13 +2403,10 @@ class databaseCL extends framework {
 		$table_row = ''; $i=0;
 		if ($list_posts) {
 			foreach ($list_posts as $post) {
-				$i++;
-				$page = $SETT['url'].$_SERVER['REQUEST_URI'];
-				if (isset($_GET['delete'])) {
-					$delete_link = cleanUrls(str_replace('&delete='.$_GET['delete'], '', $page).'&delete='.$post['id']);
-				} else {
-					$delete_link = cleanUrls($page.'&delete='.$post['id']);
-				} 
+				$i++; 
+
+				$delete_link = urlQueryFix('delete', $post['id']);
+
 				$edit_link = cleanUrls($SETT['url'].'/index.php?page='.$_GET['page'].'&view=create_post&post_id='.$post['id']);
 				$view_link = cleanUrls($SETT['url'].'/index.php?page=post&post_id='.$post['id']);
 				$set_status = $post['public'] == 1 ? 'Public' : 'Private';
@@ -1950,6 +2433,90 @@ class databaseCL extends framework {
 			<tr><td colspan="8">'.notAvailable('You have not created any posts', '', 1).'</td></tr>';
 		}		
 			return $table_row;
+	}
+
+	function manageStoreItems() {
+		global $SETT, $framework, $configuration;
+
+		$this->manage = true;
+	    $framework->all_rows = $this->fetchStore(2);
+	    $PTMPL['pagination'] = $framework->pagination();
+		$list_items = $this->fetchStore(2); 
+		
+		$table_row = ''; $i=0;
+		if ($list_items) {
+			foreach ($list_items as $item) {
+				$i++;
+
+				$delete_link = urlQueryFix('delete', $item['id']);
+
+				$edit_link = cleanUrls($SETT['url'].'/index.php?page='.$_GET['page'].'&view=add_store_item&item_id='.$item['id']);
+				$view_link = cleanUrls($SETT['url'].'/index.php?page=store&item_id='.$item['id']);
+				$set_status = $item['public'] == 1 ? 'Public' : 'Private';
+				$set_featured = $item['featured'] == 1 ? 'Yes' : 'Not Featured';
+				$set_promo = $item['featured'] == 1 ? 'Yes' : 'No';
+				$views = $this->extendedStatistics(1, $item['id'], 1)[0];
+				$table_row .= '
+				<tr>
+					<th scope="row">'.$i.'</th>
+					<td><a href="'.$view_link.'" title="View Content">'.$item['title'].'</a></td>
+					<td>'.currency(3, $configuration['currency']).number_format($item['price'], 2).'</td>
+					<td>'.$item['discount'].'</td>
+					<td>'.$item['available_qty'].'</td>
+					<td>'.$set_status.'</td>
+					<td>'.$set_featured.'</td>
+					<td>'.$set_promo.'</td>
+					<td>'.$views['total'].'</td>
+					<td class="d-flex justify-content-around">
+						<a href="'.$edit_link.'" title="Edit Content"><i class="fa fa-edit text-info hoverable"></i></a>
+						<a href="'.$delete_link.'" title="Delete Content"><i class="fa fa-trash text-danger hoverable"></i></a> 
+					</td>
+				</tr>';
+			}
+		} else {
+			$table_row .= '
+			<tr><td colspan="8">'.notAvailable('You have not created any posts', '', 1).'</td></tr>';
+		}		
+		return $table_row;
+	}
+
+	function manageStoreOrders() {
+		global $SETT, $framework, $configuration;
+
+		$this->manage = true;
+	    $framework->all_rows = $this->fetchStore(3);
+	    $PTMPL['pagination'] = $framework->pagination();
+		$list_items = $this->fetchStore(3); 
+		
+		$table_row = ''; $i=0;
+		if ($list_items) {
+			foreach ($list_items as $item) {
+				$i++;
+
+				$delete_link = urlQueryFix('delete', $item['id']);
+
+				$view_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=store_orders&item_id='.$item['id']); 
+				$status = $item['status'] == 2 ? 'Shipped' : ($item['status'] == 1 ? 'Confirmed' : 'Pending');
+				$table_row .= '
+				<tr>
+					<th scope="row">'.$i.'</th>
+					<td><a href="'.$view_link.'" title="Order Details">'.$item['fname'].' '.$item['lname'].'</a></td>
+					<td>'.currency(3, $configuration['currency']).number_format($item['total'], 2).'</td>
+					<td>'.$item['id'].'</td>
+					<td>'.$item['reference'].'</td>
+					<td>'.$this->fetchStore(4, $item['id'])[0]['count'].'</td>   
+					<td>'.$status.'</td>   
+					<td class="d-flex justify-content-around">
+						<a href="'.$view_link.'" title="Order Details" class="btn btn-info btn-sm">Details</a>
+						<a href="'.$delete_link.'" title="Delete Content"><i class="fa fa-trash text-danger hoverable"></i></a> 
+					</td>
+				</tr>';
+			}
+		} else {
+			$table_row .= '
+			<tr><td colspan="8">'.notAvailable('You have not created any posts', '', 1).'</td></tr>';
+		}		
+		return $table_row;
 	}
 }
 

@@ -1,0 +1,64 @@
+            <!-- Section cart -->
+              <section class="section mb-5 pb-5 cart-v1">
+                <div class="card card-ecommerce">
+                  <div class="card-body">
+                    <!-- Shopping Cart table -->
+                    {$notification}
+                    <div class="table-responsive">
+                      <table class="table product-table table-cart-v-2">
+                        <!-- Table head -->
+                        <thead class="mdb-color lighten-5">
+                          <tr>
+                            <th></th>
+                            <th class="font-weight-bold">
+                              <strong>Product</strong>
+                            </th>
+                            <th class="font-weight-bold">
+                              <strong>Price</strong>
+                            </th>
+                            <th></th>
+                            <th class="font-weight-bold">
+                              <strong>Shipping</strong>
+                            </th> 
+                            <th class="font-weight-bold">
+                              <strong>Amount</strong>
+                            </th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <!-- Table head -->
+                        <!-- Table body -->
+                        <tbody>
+                          <!-- First row -->
+                          {$shopping_cart}
+                          <!-- First row --> 
+                          <!-- Fourth row -->
+                          <tr>
+                            <td colspan="3"></td>
+                            <td>
+                              <h4 class="mt-2">
+                              <strong>Total</strong>
+                              </h4>
+                            </td>
+                            <td class="text-right">
+                              <h4 class="mt-2">
+                              <strong>{$shopping_cart_total}</strong>
+                              </h4>
+                            </td>
+                            <td colspan="3" class="text-right">
+                              <a href="{$checkout_url}" class="btn btn-primary btn-rounded{$disabled}">Complete order <i class="fa fa-angle-right right"></i></a>
+                            </td>
+                          </tr>
+                          <!-- Fourth row -->
+                        </tbody>
+                        <!-- Table body -->
+                      </table>
+
+                      <a href="{$empty_url}" class="my-3 btn btn-sm btn-danger btn-rounded{$disabled}">Empty Cart <i class="fa fa-times"></i></a>
+
+                    </div>
+                    <!-- Shopping Cart table -->
+                  </div>
+                </div>
+              </section>
+              <!-- Section cart -->

@@ -1,0 +1,134 @@
+        
+            {$create_item_btn}   
+            <div class="card">  
+              <div class="card-header info-color white-text text-center">
+                <div class="h3">Order Details</div>
+              </div>
+              <div class="card-body">
+                {$notification}
+                <div class="m-3">
+                  
+                <div class="m-2 px-5 pb-4 pt-2 border">
+                  <form action="" method="post">
+                    <div class="text-info h5 rounded">Change Status</div>
+                    
+                    <select class="form-control" name="status">
+                      <option value="0" selected="">Payment Pending</option>
+                      <option value="1">Payment Confirmed</option>
+                      <option value="2">Order Shipped</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-block btn-info mt-2 font-weight-bold">Update Order</button>
+
+                  </form>
+                </div>
+
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <h4>
+                        <span class="text-info">Customer Name</span> <br>
+                        {$customer}
+                      </h4>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <h4>
+                        <span class="text-info">Customer Email</span> <br>
+                        {$email}
+                      </h4>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <h4>
+                        <span class="text-info">Customer Contact Info</span> <br>
+                      </h4>
+                        {$address}
+                    </div>
+                  </div>
+
+                  <hr>
+
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <h4>
+                        <span class="text-info">Order Amount</span> <br>
+                        {$order_total}
+                      </h4>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <h4>
+                        <span class="text-info">Order ID</span> <br>
+                        {$order_id}
+                      </h4>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <h4>
+                        <span class="text-info">Order Reference</span> <br>
+                        {$order_reference}
+                      </h4>
+                    </div>
+                  </div>
+
+                  <hr>
+                  
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <h4>
+                        <span class="text-info">Order Date</span> <br>
+                        {$order_date}
+                      </h4>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <h4>
+                        <span class="text-info">Order Status</span> <br>
+                        {$order_status}
+                      </h4>
+                    </div>
+                  </div>
+
+                </div>
+              </div> 
+            </div>  
+
+            <p></p>
+
+            <div class="card">  
+              <div class="card-header info-color white-text text-center">
+                <div class="h3">Order Items</div>
+              </div>
+              <div class="card-body">
+
+                <div class="table-responsive">
+                  <table class="table product-table table-cart-v-2">
+                    <!-- Table head -->
+                    <thead class="mdb-color lighten-5">
+                      <tr>
+                        <th></th>
+                        <th class="font-weight-bold">
+                          <strong>Product</strong>
+                        </th>
+                        <th class="font-weight-bold">
+                          <strong>Price</strong>
+                        </th>
+                        <th></th>
+                        <th class="font-weight-bold">
+                          <strong>Shipping</strong>
+                        </th> 
+                        <th class="font-weight-bold">
+                          <strong>Amount</strong>
+                        </th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <!-- Table head -->
+                    <!-- Table body -->
+                    <tbody>
+                      <!-- First row -->
+                      {$shopping_cart}
+                      <!-- First row -->   
+                    </tbody>
+                    <!-- Table body -->
+                  </table> 
+
+                </div>
+
+              </div>
+            </div>

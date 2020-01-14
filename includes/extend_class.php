@@ -201,6 +201,24 @@ function getImage($image, $type = null) {
     return $image;
 }
 
+function showTags($str = '', $extra_class = '') {
+    global $SETT;
+
+    $string = explode(',',$str);
+    $tags = ''; 
+    if ($str) {
+        foreach ($string as $list) {
+            $link = cleanUrls($SETT['url'] . '/index.php?page=search&q='.urlencode('#'.$list).'&rel=search'); 
+            $tags .= '
+              <a href="'.$link.'"><span class="badge bg-success '.$extra_class.'">'.$list.'</span></a>';
+        }
+    } else {
+        $tags .= '
+              <a href="#"><span class="badge badge-success '.$extra_class.'">Best Buy</span></a>';
+    }
+    return $tags;
+}
+
 function getVideo($source) {
     global $SETT, $framework;
     $link = $framework->determineLink($source);
@@ -359,17 +377,43 @@ function userAction() {
     return $dropdown;  
 }
 
+function urlQueryFix($index = '', $item = null)
+{
+    global $SETT, $configuration, $cd_input;
+
+    $page = $SETT['url'].$_SERVER['REQUEST_URI']; 
+
+    $query = $cd_input->get($index);
+    
+    $delete = ($query ? str_replace(array('&'.$index.'='.$query, '/'.$index.'/'.$query), array('', ''), $page) : $page);
+
+    if ($item) {
+        $item = ($configuration['cleanurl'] ? '/'.$index.'/'.$item : '&'.$index.'='.$item); 
+    }
+
+    $url = parseURL($delete.$item, 1);
+    return cleanUrls($url['base'].$url['abs']);
+}
+
 /**
  * This function will convert your urls with query strings into SEO friendly urls
  **/
-function cleanUrls($url) {
+function cleanUrls($url) 
+{    
+    return urlCleanUp($url);
+}
+
+function urlCleanUp($url) 
+{
     global $configuration; //$configuration['cleanurl'] = 1;
+    
     if ($configuration['cleanurl']) {
         $pager['homepage'] = 'index.php?page=homepage';
         $pager['introduction'] = 'index.php?page=introduction';
         $pager['static'] = 'index.php?page=static';
         $pager['post'] = 'index.php?page=post';
         $pager['events'] = 'index.php?page=events';
+        $pager['store'] = 'index.php?page=store';
         $pager['listing'] = 'index.php?page=listing';
  
         $pager['moderate'] = 'index.php?page=moderate';
@@ -387,12 +431,14 @@ function cleanUrls($url) {
             $url = str_replace(array($pager['post'], '&post_id=', '&id'), array('post', '/', '/'), $url);
         } elseif (strpos($url, $pager['static'])) {
             $url = str_replace(array($pager['static'], '&view=', '&id'), array('static', '/', '/'), $url);
-        }  elseif (strpos($url, $pager['events'])) {
+        } elseif (strpos($url, $pager['events'])) {
             $url = str_replace(array($pager['events'], '&view=', '&id'), array('events', '/', '/'), $url);
+        } elseif (strpos($url, $pager['store'])) {
+            $url = str_replace(array($pager['store'], '&view=', '&add=', '&remove=', '&empty=', '&item_id='), array('store', '/', '/add/', '/remove/', '/empty/', '/item/'), $url);
         } elseif (strpos($url, $pager['listing'])) {
             $url = str_replace(array($pager['listing'], '&sorting=', '&type='), array('listing', '/sort/', '/'), $url);
         } elseif (strpos($url, $pager['moderate'])) {
-            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&delete=', '&pagination=', '&login='), array('moderate', '/', '/', '/delete/', '/page/', '/'), $url);
+            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&item_id=', '&delete=', '&pagination=', '&login='), array('moderate', '/', '/', '/item/', '/delete/', '/page/', '/'), $url);
         } elseif (strpos($url, $pager['profile'])) {
             $url = str_replace(array($pager['profile'], '&update=', '&view=', '&set=', '&delete=', '&user_id=', '&post_id='), array('profile', '/update/', '/view/', '/set/', '/delete/', '/', '/'), $url);
         }
@@ -582,7 +628,7 @@ function notAvailable($string, $pad='', $type = null) {
         </div>';
     } elseif ($type == 2) {
         $return = 
-        '<div class="row mb-4"> 
+        '<div class="mb-4"> 
             <div class="my-5"> 
                 <div class="card"> 
                     <div class="card-body p-5"> 
@@ -632,9 +678,9 @@ function restrictedContent($content, $tab = null) {
     $section = $theme->make();
     return $section;
 }
-
+ 
 function globalTemplate($type = null, $jar = null) {
-    global $LANG, $SETT, $PTMPL, $contact_, $configuration, $framework, $collage, $user, $admin, $user_role;
+    global $LANG, $SETT, $PTMPL, $contact_, $configuration, $framework, $collage, $user, $admin, $user_role, $cd_session;
 
     $PTMPL['home_url'] = cleanUrls($SETT['url'] . '/index.php?page=homepage');
     $PTMPL['introduction_url'] = cleanUrls($SETT['url'] . '/index.php?page=introduction');
@@ -653,7 +699,7 @@ function globalTemplate($type = null, $jar = null) {
     }
  
     // Set footer navigation links
-    $nav_list = $foot_list = $foot_list_var = '';
+    $nav_list = $foot_list = $foot_list_var = $content_menu_link = '';
     $collage->limit = 10;
     $collage->start = 0;
     $collage->parent = 'static'; 
@@ -678,8 +724,25 @@ function globalTemplate($type = null, $jar = null) {
                 }
             }
         }
+        
+        $store_page_url = cleanUrls($SETT['url'] . '/index.php?page=store');
+        $content_menu_link .= $configuration['enable_store'] ? '
+        <li class="nav-item ml-3 mb-0">
+            <a href="'.$store_page_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">STORE</a>
+        </li>' : '';
 
-        $PTMPL['content_menu_link'] = isset($hs) ? '
+        $cart_counter = $cd_session->userdata('cart') && !empty($cd_session->userdata('cart')) ? count($cd_session->userdata('cart')) : 0;
+        $cart_url = cleanUrls($SETT['url'] . '/index.php?page=store&view=cart');
+        $content_menu_link .= $cd_session->userdata('cart') ? '
+        <li class="nav-item ml-3 mb-0">
+            <a href="'.$cart_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">
+                <span class="badge danger-color">'.$cart_counter.'</span>
+                <i class="fa fa-shopping-cart"></i>
+                CART
+            </a>
+        </li>' : '';
+
+        $content_menu_link .= isset($hs) ? '
         <li class="nav-item dropdown ml-4 mb-0">
             <a class="nav-link dropdown-toggle waves-effect waves-light font-weight-bold"
             id="contentMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> CONTENT </a>
@@ -688,6 +751,8 @@ function globalTemplate($type = null, $jar = null) {
             </div>
         </li>' : '';   
     } 
+    $PTMPL['content_menu_link'] = $content_menu_link;
+
     $PTMPL['footer_list'] = $foot_list;
     $PTMPL['footer_list_var'] = $foot_list_var;  
 
@@ -874,6 +939,127 @@ function eventsCard($image = '', $title = '', $details = '', $date = '', $link =
             //     <i class="far fa-comment-dots" aria-hidden="true"></i> 6 Comments</p>
             // </div>   
             // Place this next after the date col and change date col to correspond with comments col
+    return $card;
+}
+
+function storeCard($image = '', $details = array()) {
+    global $SETT, $PTMPL, $configuration, $user, $framework, $collage, $marxTime; 
+
+    $link = cleanUrls($SETT['url'].'/index.php?page=store&item_id='.$details['id']);
+    $date = $marxTime->dateFormat($details['added_date'], 2);
+
+    $title = $details['title'];
+    $description = $framework->rip_tags($details['description']);
+    $description = $framework->myTruncate($description, 150);
+
+    $discount = $real_price = '';
+    if ($details['discount']) {
+        $discount_per = $details['price'] * $details['discount'] / 100;
+        $real_price = '
+        <span class="grey-text"><small><s>'.currency(3, $configuration['currency']).number_format($details['price']).'</s></small></span>
+        <span class="red-text"><small><sup>-'.$details['discount'].'%</sup></small></span>';
+        $price_tag = $details['price'] - $discount_per;
+        $sale_price = '
+        <span class="red-text"><strong>'.currency(3, $configuration['currency']).number_format($price_tag, 2).'</strong></span>';
+    } else { 
+        $sale_price = '
+        <span class="red-text"><strong>'.currency(3, $configuration['currency']).number_format($details['price'], 2).'</strong></span>';
+    }
+
+    $add_url = cleanUrls($SETT['url'] . '/index.php?page=store&add=cart_item_inline&item_id='.$details['id']);
+
+    $card = '
+    <div class="col-lg-4 col-md-12 mb-4"> 
+        <div class="card card-ecommerce"> 
+            <div class="view overlay">
+                <img src="'.$image .'" class="img-fluid" alt="">
+                <a href="'.$link.'">
+                    <div class="mask rgba-white-slight"></div>
+                </a>
+            </div> 
+            <div class="card-body"> 
+                <h5 class="card-title mb-1"><strong><a href="'.$link.'" class="dark-grey-text">'.$title .'</a></strong></h5>
+                '.showTags($details['tags']).'
+                './*<ul class="rating">
+                    <li><i class="fa fa-star blue-text"></i></li>
+                    <li><i class="fa fa-star blue-text"></i></li>
+                    <li><i class="fa fa-star blue-text"></i></li>
+                    <li><i class="fa fa-star blue-text"></i></li>
+                    <li><i class="fa fa-star grey-text"></i></li>
+                </ul> */'<br>&nbsp;
+                <div class="card-footer pb-0">
+                    <div class="row mb-0">
+                        <h5 class="mb-0 pb-0 mt-1 font-weight-bold">
+                        '.$sale_price.'
+                        '.$real_price.'
+                        </h5>
+                        <span class="float-right">
+                            <a href="'.$add_url.'" class="" data-toggle="tooltip" data-placement="top" title="Add to Cart"><i
+                            class="fa fa-shopping-cart ml-3"></i></a>
+                        </span>
+                    </div>
+                </div>
+            </div> 
+        </div>
+    </div>'; 
+    return $card;
+}
+
+function storeCartCard($details, $static = null) {
+    global $SETT, $PTMPL, $configuration, $user, $framework, $collage, $marxTime; 
+
+    $link = cleanUrls($SETT['url'].'/index.php?page=store&item_id='.$details['id']);
+    $date = $marxTime->dateFormat($details['added_date'], 2);
+
+    $image = getImage($details['image1'], 1);
+
+    $title = $details['title'];
+    $description = $framework->rip_tags($details['description']);
+    $description = $framework->myTruncate($description, 150);
+
+    $discount = $real_price = '';
+    if ($details['discount']) {
+        $discount_per = $details['price'] * $details['discount'] / 100;
+        $real_price = '
+        <span class="grey-text"><small><s>'.currency(3, $configuration['currency']).number_format($details['price']).'</s></small></span>
+        <span class="red-text"><small><sup>-'.$details['discount'].'%</sup></small></span>';
+        $price_tag = $details['price'] - $discount_per;
+
+        $amount = ($price_tag+$details['shipping']);
+        $sale_price = '
+        <span class="red-text"><strong>'.currency(3, $configuration['currency']).number_format($price_tag, 2).'</strong></span>';
+    } else { 
+        $amount = ($details['price']+$details['shipping']);
+        $sale_price = '
+        <span class="red-text"><strong>'.currency(3, $configuration['currency']).number_format($details['price'], 2).'</strong></span>';
+    }
+    $item_total = currency(3, $configuration['currency']).number_format($amount, 2);
+    $shipping = $details['shipping'] ? currency(3, $configuration['currency']).number_format($details['shipping'], 2) : 'FREE';
+    
+    $remove_url = cleanUrls($SETT['url'] . '/index.php?page=store&view=cart&remove=cart_item&item_id='.$details['id']);
+    $card = '
+    <tr>
+        <th scope="row">
+            <img src="'.$image.'" alt="'.$title.' Image" class="img-fluid z-depth-0">
+        </th>
+        <td>
+            <h5 class="mt-3">
+            <strong>'.$title.'</strong>
+            </h5>
+            <p class="text-muted">'.$details['artist'].'</p>
+        </td>
+        <td>'.$sale_price.$real_price.'</td>
+        <td></td>
+        <td>'.$shipping.'</td>
+        <td class="font-weight-bold">
+            <strong>'.$item_total.'</strong>
+        </td>
+        '.(!$static ? '
+            <td>
+                <a href="'.$remove_url.'" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Remove item">X</a>
+            </td> 
+        ' : '').'
+    </tr>';
     return $card;
 }
 
@@ -1255,33 +1441,31 @@ function site_sidebar() {
 
 function moderate_sidebar() {
     global $SETT, $PTMPL, $user, $framework, $collage; 
-    $template = new themer('moderate/side_bar'); $section = '';
+    $template = new themer('moderate/side_bar'); $section = ''; 
 
-    $PTMPL['create_post_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=create_post');
-    $PTMPL['static_content_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=static');
-    $PTMPL['posts_content_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=posts');
-    $PTMPL['admin_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=admin');
-    $PTMPL['cofiguration_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=config'); 
-    $PTMPL['filemanager_link'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=filemanager'); 
-    $PTMPL['admin_url'] = cleanUrls($SETT['url'] . '/index.php?page=moderate'); 
+    $moderate_links = array(
+        array('start', 'moderate'),
+        array('create post', 'create_post'),
+        array('static content', 'static'),
+        array('posts', 'posts'),
+        array('admin details', 'admin'),
+        array('site configuration', 'config'),
+        array('filemanager', 'filemanager'),
+        array('store', 'store')
+    );
 
-    if (isset($_GET['view'])) {
-        if ($_GET['view'] == 'posts') {
-            $PTMPL['p_active'] = ' active';
-        } elseif ($_GET['view'] == 'config') {
-            $PTMPL['c_active'] = ' active';
-        } elseif ($_GET['view'] == 'admin') {
-            $PTMPL['a_active'] = ' active';
-        } elseif ($_GET['view'] == 'config') {
-            $PTMPL['c_active'] = ' active';
-        } elseif ($_GET['view'] == 'static') {
-            $PTMPL['s_active'] = ' active';
-        } elseif ($_GET['view'] == 'filemanager') {
-            $PTMPL['fm_active'] = ' active';
+    $set_links = '';
+    foreach ($moderate_links as $moderate_link) {
+        $active = isset($_GET['view']) && $_GET['view'] == $moderate_link[1] ? ' active' : !isset($_GET['view']) && $moderate_link[1] == 'moderate' ? ' active' : '';
+        if ($moderate_link[1] == 'moderate') {
+            $link = cleanUrls($SETT['url'].'/index.php?page='.$moderate_link[1]);
+        } else {
+            $link = cleanUrls($SETT['url'].'/index.php?page=moderate&view='.$moderate_link[1]);
         }
-    } else {
-        $PTMPL['ss_active'] = ' active';
+        $set_links .= '<a href="'.$link.'" class="list-group-item list-group-item-action'.$active.'">'.ucwords($moderate_link[0]).'</a>';
     }
+    $PTMPL['sidebar_links'] = $set_links;
+
     $collage->featured = 1;
     $featured_posts = $collage->fetchPost(2);
     if ($featured_posts) {

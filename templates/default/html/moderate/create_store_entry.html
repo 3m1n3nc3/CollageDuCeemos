@@ -1,0 +1,155 @@
+            <div class="card"> 
+              <h5 class="card-header info-color white-text text-center py-4">
+                <strong><p class="h4 text-center">{$page_title}</p></strong>
+              </h5>
+      
+              <div class="card-body px-lg-5">
+                {$notification}
+                <form style="color: #757575;" method="post" action="" enctype="multipart/form-data" class="needs-validation" novalidate> 
+                  
+                  <div class="mb-4 mx-0">
+                    <label for="title">Item Name</label>   
+                    <input type="text" id="title" class="form-control" placeholder="Item Name" name="title" value="{$title}" required>   
+                    <div class="mt-0 invalid-feedback">
+                      Please provide a valid name for this item.
+                    </div>
+                  </div>
+                  
+                  <div class="mb-4 mx-0">
+                    <label for="title">Artist Name</label>   
+                    <input type="text" id="artist" class="form-control" placeholder="Artist Name" name="artist" value="{$artist}" required>   
+                    <div class="mt-0 invalid-feedback">
+                      Please provide a valid artist name for this item.
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-sm-4 mb-4">
+                      <label for="price">Price ({$currency})</label>
+                      <input type="text" id="price" class="form-control" placeholder="Price" name="price" value="{$price}" required> 
+                      <div class="mt-0 invalid-feedback">
+                        Please provide a valid price for this item.
+                      </div>
+                    </div>
+
+                    <div class="col-sm-4 mb-4">
+                      <label for="discount">Discount (%)</label>
+                      <input type="text" id="discount" class="form-control" placeholder="Discount" name="discount" value="{$discount}"> 
+                    </div>
+
+                    <div class="col-sm-4 mb-4">
+                      <label for="shipping">Shipping Fees ({$currency})</label>
+                      <input type="text" id="shipping" class="form-control" placeholder="Shipping" name="shipping" value="{$shipping}"> 
+                    </div>
+                  </div>
+
+                  <div class="mb-4 mx-0">
+                    <label for="available_qty">Available Quantity</label>
+                    <input type="text" id="available_qty" class="form-control" placeholder="Available Quantity" name="available_qty" value="{$available_qty}">   
+                  </div>  
+
+                  <div class="mb-4 mx-0">
+                    <label for="tags">Tags</label>
+                    <small id="helper" class="form-text text-info mt-0">Comma Separated keyword tags</small>
+                    <input type="text" id="tags" class="form-control" placeholder="Tags" name="tags" value="{$tags}">   
+                  </div>  
+
+                  <div class="mb-4 mx-0">
+                    <label for="description">Item Description</label>
+                    <small id="helper" class="form-text text-info mt-0">{$lang->use_image_btn}</small>
+                    <textarea id="description" class="form-control" placeholder="Description" name="description" required>{$description}</textarea>
+                    <div class="mt-0 invalid-feedback">
+                      Please write some description for this item.
+                    </div>
+                  </div>
+                   
+                  <label for="flex-images" class="font-weight-bold">Featured Images</label>
+                  <div class="d-flex justify-content-around border p-2 mb-2" id="flex-images">
+                    <img src="{$store_image1}" style="max-height: 50px;" class="thumbnail">
+                    <img src="{$store_image2}" style="max-height: 50px;" class="thumbnail">
+                    <img src="{$store_image3}" style="max-height: 50px;" class="thumbnail">
+                  </div> 
+
+                  <small id="helper" class="form-text text-info mt-0">You may only add one image if so required</small>
+
+                  <label for="upload-col">Featured Image 1</label>
+                  <div class="input-group mb-4" id="upload-col">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">Choose File</span>
+                    </div>
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="fileInput1" aria-describedby="fileInput1" name="image[]">
+                      <label class="custom-file-label" for="fileInput1">File Name</label>
+                    </div>
+                  </div>
+
+                  <label for="upload-col">Featured Image 2</label>
+                  <div class="input-group mb-4" id="upload-col">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">Choose File</span>
+                    </div>
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="fileInput2" aria-describedby="fileInput2" name="image[]">
+                      <label class="custom-file-label" for="fileInput2">File Name</label>
+                    </div>
+                  </div>
+
+                  <label for="upload-col">Featured Image 3</label>
+                  <div class="input-group mb-4" id="upload-col">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">Choose File</span>
+                    </div>
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="fileInput3" aria-describedby="fileInput3" name="image[]">
+                      <label class="custom-file-label" for="fileInput3">File Name</label>
+                    </div>
+                  </div>
+                  
+                  <div class="d-flex">
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_public" name="public" value="1"{$public}>
+                      <label class="custom-control-label" for="checkbox_public">Make public</label>
+                    </div> 
+
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_feature" name="featured" value="1"{$featured}>
+                      <label class="custom-control-label" for="checkbox_feature">Featured Item</label>
+                    </div>
+
+                    <div class="custom-control custom-checkbox mb-4 pr-5">
+                      <input type="checkbox" class="custom-control-input" id="checkbox_promote" name="promoted" value="1"{$promoted}>
+                      <label class="custom-control-label" for="checkbox_promote">Promoted Item</label>
+                    </div>
+                  </div>
+ 
+                  <div class="d-flex">
+                    <a href="{$return_btn}" class="btn btn-warning my-4 btn-block"><i class="fa fa-chevron-left"></i> Return</a>
+                    <button class="btn btn-info my-4 btn-block" type="submit" name="create_item">{$up_btn}</button>
+                  </div>
+                </form>
+
+              </div> 
+            </div>  
+
+            <script>
+              var myEditor;
+              ClassicEditor
+                .create( 
+                  document.querySelector( '#post_details, #details, #description' ) , {  
+                    ckfinder: {
+                      uploadUrl: '{$upload_script}'
+                    },
+                    image: { 
+                      toolbar: [ 'imageTextAlternative', '|', 'imageStyle:alignLeft', 'imageStyle:full', 'imageStyle:alignRight' ], 
+                      styles: [ 'full', 'alignLeft', 'alignRight' ]
+                    }                    
+                  })
+                .then( editor => {
+                  console.log(Array.from( editor.ui.componentFactory.names() ));
+                  console.log( 'Editor was initialized', editor );
+                  myEditor = editor;
+                })
+                .catch( err => {
+                  console.error( err.stack );
+                });
+            </script>

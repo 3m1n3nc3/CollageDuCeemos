@@ -32,6 +32,13 @@ RewriteRule ^static/([^/]+)/?$										index.php?page=static&view=$1								[NC
 RewriteRule ^events/?$												index.php?page=events 										[NC] 
 RewriteRule ^events/([^/]+)/?$										index.php?page=events&view=$1								[NC] 
 
+RewriteRule ^store/?$												index.php?page=store										[NC] 
+RewriteRule ^store/([^/]+)/?$										index.php?page=store&view=$1								[NC] 
+RewriteRule ^store/([^/]+)/remove/([^/]+)/item/([^/]+)/?$			index.php?page=store&view=$1&remove=$2&item_id=$3			[NC] 
+RewriteRule ^store/([^/]+)/empty/([^/]+)/?$							index.php?page=store&view=$1&empty=$2						[NC] 
+RewriteRule ^store/item/([^/]+)/?$								 	index.php?page=store&item_id=$1								[NC]  
+RewriteRule ^store/add/([^/]+)/item/([^/]+)/?$						index.php?page=store&add=$1&item_id=$2						[NC] 
+
 RewriteRule ^listing/?$												index.php?page=listing										[NC] 
 RewriteRule ^listing/sort/([^/]+)/?$								index.php?page=listing&sorting=$1							[NC] 
 RewriteRule ^listing/sort/([^/]+)/([^/]+)?$							index.php?page=listing&sorting=$1&type=$2					[NC] 
@@ -40,6 +47,8 @@ RewriteRule ^login/([^/]+)/?$										index.php?page=moderate&view=access&login
 
 RewriteRule ^moderate/?$											index.php?page=moderate										[NC] 
 RewriteRule ^moderate/([^/]+)/?$									index.php?page=moderate&view=$1								[NC]   
+RewriteRule ^moderate/([^/]+)/delete/([^/]+)/?$						index.php?page=moderate&view=$1&delete=$2					[NC]   
 RewriteRule ^moderate/([^/]+)/([^/]+)?$								index.php?page=moderate&view=$1&post_id=$2					[NC] 
+RewriteRule ^moderate/([^/]+)/item/([^/]+)?$						index.php?page=moderate&view=$1&item_id=$2					[NC] 
 RewriteRule ^moderate/([^/]+)/page/([^/]+)?$						index.php?page=moderate&view=$1&pagination=$2				[NC]  
 RewriteRule ^uploader/([^/]+)?$						                connection/uploader.php?action=$1				            [NC]  

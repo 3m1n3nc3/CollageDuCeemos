@@ -82,7 +82,7 @@ function mainContent() {
     }
 
     // Set the skin for the home page
-	$PTMPL['skin'] = ' class="black-skin homepage-v1"'; 
+	$PTMPL['skin'] = ' class="'.$configuration['skin'].' homepage-v1"'; 
 
 	$theme = new themer('homepage/content');
 	$PTMPL['page_content'] = $theme->make(); 

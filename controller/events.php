@@ -23,11 +23,11 @@ function mainContent() {
     </div>'; 
 
     // Fetch the pagination for the posts
-    $framework->all_rows = $collage->fetchEvents(1);
+    $framework->all_rows = $collage->fetchSpecialPosts(1, 'event');
     $PTMPL['pagination'] = $framework->pagination(1);
 
     // Fetch the event
-    $all_events = $collage->fetchEvents(1);
+    $all_events = $collage->fetchSpecialPosts(1, 'event');
 
     if ($all_events) {
         $event_card = ''; $top = ' mt-4';
@@ -42,7 +42,7 @@ function mainContent() {
     }
 
     // Set the skin for the home page
-	$PTMPL['skin'] = ' class="black-skin homepage-v4"';
+	$PTMPL['skin'] = ' class="'.$configuration['skin'].' homepage-v4"';
 
 	$theme = new themer('events/content');
 	$PTMPL['page_content'] = $theme->make();
