@@ -724,6 +724,15 @@ function globalTemplate($type = null, $jar = null) {
                 }
             }
         }
+
+        $content_menu_link .= isset($hs) ? '
+        <li class="nav-item dropdown ml-4 mb-0">
+            <a class="nav-link dropdown-toggle waves-effect waves-light font-weight-bold"
+            id="contentMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> CONTENT </a>
+            <div class="dropdown-menu dropdown-primary dropdown-menu-right" aria-labelledby="contentMenuLink">
+                 '.$nav_list.'
+            </div>
+        </li>' : '';   
         
         $store_page_url = cleanUrls($SETT['url'] . '/index.php?page=store');
         $content_menu_link .= $configuration['enable_store'] ? '
@@ -741,15 +750,6 @@ function globalTemplate($type = null, $jar = null) {
                 CART
             </a>
         </li>' : '';
-
-        $content_menu_link .= isset($hs) ? '
-        <li class="nav-item dropdown ml-4 mb-0">
-            <a class="nav-link dropdown-toggle waves-effect waves-light font-weight-bold"
-            id="contentMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> CONTENT </a>
-            <div class="dropdown-menu dropdown-primary dropdown-menu-right" aria-labelledby="contentMenuLink">
-                 '.$nav_list.'
-            </div>
-        </li>' : '';   
     } 
     $PTMPL['content_menu_link'] = $content_menu_link;
 
