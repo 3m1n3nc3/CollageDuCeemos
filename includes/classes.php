@@ -2233,7 +2233,7 @@ class databaseCL extends framework {
 		$shipping 		= $framework->db_prepare_input($this->shipping); 
 		$available_qty 	= $framework->db_prepare_input($this->available_qty); 
 		$tags 			= $framework->db_prepare_input($this->tags);  
-		$description 	= $this->description;
+		$description 	= $framework->db_prepare_input($this->tags);  
 		$public 		= $framework->db_prepare_input($this->public);  
 		$featured 		= $framework->db_prepare_input($this->featured); 
 		$promoted 		= $framework->db_prepare_input($this->promoted);
