@@ -219,6 +219,31 @@ class framework {
         return $msg;
     }
 
+	// Fetch and authenticate admin Auth token
+	function auth_auth($type = null, $token = null) 
+	{
+		global $cd_input, $cd_session;
+
+		$token 			= ($token ? $token : $cd_input->get('auth'));
+		$session 		= ($type ? 'username' : 'admin');
+		$table 			= ($type ? 'users' : 'admin');
+		$pass_prefix 	= ($type ? '' : 'admin');
+
+		if (!$cd_session->userdata($session) && !isset($_COOKIE[$session]) && $token) 
+		{
+			$sql 		= sprintf("SELECT * FROM %s WHERE `access_token` = '%s'", $table, $token); 
+			$auth 		= $this->dbProcessor($sql, 1)[0];
+
+			if ($auth['username']) {
+	            $cd_session->set_userdata('access_token', $token);
+	            $cd_session->set_userdata($session, $auth['username']);
+	            $cd_session->set_userdata($pass_prefix.'password', $auth['password']);
+			}
+		}
+
+		return;
+	}
+
 	// Fetch and authenticate Administrator
 	function administrator($type = null, $username = null) {
 		global $LANG, $framework;
@@ -263,31 +288,44 @@ class framework {
 
 	        return false;
 		} elseif ($type == 2) {
-			$sql = sprintf("SELECT * FROM admin WHERE `username` = '%s'", $username); 
-		    return $framework->dbProcessor($sql, 1)[0];
+			if ($username) {
+				$sql = sprintf("SELECT * FROM admin WHERE `username` = '%s'", $username); 
+			    return $framework->dbProcessor($sql, 1)[0];
+			} else {
+				$sql = sprintf("SELECT * FROM admin WHERE 1"); 
+			    return $framework->dbProcessor($sql, 1);
+			}
 		} else {
 			$sql = sprintf("SELECT * FROM admin WHERE `username` = '%s' AND `password` = '%s'", $this->username, $this->password); 
 		    return $framework->dbProcessor($sql, 1)[0];
 		}
 	} 
 
-    function sign_out($reset = null, $type = null) {
-		if ($type) {
+    function sign_out($reset = null, $type = null) 
+    {
+    	global $cd_session;
+
+		if ($type) 
+		{
 			$us = 'admin';
 			$ust = $uss = $us;
-		} else {
+		} 
+		else 
+		{
 			$us = 'username';
 			$ust = 'user';
 			$uss = '';
 		}
 
-        if ($reset == true) {
+        if ($reset == true) 
+        {
             $this->resetToken();
         }
         setcookie($ust."token", '', time() - 3600, COOKIE_PATH);
         setcookie($us, '', time() - 3600, COOKIE_PATH);
-        unset($_SESSION[$us]);
-        unset($_SESSION[$uss.'password']);
+        $cd_session->unset_userdata($us);
+        $cd_session->unset_userdata($uss.'password');
+	    $cd_session->unset_userdata('access_token');
         return 1;
     }
 
@@ -391,13 +429,13 @@ class framework {
 				require_once(__DIR__ . '/vendor/autoload.php');
 				
 				//Tell PHPMailer to use SMTP
-				$mail->isSMTP();
+				$mail->isSMTP(); 
 
 				//Enable SMTP debugging
 				// 0 = off 
 				// 1 = client messages
 				// 2 = client and server messages
-				$mail->SMTPDebug = $configuration['mode'] == 0 ? 2 : 0;
+				$mail->SMTPDebug = $configuration['smtp_debug'];
 				
 				$mail->CharSet = 'UTF-8';	//Set the CharSet encoding
 				
@@ -438,7 +476,7 @@ class framework {
 				//send the message, check for errors
 				if(!$mail->send()) {
 					// Return the error in the Browser's console
-					#echo $mail->ErrorInfo;
+					//echo $mail->ErrorInfo;
 				}
 			} else {
 				$headers  = 'MIME-Version: 1.0' . "\r\n";
@@ -1685,7 +1723,7 @@ class framework {
 		$navigation = '';
 		if ($endpage > 1) {
 			if ($curpage != $startpage) {
-				$pager = cleanUrls($page.'&pagination='.$startpage);
+				$pager = urlQueryFix('pagination', $startpage);
 				$navigation .= '
 					<li class="page-item">
 						<a class="page-link" aria-label="Previous" href="'.$pager.'">
@@ -1697,7 +1735,7 @@ class framework {
 			}
 
 			if ($curpage >= 2) {
-				$pager = cleanUrls($page.'&pagination='.$previouspage);
+				$pager = urlQueryFix('pagination', $previouspage);
 			    $navigation .= '
 					<li class="page-item">
 						<a class="page-link" href="'.$pager.'">Prev</a>
@@ -1705,7 +1743,7 @@ class framework {
 			    ';
 			}
 
-			$pager = cleanUrls($page.'&pagination='.$curpage);
+			$pager = urlQueryFix('pagination', $curpage);
 		    $navigation .= '
 				<li class="page-item active">
 					<a class="page-link" href="'.$pager.'">'.$curpage.'</a>
@@ -1713,14 +1751,14 @@ class framework {
 		    '; 
 
 			if($curpage != $endpage){
-				$pager = cleanUrls($page.'&pagination='.$nextpage);
+				$pager = urlQueryFix('pagination', $nextpage);
 			    $navigation .= '
 					<li class="page-item">
 						<a class="page-link" href="'.$pager.'">Next</a>
 					</li>
 			    ';  
- 
-				$pager = cleanUrls($page.'&pagination='.$endpage);
+
+				$pager = urlQueryFix('pagination', $endpage);
 			    $navigation .= '                
 					<li class="page-item">
 						<a class="page-link" aria-label="Next" href="'.$pager.'">
@@ -2271,7 +2309,7 @@ class databaseCL extends framework {
 		}
 
 		if ($store == 1) {
-			$msg = messageNotice('Your store item has been '.($item_ids ? 'updated' : 'created'), 1);
+			$msg = messageNotice('Your '.$LANG['store'].' item has been '.($item_ids ? 'updated' : 'created'), 1);
 		} else {
 			$msg = $store;
 		}	
@@ -2300,10 +2338,11 @@ class databaseCL extends framework {
 	}
 
 	function placeOrder($items = array()) {
-		global $cd_input, $cd_session;
+		global $LANG, $SETT, $cd_input, $cd_session;
 
         $fname    = $cd_input->post('fname');
         $lname    = $cd_input->post('lname');
+        $name 	  = $fname.' '.$lname;
         $username = $this->safeLinks($fname.' '.$lname, 1);
         $email    = $cd_input->post('email');
         $phone    = $cd_input->post('phone');
@@ -2356,11 +2395,24 @@ class databaseCL extends framework {
 	        if ($this->dbProcessorErrors()) {
 	        	return $this->dbProcessorErrors();
 	        } else {
+	        	$administrators = $this->administrator(2);
+	        	foreach ($administrators as $admin) {
+	        		$view_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=store_orders&item_id='.$insert.'&auth='.$admin['access_token']); 
+	        		$admin_user = $this->userData($admin['admin_user'], 1);
+		        	$email = array(
+		        		'receiver' => $admin_user['fname'].' '.$admin_user['lname'],
+		        		'subject' => 'New '.$LANG['purchase'].' order received',
+		        		'message' => $name.' placed an order on a '.$LANG['store'].' item, please login to the dashboard to view the full order details',
+		        		'more_info' => 'Click the button below to view order details',
+		        		'btn' => array($view_link, 'view order')
+		        	);
+	        		$this->message = returnPage('email_template', $email);
+	        		$this->mailerDaemon($SETT['email'], $admin['email'], $email['subject']);
+	        	}
+
         		$msg = 'Your order has been placed successfully, we would contact you via email for payment information, here is your order reference: <b>'.$reference.'</b>, please note it down.';
 
 				$cd_input->write_flashdata('msg', '<script type="text/javascript"> sweetalert = \'success\';  sweet_title = \''.$msg.'\'</script>');
-
-        		return $store = bigNotice($msg, 1);
 
 	            // remove the payment reference from session
 	            if ($cd_session->has_userdata('reference')) 
@@ -2368,6 +2420,8 @@ class databaseCL extends framework {
 	                $cd_session->unset_userdata('reference');
                 	$this->storeCart('empty'); 
 	            }
+
+        		return $store = bigNotice($msg, 1);
 	        }
         } else {
         	$msg = 'Thank you, this order has already been placed.';

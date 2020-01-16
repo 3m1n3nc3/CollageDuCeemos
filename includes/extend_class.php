@@ -156,6 +156,13 @@ function fileInfo($file, $type = null) {
     return;
 }
 
+function returnPage($controller = 'email', $data = array())
+{
+    require_once(__DIR__ . '/autoload.php');
+    require_once(__DIR__ . '../../controller/'.$controller.'.php');
+    return returnContent($data);
+}
+
 function getImage($image, $type = null) {
     // $a = 1: Get direct link to image
     global $SETT, $framework;
@@ -385,13 +392,13 @@ function urlQueryFix($index = '', $item = null)
 
     $query = $cd_input->get($index);
     
-    $delete = ($query ? str_replace(array('&'.$index.'='.$query, '/'.$index.'/'.$query), array('', ''), $page) : $page);
+    $query_link = ($query ? str_replace(array('&'.$index.'='.$query, '/'.$index.'/'.$query), array('', ''), $page) : $page);
 
     if ($item) {
         $item = ($configuration['cleanurl'] ? '/'.$index.'/'.$item : '&'.$index.'='.$item); 
     }
 
-    $url = parseURL($delete.$item, 1);
+    $url = parseURL($query_link.$item, 1);
     return cleanUrls($url['base'].$url['abs']);
 }
 
@@ -438,7 +445,7 @@ function urlCleanUp($url)
         } elseif (strpos($url, $pager['listing'])) {
             $url = str_replace(array($pager['listing'], '&sorting=', '&type='), array('listing', '/sort/', '/'), $url);
         } elseif (strpos($url, $pager['moderate'])) {
-            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&item_id=', '&delete=', '&pagination=', '&login='), array('moderate', '/', '/', '/item/', '/delete/', '/page/', '/'), $url);
+            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&item_id=', '&delete=', '&pagination=', '&auth=', '&login='), array('moderate', '/', '/', '/item/', '/delete/', '/pagination/', '/auth/', '/'), $url);
         } elseif (strpos($url, $pager['profile'])) {
             $url = str_replace(array($pager['profile'], '&update=', '&view=', '&set=', '&delete=', '&user_id=', '&post_id='), array('profile', '/update/', '/view/', '/set/', '/delete/', '/', '/'), $url);
         }
@@ -712,7 +719,7 @@ function globalTemplate($type = null, $jar = null) {
     $store_page_url = cleanUrls($SETT['url'] . '/index.php?page=store');
     $content_menu_link .= $configuration['enable_store'] ? '
     <li class="nav-item ml-3 mb-0">
-        <a href="'.$store_page_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">STORE</a>
+        <a href="'.$store_page_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">'.strtoupper($LANG['store']).'</a>
     </li>' : '';
 
     $cart_counter = $cd_session->userdata('cart') && !empty($cd_session->userdata('cart')) ? count($cd_session->userdata('cart')) : 0;
@@ -753,7 +760,7 @@ function globalTemplate($type = null, $jar = null) {
         </li>' : '';   
     } 
  
-    $PTMPL['content_menu_link'] .= $content_menu_link;
+    $PTMPL['content_menu_link'] = $content_menu_link;
 
     $PTMPL['footer_list'] = $foot_list;
     $PTMPL['footer_list_var'] = $foot_list_var;  
@@ -1442,7 +1449,7 @@ function site_sidebar() {
 }
 
 function moderate_sidebar() {
-    global $SETT, $PTMPL, $user, $framework, $collage; 
+    global $SETT, $LANG, $PTMPL, $user, $framework, $collage; 
     $template = new themer('moderate/side_bar'); $section = ''; 
 
     $moderate_links = array(
@@ -1452,8 +1459,8 @@ function moderate_sidebar() {
         array('posts', 'posts'),
         array('admin details', 'admin'),
         array('site configuration', 'config'),
-        array('filemanager', 'filemanager'),
-        array('store', 'store')
+        array('file manager', 'filemanager'),
+        array($LANG['store'], 'store')
     );
 
     $set_links = '';

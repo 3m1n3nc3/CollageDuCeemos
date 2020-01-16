@@ -3,20 +3,25 @@
 function mainContent() {
 	global $PTMPL, $LANG, $SETT, $configuration, $admin, $user, $user_role, $framework, $collage, $marxTime, $cd_input, $cd_session; 
 
+	if ($cd_session->userdata('access_token') && $cd_input->get('auth')) {
+   		$PTMPL['misc'] = '<div class="alert alert-danger font-weight-bold text-center">You are currently logged in with an authentication token, please treat the url above as you would your password...</div>';
+	}
+
    	if ($admin || $user['founder'] || $user_role >= 4) {
    		$notification = '';
 
    	 	$PTMPL['upload_script'] = $SETT['url'].'/connection/uploader.php?action=ckeditor';
-			
-		$PTMPL['page_title'] = $LANG['homepage'];
+    	
+    	$PTMPL['page_title']        = 'Admin Dashboard';  
+			 
 		$PTMPL['site_url'] = $SETT['url'];
 
-		$post_id = $post_ids = isset($_GET['post_id']) && $_GET['post_id'] !== '' ? $_GET['post_id'] : null;
+		$post_id = $post_ids = $cd_input->get('post_id');
 		$get_post = $collage->fetchPost(1, $post_id)[0];
 
 		$get_statics = $collage->fetchStatic($post_id)[0];
 
-		$item_id = $item_ids = isset($_GET['item_id']) && $_GET['item_id'] !== '' ? $_GET['item_id'] : null;
+		$item_id = $item_ids = $cd_input->get('item_id');
 		$store_item = $collage->fetchStore(1, $item_id)[0];
 
 		$option = $option_var = $opt_var = $class = $PTMPL['notification'] = '';
@@ -497,11 +502,12 @@ function mainContent() {
 				$PTMPL['page_title'] = 'Update Admin'.$this_admin; 
 				
 				$admin_user = $framework->userData($admin['admin_user'], 1);
-				$PTMPL['lusername'] = isset($_POST['lusername']) ? $_POST['lusername'] : $admin_user['username'];
+				$PTMPL['lusername'] 	= $cd_input->post('lusername') ? $cd_input->post('lusername') : $admin_user['username'];
 
-				$PTMPL['username'] = isset($_POST['username']) ? $_POST['username'] : $admin['username'];
-				$PTMPL['password'] = isset($_POST['password']) ? $_POST['password'] : '';
-				$PTMPL['re_password'] = isset($_POST['re_password']) ? $_POST['re_password'] : '';
+				$PTMPL['username'] 		= $cd_input->post('username') ? $cd_input->post('username') : $admin['username'];
+				$PTMPL['email'] 		= $cd_input->post('email') ? $cd_input->post('email') : $admin['email'];
+				$PTMPL['password'] 		= $cd_input->post('password');
+				$PTMPL['re_password'] 	= $cd_input->post('re_password');
 					
 				$na = '';
 				if (isset($_POST['admin_action'])) {
@@ -537,31 +543,35 @@ function mainContent() {
 					}
 					$PTMPL['notification'] = $msg;
 				}
-				if (isset($_POST['update'])) { 
-					$username = $framework->db_prepare_input($_POST['username']);
-					$password = hash('md5', $_POST['password']);
-					$re_password = $_POST['re_password'];
-					$auth = $framework->generateToken(null, 1);
+				if ($cd_input->post('update') !== NULL) { 
+					$username 		= $cd_input->post('username') ? $cd_input->post('username') : $admin['username'];
+					$email 			= $cd_input->post('email') ? $cd_input->post('email') : $admin['email'];
+					$password 		= $cd_input->post('password') ? hash('md5', $cd_input->post('password')) : $admin['password'];
+					$re_password 	= $cd_input->post('re_password');
+					$auth 			= $framework->generateToken(null, 1);
+					$access_token	= $framework->generateToken();
 
-					if ($_POST['re_password'] !== $_POST['password']) {
+					if ($cd_input->post('password') && $cd_input->post('re_password') !== $cd_input->post('password')) {
 						$msg = messageNotice('Repeat password does not match with Password', 3);
+					} elseif ($cd_input->post('email') && !filter_var($cd_input->post('email'), FILTER_VALIDATE_EMAIL)) {
+						$msg = messageNotice('Invalid Email Address', 3);
 					} else {
 		 				if ($admin && $_POST['admin_action'] == 'update_admin') {
-		 					$sql = "UPDATE admin SET `username` = '$username', `password` = '$password' WHERE `id` = '$admin_id'";
+		 					$sql = "UPDATE admin SET `username` = '$username', `email` = '$email', `password` = '$password', `access_token` = '$access_token' WHERE `id` = '$admin_id'";
 		 					$msg = messageNotice($username.' has been updated', 1);
-		 				} elseif ($admin && $_POST['admin_action'] == 'new_user') {
+		 				} elseif ($admin && $cd_input->post('admin_action') == 'new_user') {
 		 					$auth_date = date('Y-m-d h:i:s', strtotime('now'));
-		 					$sql = "INSERT INTO users (`username`, `password`, `role`, `auth_token`, `token_date`) VALUES ('$username', '$password', 3, '$auth', date('$auth_date'))";
+		 					$sql = "INSERT INTO users (`username`, `email`, `password`, `role`, `access_token`, `auth_token`, `token_date`) VALUES ('$username', '$email', '$password', 3, '$access_token', '$auth', date('$auth_date'))";
 		 					$msg = messageNotice('New user account created', 1);
 		 				} else {
-		 					$sql = "INSERT INTO admin (`username`, `password`, `auth_token`) VALUES ('$username', '$password', '$auth')";
+		 					$sql = "INSERT INTO admin (`username`, `email`, `password`, `access_token`, `auth_token`) VALUES ('$username', '$email', '$password', '$access_token', '$auth')";
 		 					$msg = messageNotice('New admin user created', 1);
 		 				}
 	 					if ($_POST['admin_action'] == 'update_admin' && $username !== $admin['username'] && $framework->administrator(2, $username)) {
 	 						$msg = messageNotice('This Username is already in use!');
-	 					} elseif ($_POST['admin_action'] == 'new_admin' && $framework->administrator(2, $username)) {
+	 					} elseif ($cd_input->post('admin_action') == 'new_admin' && $framework->administrator(2, $username)) {
 	 						$msg = messageNotice('This Admin already exists!');
-	 					} elseif ($_POST['admin_action'] == 'new_user' && $framework->userData($username, 2)) {
+	 					} elseif ($cd_input->post('admin_action') == 'new_user' && $framework->userData($username, 2)) {
 	 						$msg = messageNotice('This User already exists!');
 	 					} else {
 	 						$msg = $msg;
@@ -596,9 +606,9 @@ function mainContent() {
 					$did = $collage->db_prepare_input($_GET['delete']);
 					$delete = $collage->deleteContent($did, 2);
 					if ($delete === 1) {
-						$PTMPL['notification'] = messageNotice('Store item deleted successfully', 1, 6);
+						$PTMPL['notification'] = messageNotice($LANG['store'].' item deleted successfully', 1, 6);
 					} elseif ($delete === 0) {
-						$PTMPL['notification'] = messageNotice('Store item does not exist, or may have already been deleted', 2, 6);
+						$PTMPL['notification'] = messageNotice($LANG['store'].' item does not exist, or may have already been deleted', 2, 6);
 					} else {
 						$PTMPL['notification'] = messageNotice($delete, 3, 7);
 					}
@@ -606,7 +616,7 @@ function mainContent() {
 
 		        $create_item_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=add_store_item');
 		        $view_orders_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=store_orders');
-		        $create_item_btn = '<a href="'.$create_item_link.'" class="btn btn-primary font-weight-bolder mb-2">Add store Item</a>';
+		        $create_item_btn = '<a href="'.$create_item_link.'" class="btn btn-primary font-weight-bolder mb-2">Add '.$LANG['store'].' Item</a>';
 		        $create_item_btn .= '<a href="'.$view_orders_link.'" class="btn btn-primary font-weight-bolder mb-2">View Orders</a>';
 		        $PTMPL['create_item_btn'] = $create_item_btn;
 
@@ -687,7 +697,7 @@ function mainContent() {
 					}
 
 			        $create_item_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=add_store_item'); 	
-			        $create_item_btn = '<a href="'.$create_item_link.'" class="btn btn-primary font-weight-bolder mb-2">Add store Item</a>'; 
+			        $create_item_btn = '<a href="'.$create_item_link.'" class="btn btn-primary font-weight-bolder mb-2">Add '.$LANG['store'].' Item</a>'; 
 			        $PTMPL['create_item_btn'] = $create_item_btn;
 
 					$PTMPL['currency'] = $configuration['currency'];
@@ -698,7 +708,7 @@ function mainContent() {
 			} 
 			elseif ($_GET['view'] == 'add_store_item') 
 			{   
-				$PTMPL['page_title'] = 'New store entry'; 
+				$PTMPL['page_title'] = 'New '.$LANG['store'].' entry'; 
 				$PTMPL['up_btn'] = $store_item ? 'Update Item' : 'Create Item';
 				
 				$PTMPL['currency'] 			= $configuration['currency'];
@@ -777,7 +787,7 @@ function mainContent() {
             $category =  array(
             	'create_post' 	=> 	'Create New blog post',
             	'posts' 		=> 	'Manage posts',
-            	'store' 		=> 	'Manage Store',
+            	'store' 		=> 	'Manage '.$LANG['store'],
             	'create_static'	=>	'New static content',
             	'static'		=>	'Manage Static content',
             	'categories'	=>	'Manage categories',

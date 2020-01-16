@@ -37,8 +37,16 @@
                   </div>  
 
                   <div class="mb-4 mx-0">
+                    <label for="email">Email Address</label>   
+                    <input type="text" id="email" class="form-control" placeholder="Email" name="email" value="{$email}" required>   
+                    <div class="mt-0 invalid-feedback">
+                      Please provide a valid Email Address.
+                    </div>
+                  </div>  
+
+                  <div class="mb-4 mx-0">
                     <label for="password">Password</label>   
-                    <input type="password" id="password" class="form-control" placeholder="Password" name="password" value="{$password}" required>   
+                    <input type="password" id="password" class="form-control" placeholder="Password" name="password" value="{$password}">   
                     <div class="mt-0 invalid-feedback">
                       Please provide a valid password.
                     </div>
@@ -46,7 +54,7 @@
 
                   <div class="mb-4 mx-0">
                     <label for="re_password">Repeat Password</label>   
-                    <input type="password" id="re_password" class="form-control" placeholder="Repeat Password" name="re_password" value="{$re_password}" required>   
+                    <input type="password" id="re_password" class="form-control" placeholder="Repeat Password" name="re_password" value="{$re_password}">   
                     <div class="mt-0 invalid-feedback">
                       Repeat password cannot be empty.
                     </div>

@@ -20,6 +20,7 @@ $PTMPL['full_template_url'] = $SETT['full_template_url'] = $SETT['url'].'/'.$PTM
 
 // $_SESSION['username'] = 'davidson';
 // Check who is logged in right now
+$framework->auth_auth(1);
 if (isset($_SESSION['username'])) { 
 	$user = $framework->userData($_SESSION['username'], 2);
 	$user_role = $user['role'];
@@ -27,6 +28,7 @@ if (isset($_SESSION['username'])) {
 	$user = $framework->userData($_COOKIE['username'], 2);
 }  
 
+$framework->auth_auth();
 if (isset($_SESSION['admin'])) { 
 	$admin = $framework->administrator(2, $_SESSION['admin']); 
 } elseif (isset($_COOKIE['admin'])) {

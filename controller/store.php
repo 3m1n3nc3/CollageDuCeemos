@@ -4,7 +4,7 @@ function mainContent() {
 	global $PTMPL, $LANG, $SETT, $configuration, $framework, $marxTime, $collage, $cd_input, $cd_session; 
 
     // Set the skin for the home page
-    $PTMPL['skin'] = ' class="'.$configuration['skin'].' homepage-v4"'; 
+    $PTMPL['skin'] = ' class="'.$configuration['skin'].' homepage-v4"';
 
     // Add an item to the shopping cart
     if ($cd_input->post('cart_item') || ($cd_input->get('add') && ($cd_input->get('add') === 'cart_item' || $cd_input->get('add') === 'cart_item_inline'))) {
@@ -260,7 +260,7 @@ function mainContent() {
             }  
             $PTMPL['list_events'] = sprintf($store_holder, $store_card);  
         } else {
-            $PTMPL['list_events'] = notavailable('Sorry, the store is still empty, check back tomorrow', '', 2);  
+            $PTMPL['list_events'] = notavailable('Sorry, the '.$LANG['store'].' is still empty, check back tomorrow...', '', 2);  
         }
 
         $theme = new themer('events/content');

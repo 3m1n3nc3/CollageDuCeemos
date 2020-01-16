@@ -44,6 +44,10 @@ $LANG['no_fname'] = 'First Name can not be empty';
 $LANG['no_lname'] = 'Last Name can not be empty';
 $LANG['data_unmatch'] = 'Invalid username or password';
 
-
+// Sections
+$LANG['store'] = 'Gallery';
+$LANG['art_store'] = 'Art Gallery';
+$LANG['purchase'] = 'purchase';
+$LANG['buy'] = 'buy';
 // $LANG[''] = '';
 ?>
