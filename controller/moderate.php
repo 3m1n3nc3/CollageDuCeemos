@@ -463,8 +463,8 @@ function mainContent() {
 	 					$msg = 'New category created';
 	 				}
 
-					$notification =  $collage->dbProcessor($sql, 0, 1);
-					if ($notification == 1) {
+					$create_cate =  $collage->dbProcessor($sql, 0, 1);
+					if ($create_cate == 1) {
 						if ($category) {
 							$up = 2;
 						} else {
@@ -481,8 +481,8 @@ function mainContent() {
 		    		}
 				}
 
-				if (isset($notification)) {
-					$PTMPL['notification'] = messageNotice($msg);
+				if (isset($create_cate) && $create_cate !== 1) {
+					$PTMPL['notification'] = messageNotice($create_cate);
 				} elseif (isset($_GET['msg'])) {
 					if ($_GET['msg'] == 1) {
 						$msg = messageNotice('New category created', 1);
