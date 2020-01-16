@@ -765,29 +765,20 @@ function mainContent() {
 			} 
 			else 
 			{
-				$PTMPL['up_btn'] = $get_post ? 'Update Post' : 'Create Post';
-				$PTMPL['page_title'] = $get_post ? 'Update '.$get_post['title'] : 'Create new post';
-				$PTMPL['post_title'] = isset($_POST['title']) ? $_POST['title'] : $get_post['title'];
-				$PTMPL['post_sub_title'] = isset($_POST['sub_title']) ? $_POST['sub_title'] : $get_post['sub_title'];
-				$PTMPL['post_details'] = isset($_POST['post_details']) ? $_POST['post_details'] : $get_post['details']; 
-				$PTMPL['post_quote'] = isset($_POST['quote']) ? $_POST['quote'] : $get_post['quote'];
-				$PTMPL['post_date'] = isset($_POST['date']) ? $_POST['date'] : ($get_post['event_date'] ? date('Y-m-d', strtotime($get_post['event_date'])) : '');
-				$PTMPL['post_time'] = isset($_POST['time']) ? $_POST['time'] : ($get_post['event_date'] ? date('h:i', strtotime($get_post['event_date'])) : '');
-				$PTMPL['public'] = isset($_POST['public']) || $get_post['public'] == 1 ? ' checked' : '';
-				$PTMPL['featured'] = isset($_POST['featured']) || $get_post['featured'] == 1 ? ' checked' : '';
-				$PTMPL['promote'] = isset($_POST['promote']) || $get_post['promoted'] == 1 ? ' checked' : '';
+				$PTMPL['up_btn'] 			= $get_post ? 'Update Post' : 'Create Post';
+				$PTMPL['page_title'] 		= $get_post ? 'Update '.$get_post['title'] : 'Create new post';
 
-				if (isset($_POST['create_post'])) {  
-					$collage->category = $_POST['category'];
-					$collage->title = $_POST['title'];
-					$collage->sub_title = $_POST['sub_title'];
-					$collage->quote = $_POST['quote'];
-					$collage->post_details = str_replace('\'', '', $_POST['post_details']);
-					$collage->post_date = $_POST['date'];
-					$collage->post_time = $_POST['time'];
-					$collage->public = isset($_POST['public']) ? 1 : 0;
-					$collage->featured = isset($_POST['featured']) ? 1 : 0;
-					$collage->promote = isset($_POST['promote']) ? 1 : 0;
+				$PTMPL['post_title'] 		= $cd_input->post('title') ? $cd_input->post('title') : $get_post['title'];
+				$PTMPL['post_sub_title'] 	= $cd_input->post('sub_title') ? $cd_input->post('sub_title') : $get_post['sub_title'];
+				$PTMPL['post_details'] 		= $cd_input->post('post_details') ? $cd_input->post('post_details') : $get_post['details']; 
+				$PTMPL['post_quote'] 		= $cd_input->post('quote') ? $cd_input->post('quote') : $get_post['quote'];
+				$PTMPL['post_date'] 		= $cd_input->post('date') ? $cd_input->post('date') : ($get_post['event_date'] ? date('Y-m-d', strtotime($get_post['event_date'])) : '');
+				$PTMPL['post_time'] 		= $cd_input->post('time') ? $cd_input->post('time') : ($get_post['event_date'] ? date('h:i', strtotime($get_post['event_date'])) : '');
+				$PTMPL['public'] 			= $cd_input->post('public') || $cd_input->post('public') == 1 ? ' checked' : '';
+				$PTMPL['featured'] 			= $cd_input->post('featured') || $cd_input->post('featured') == 1 ? ' checked' : '';
+				$PTMPL['promote'] 			= $cd_input->post('promote') || $cd_input->post('promote') == 1 ? ' checked' : '';
+
+				if (isset($_POST['create_post'])) {   
 					$collage->image = $_FILES['image'];
 
 					$create = $collage->createPost();

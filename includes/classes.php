@@ -2135,33 +2135,34 @@ class databaseCL extends framework {
 	}
 
 	function createPost() {
-		global $PTMPL, $LANG, $SETT, $user, $admin, $framework, $collage, $marxTime; 
+		global $PTMPL, $LANG, $SETT, $user, $admin, $framework, $collage, $marxTime, $cd_input; 
  
-		$post_ids = isset($_GET['post_id']) ? $framework->db_prepare_input($_GET['post_id']) : null;
+		$post_ids = $cd_input->get('post_id');
 		$get_post = $collage->fetchPost(1, $post_ids)[0];
 
 		if ($user) {
-			$uids = $user['uid'];
+			$user_id = $user['uid'];
 		} else {
-			$uids = $admin['admin_user'];
+			$user_id = $admin['admin_user'];
 		}
-		$user_id = $framework->db_prepare_input($uids);
-		$category = $framework->db_prepare_input($this->category);
-		$title = $framework->db_prepare_input($this->title);
-		$sub_title = $framework->db_prepare_input($this->sub_title);
-		$quote = $framework->db_prepare_input($this->quote);
-		$details = $this->post_details;
-		$date = $framework->db_prepare_input($this->post_date);
-		$time = $framework->db_prepare_input($this->post_time); 
-		$date_time = $marxTime->timemerger($date, $time, 1);
-		$public = $this->public;
-		$featured = $this->featured;
-		$promote = $this->promote;
+
+		$category 		= $cd_input->post('category');
+		$title 			= $cd_input->post('title');
+		$sub_title 		= $cd_input->post('sub_title');
+		$quote 			= $cd_input->post('quote');
+		$details 		= $cd_input->post('post_details');
+		$date 			= $cd_input->post('date');
+		$time 			= $cd_input->post('time'); 
+		$date_time 		= $marxTime->timemerger($date, $time, 1);
+		$public 		= $cd_input->post('public') ? 1 : 0;
+		$featured 		= $cd_input->post('featured') ? 1 : 0;
+		$promote 		= $cd_input->post('promote') ? 1 : 0;
+
 		$image = $framework->imageUploader($this->image);
 		$image_errors = $collage->imageErrorHandler();
 		
 		$post_id = $framework->token_generator(null, 6);
-		$safelink = $framework->checkSafeLinks($title);
+		$safelink = $framework->checkSafeLinks($title); 
 
 		if ($image) { 
 			if ($post_ids) {
