@@ -38,7 +38,8 @@ function mainContent() {
 			'contact' 	=> 	'Contact Page Section', 
 			'static' 	=> 	'New static Page', 
 			'events'	=>	'Event Header',
-			'footer'	=>	'Footer Text'
+			'footer'	=>	'Footer Text',
+			'store'		=>  $LANG['store']
 		);
 		foreach ($parents as $key => $row) { 
 			$sel = (isset($_POST['parent']) && $_POST['parent'] == $key) || ($get_statics['parent'] == $key) ? ' selected="selected"' : ''; 
