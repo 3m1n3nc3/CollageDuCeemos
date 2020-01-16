@@ -445,7 +445,7 @@ function urlCleanUp($url)
         } elseif (strpos($url, $pager['listing'])) {
             $url = str_replace(array($pager['listing'], '&sorting=', '&type='), array('listing', '/sort/', '/'), $url);
         } elseif (strpos($url, $pager['moderate'])) {
-            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&item_id=', '&delete=', '&pagination=', '&auth=', '&login='), array('moderate', '/', '/', '/item/', '/delete/', '/pagination/', '/auth/', '/'), $url);
+            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&item_id=', '&delete=', '&pagination=', '&auth=', '&login=', '&set=', '&msg='), array('moderate', '/', '/', '/item/', '/delete/', '/pagination/', '/auth/', '/', '/set/', '/msg/'), $url);
         } elseif (strpos($url, $pager['profile'])) {
             $url = str_replace(array($pager['profile'], '&update=', '&view=', '&set=', '&delete=', '&user_id=', '&post_id='), array('profile', '/update/', '/view/', '/set/', '/delete/', '/', '/'), $url);
         }

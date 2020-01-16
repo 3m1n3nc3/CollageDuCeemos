@@ -47,6 +47,9 @@ RewriteRule ^login/([^/]+)/?$										index.php?page=moderate&view=access&login
 
 RewriteRule ^moderate/?$											index.php?page=moderate										[NC] 
 RewriteRule ^moderate/([^/]+)/?$									index.php?page=moderate&view=$1								[NC]   
+RewriteRule ^moderate/([^/]+)/msg/([^/]+)?$							index.php?page=moderate&view=$1&msg=$2						[NC]    
+RewriteRule ^moderate/([^/]+)/set/([^/]+)?$							index.php?page=moderate&view=$1&set=$2						[NC]  
+RewriteRule ^moderate/([^/]+)/set/([^/]+)/msg/([^/]+)?$				index.php?page=moderate&view=$1&set=$2&msg=$3				[NC]   
 RewriteRule ^moderate/([^/]+)/delete/([^/]+)/?$						index.php?page=moderate&view=$1&delete=$2					[NC]   
 RewriteRule ^moderate/([^/]+)/([^/]+)?$								index.php?page=moderate&view=$1&post_id=$2					[NC] 
 RewriteRule ^moderate/([^/]+)/([^/]+)/auth/([^/]+)?$				index.php?page=moderate&view=$1&post_id=$2&auth=$3			[NC] 

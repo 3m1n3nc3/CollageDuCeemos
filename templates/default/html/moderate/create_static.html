@@ -61,14 +61,16 @@
                   
                   <div class="d-flex">
                     <div class="custom-control custom-checkbox mb-4 pr-5">
-                      <input type="checkbox" class="custom-control-input" id="checkbox_footer" name="footer"{$footer_check}>
+                      <input type="checkbox" class="custom-control-input" id="checkbox_footer" name="footer" value="1"{$footer_check}>
                       <label class="custom-control-label" for="checkbox_footer">Show in footer</label>
                     </div> 
 
                     <div class="custom-control custom-checkbox mb-4 pr-5">
-                      <input type="checkbox" class="custom-control-input" id="checkbox_header" name="header"{$header_check}>
+                      <input type="checkbox" class="custom-control-input" id="checkbox_header" name="header" value="1"{$header_check}>
                       <label class="custom-control-label" for="checkbox_header">Show in header</label>
                     </div> 
+
+                    {$more_checks}
                   </div>
 
                   <div class="d-flex">

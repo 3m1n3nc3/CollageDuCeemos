@@ -1288,7 +1288,7 @@ class framework {
 	}
 
 	function storeCart($action = '', $data = array()) {
-		global $cd_session, $cd_post, $cd_input;
+		global $cd_session, $cd_input;
 
 		$dk = key($data);
 		$data_key = (isset($data[$dk]['item_id']) ? $data[$dk]['item_id'] : (isset($data['item_id']) ? $data['item_id'] : NULL)); 
@@ -2035,22 +2035,24 @@ class databaseCL extends framework {
 	}
 
 	function createStaticContent() {
-		global $PTMPL, $LANG, $SETT, $user, $framework, $collage, $marxTime; 
+		global $PTMPL, $LANG, $SETT, $user, $framework, $collage, $marxTime, $cd_input; 
 
-		$post_ids = isset($_GET['post_id']) ? $framework->db_prepare_input($_GET['post_id']) : null;
-		$get_statics = $collage->fetchStatic($post_ids)[0];
+		$post_ids 		= $cd_input->get('post_id');
+		$get_statics 	= $collage->fetchStatic($post_ids)[0];
 
-		$parent = $framework->db_prepare_input($this->parent); 
-		$priority = $framework->db_prepare_input($this->priority); 
-		$icon = $framework->db_prepare_input($this->icon); 
-		$title = $framework->db_prepare_input($this->title); 
-		$main_content = $this->main_content; 
-		$footer = $this->footer;
-		$header = $this->header;
-		$image = $framework->imageUploader($this->image);
-		$image_errors = $collage->imageErrorHandler();
+		$parent 		= $cd_input->post('parent'); 
+		$priority 		= $cd_input->post('priority'); 
+		$icon 			= $cd_input->post('icon'); 
+		$title 			= $cd_input->post('title'); 
+		$main_content 	= $cd_input->post('main_content'); 
+		$footer 		= $cd_input->post('footer') ? 1 : 0; 
+		$header 		= $cd_input->post('header') ? 1 : 0; 
+		$restricted 	= $cd_input->post('restricted') ? 1 : 0;
 
-		$safelink = $framework->checkSafeLinks($title);
+		$image 			= $framework->imageUploader($this->image);
+		$image_errors 	= $collage->imageErrorHandler();
+
+		$safelink 		= $framework->checkSafeLinks($title);
 
 		if (is_array($image)) { 
 			if ($post_ids) {
@@ -2066,17 +2068,20 @@ class databaseCL extends framework {
 		}
 
 		if ($post_ids) {
-			$sql = sprintf("UPDATE static_pages SET `parent` = '%s', `jarallax` = '%s', `title` = '%s', 
-				`content` = '%s', `priority` = '%s', `icon` = '%s', `footer` = '%s', `header` = '%s' WHERE `id` = '%s'", 
-				$parent, $set_image, $title, $main_content, $priority, $icon, $footer, $header, $post_ids);
+			$sql = sprintf("
+				UPDATE static_pages SET `parent` = '%s', `jarallax` = '%s', `title` = '%s', `content` = '%s', `priority` = '%s', 
+				`icon` = '%s', `footer` = '%s', `header` = '%s', `restricted` = '%s' WHERE `id` = '%s'", 
+				$parent, $set_image, $title, $main_content, $priority, $icon, $footer, $header, $restricted, $post_ids
+			);
 
 			$post = $this->dbProcessor($sql, 0, 1);
 			$post = $post == 1 ? $post : messageNotice($post, 2);
 		} else {
 			if (empty($this->image['name']) || $set_image) { 
-				$sql = sprintf("INSERT INTO static_pages (`parent`, `jarallax`, `title`, `content`, `priority`, 
-					`icon`, `footer`, `header`, `safelink`) VALUES  ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
-					$parent, $set_image, $title, $main_content, $priority, $icon, $footer, $header, $safelink);
+				$sql = sprintf("
+					INSERT INTO static_pages (`parent`, `jarallax`, `title`, `content`, `priority`, `icon`, `footer`, 
+					`header`, `safelink`, `restricted`) VALUES  ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+					$parent, $set_image, $title, $main_content, $priority, $icon, $footer, $header, $safelink, $restricted);
 
 				$post = $this->dbProcessor($sql, 0, 1);
 				$post = $post == 1 ? $post : messageNotice($post, 2);
@@ -2529,7 +2534,7 @@ class databaseCL extends framework {
 			}
 		} else {
 			$table_row .= '
-			<tr><td colspan="8">'.notAvailable('You have not created any posts', '', 1).'</td></tr>';
+			<tr><td colspan="10">'.notAvailable('You have not created any '.$LANG['store'].' items', '', 1).'</td></tr>';
 		}		
 		return $table_row;
 	}
@@ -2568,7 +2573,7 @@ class databaseCL extends framework {
 			}
 		} else {
 			$table_row .= '
-			<tr><td colspan="8">'.notAvailable('You have not created any posts', '', 1).'</td></tr>';
+			<tr><td colspan="8">'.notAvailable('There are no '.$LANG['store'].' payment orders', '', 1).'</td></tr>';
 		}		
 		return $table_row;
 	}

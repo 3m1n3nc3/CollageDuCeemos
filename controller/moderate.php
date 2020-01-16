@@ -356,12 +356,7 @@ function mainContent() {
 					$table_row_static = ''; $i=0;
 					foreach ($list_statics as $sta) {
 						$i++;
-	    				$page = $SETT['url'].$_SERVER['REQUEST_URI'];
-						if (isset($_GET['delete'])) {
-							$delete_link = cleanUrls(str_replace('&delete='.$_GET['delete'], '', $page).'&delete='.$sta['id']);
-						} else {
-							$delete_link = cleanUrls($page.'&delete='.$sta['id']);
-						}
+	    				$delete_link = urlQueryFix('delete', $sta['id']);
 						$edit_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=create_static&post_id='.$sta['id']);
 						$set_view = $sta['parent'] == 'about' || $sta['parent'] == 'contact' ? $sta['parent'] : $sta['safelink'];
 						$view_link = cleanUrls($SETT['url'].'/index.php?page=static&view='.$set_view);
@@ -382,7 +377,7 @@ function mainContent() {
 							<td class="'.$framework->mdbColors($sta['priority']).'">'.$sta['priority'].'</td>
 							<td class="d-flex justify-content-around">
 								<a href="'.$edit_link.'" title="Edit Content"><i class="fa fa-edit text-info hoverable"></i></a>
-								<a href="'.$delete_link.'" title="Delete Content"><i class="fa fa-trash text-danger hoverable"></i></a> 
+								'.($admin['level'] == 1 || !$sta['restricted'] ? '<a href="'.$delete_link.'" title="Delete Content"><i class="fa fa-trash text-danger hoverable"></i></a>' : '<i class="fa fa-trash text-light disabled"></i>').' 
 							</td>
 						</tr>';
 					}
@@ -396,22 +391,28 @@ function mainContent() {
 			} 
 			elseif ($_GET['view'] == 'create_static') 
 			{
-				$PTMPL['up_btn'] = $get_statics ? 'Update Content' : 'Create Content';
-				$PTMPL['page_title'] = $get_statics ? 'Update '.$get_statics['title'] : 'Create new Static Content';
-				$PTMPL['content_title'] = isset($_POST['title']) ? $_POST['title'] : $get_statics['title']; 
-				$PTMPL['main_content'] = isset($_POST['main_content']) ? $_POST['main_content'] : $get_statics['content']; 
-				$PTMPL['footer_check'] = isset($_POST['footer']) || $get_statics['footer'] == 1 ? ' checked' : '';
-				$PTMPL['header_check'] = isset($_POST['header']) || $get_statics['header'] == 1 ? ' checked' : ''; 
+				$PTMPL['up_btn'] 		= $get_statics ? 'Update Content' : 'Create Content';
+				$PTMPL['page_title'] 	= $get_statics ? 'Update '.$get_statics['title'] : 'Create new Static Content';
 
-				if (isset($_POST['create_content'])) {  
-					$collage->parent = $_POST['parent'];
-					$collage->priority = $_POST['priority'];
-					$collage->icon = $_POST['icon'];
-					$collage->title = $_POST['title'];
-					$collage->main_content = str_replace('\'', '', $_POST['main_content']);
-					$collage->image = $_FILES['image'];
-					$collage->footer = isset($_POST['footer']) ? 1 : 0;
-					$collage->header = isset($_POST['header']) ? 1 : 0;
+				$PTMPL['content_title'] = $cd_input->post('title') ? $cd_input->post('title') : $get_statics['title']; 
+				$PTMPL['main_content'] 	= $cd_input->post('main_content') ? $cd_input->post('main_content') : $get_statics['content']; 
+				$PTMPL['footer_check'] 	= $cd_input->post('footer') || $get_statics['footer'] == 1 ? ' checked' : '';
+				$PTMPL['header_check'] 	= $cd_input->post('header') || $get_statics['header'] == 1 ? ' checked' : ''; 
+				$restricted 			= $cd_input->post('restricted') || $get_statics['restricted'] == 1 ? ' checked' : ''; 
+
+				$more_check = '';
+				if ($admin['level'] == 1) {
+					$more_check .= '
+	                <div class="custom-control custom-checkbox mb-4 pr-5">
+	                  <input type="checkbox" class="custom-control-input" id="restricted" name="restricted" value="1"'.$restricted.'>
+	                  <label class="custom-control-label" for="restricted">Restricted</label>
+	                </div>';	
+				}
+
+                $PTMPL['more_checks'] = $more_check;
+
+				if (isset($_POST['create_content'])) {    
+					$collage->image = $_FILES['image'];  
 
 					$create = $collage->createStaticContent();
 					$PTMPL['notification'] = $create;
@@ -429,21 +430,33 @@ function mainContent() {
 	    			$framework->redirect(cleanUrls($page).'&set='.$_POST['category'], 1);
 	    		}
 
-	    		$ctid = isset($_GET['set']) ? $_GET['set'] : null;
-	    		$category = $collage->dbProcessor("SELECT id, title, value, info FROM categories WHERE `value` = '$ctid'", 1)[0];
+	    		$ctid 		= $cd_input->get('set');
+	    		$category 	= $collage->dbProcessor("SELECT id, title, value, info, restricted FROM categories WHERE `value` = '$ctid'", 1)[0];
 
-				$PTMPL['page_title'] = $category ? 'Update '.$category['title'] : 'Create new Category';
+				$PTMPL['page_title'] 		= $category ? 'Update '.$category['title'] : 'Create new Category';
 				
-				$PTMPL['up_btn'] = $category ? 'Update Category' : 'Create Category';
-				$PTMPL['new_btn'] = cleanUrls($SETT['url'].'/index.php?page=moderate&view=categories');
-	    		$PTMPL['delete_btn'] = $category ? $delete_btn : '';
+				$PTMPL['up_btn'] 			= $category ? 'Update Category' : 'Create Category';
+				$PTMPL['new_btn'] 			= cleanUrls($SETT['url'].'/index.php?page=moderate&view=categories');
+	    		$PTMPL['delete_btn'] 		= ($category && ($admin['level'] == 1 || !$category['restricted']) ? $delete_btn : '');
 
-				$PTMPL['ct_title'] = isset($_POST['title']) ? $_POST['title'] : $category['title']; 
-				$PTMPL['ct_description'] = isset($_POST['info']) ? $_POST['info'] : $category['info'];  
+				$PTMPL['ct_title'] 			= $cd_input->post('title') ? $cd_input->post('title') : $category['title']; 
+				$PTMPL['ct_description'] 	= $cd_input->post('info') ? $cd_input->post('info') : $category['info'];  
+				$restricted 				= $cd_input->post('restricted') || $category['restricted'] == 1 ? ' checked' : ''; 
 
 				if (isset($_POST['delete'])) { 
-					$PTMPL['notification'] = messageNotice($collage->dbProcessor("DELETE FROM categories WHERE `value` = '$ctid'", 0, 'Category Deleted'));
+					$PTMPL['notification'] 	= messageNotice($collage->dbProcessor("DELETE FROM categories WHERE `value` = '$ctid'", 0, 'Category Deleted'));
 				}
+
+				$more_check = '';
+				if ($admin['level'] == 1) {
+					$more_check .= '
+	                <div class="custom-control custom-checkbox mb-4 pr-5">
+	                  <input type="checkbox" class="custom-control-input" id="restricted" name="restricted" value="1"'.$restricted.'>
+	                  <label class="custom-control-label" for="restricted">Restricted</label>
+	                </div>';	
+				}
+
+                $PTMPL['more_checks'] = $more_check;
 
 				if (isset($_POST['create_'])) {  
 					$info = $framework->db_prepare_input($_POST['info']); 
@@ -456,11 +469,12 @@ function mainContent() {
 						$value = $framework->safeLinks($title);
 					}
 	 				
+					$restrict 	= $cd_input->post('restricted') ? 1 : 0;
 	 				if ($category) {
-	 					$sql = "UPDATE categories SET `title` = '$title', `info` = '$info' WHERE `value` = '$ctid'";
+	 					$sql = "UPDATE categories SET `title` = '$title', `info` = '$info', `restricted` = '$restrict' WHERE `value` = '$ctid'";
 	 					$msg = $category['title'].' has been updated';
 	 				} else {
-	 					$sql = "INSERT INTO categories (`title`, `value`, `info`) VALUES ('$title', '$value', '$info')";
+	 					$sql = "INSERT INTO categories (`title`, `value`, `info`, `restricted`) VALUES ('$title', '$value', '$info', '$restrict')";
 	 					$msg = 'New category created';
 	 				}
 
@@ -476,9 +490,9 @@ function mainContent() {
 					}
 
 		    		if ($category) {
-		    			$page = str_replace('&set='.$_GET['set'], '', $page);
-		    			$page = str_replace('&msg='.$set_msg, '', $page);
-		    			$framework->redirect(cleanUrls($page).'&set='.$value.'&msg='.$up, 1);
+		    			$page = str_replace('&set='.$_GET['set'], '', $page).'&set='.$value;
+		    			$page = str_replace('&msg='.$set_msg, '', $page).'&msg='.$up;
+		    			$framework->redirect(cleanUrls($page), 1);
 		    		}
 				}
 
