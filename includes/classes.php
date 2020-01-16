@@ -2043,8 +2043,8 @@ class databaseCL extends framework {
 		$parent 		= $cd_input->post('parent'); 
 		$priority 		= $cd_input->post('priority'); 
 		$icon 			= $cd_input->post('icon'); 
-		$title 			= $collag->db_prepare_input($cd_input->post('title')); 
-		$main_content 	= $collag->db_prepare_input($cd_input->post('main_content')); 
+		$title 			= $this->db_prepare_input($cd_input->post('title')); 
+		$main_content 	= $this->db_prepare_input($cd_input->post('main_content')); 
 		$footer 		= $cd_input->post('footer') ? 1 : 0; 
 		$header 		= $cd_input->post('header') ? 1 : 0; 
 		$restricted 	= $cd_input->post('restricted') ? 1 : 0;
@@ -2147,10 +2147,10 @@ class databaseCL extends framework {
 		}
 
 		$category 		= $cd_input->post('category');
-		$title 			= $collag->db_prepare_input($cd_input->post('title'));
-		$sub_title 		= $collag->db_prepare_input($cd_input->post('sub_title'));
-		$quote 			= $collag->db_prepare_input($cd_input->post('quote'));
-		$details 		= $collag->db_prepare_input($cd_input->post('post_details'));
+		$title 			= $this->db_prepare_input($cd_input->post('title'));
+		$sub_title 		= $this->db_prepare_input($cd_input->post('sub_title'));
+		$quote 			= $this->db_prepare_input($cd_input->post('quote'));
+		$details 		= $this->db_prepare_input($cd_input->post('post_details'));
 		$date 			= $cd_input->post('date');
 		$time 			= $cd_input->post('time'); 
 		$date_time 		= $marxTime->timemerger($date, $time, 1);
