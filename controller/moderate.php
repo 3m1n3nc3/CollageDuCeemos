@@ -464,9 +464,9 @@ function mainContent() {
 					str_ireplace('event', '', $title, $cev_rep);
 					str_ireplace('exhibition', '', $title, $cex_rep);
 					if ($cev_rep > 0 || $cex_rep > 0) {
-						$value = 'event';
+						$value  = 'event';
 					} else {
-						$value = $framework->safeLinks($title);
+						$value  = $framework->safeLinks($title);
 					}
 	 				
 					$restrict 	= $cd_input->post('restricted') ? 1 : 0;
@@ -616,9 +616,11 @@ function mainContent() {
 				// Show the list of created posts
 
 				$PTMPL['page_title'] = 'Manage posts';
+				
+				$collage->public 	 = NULL;
 
 				if (isset($_GET['delete'])) {
-					$did = $collage->db_prepare_input($_GET['delete']);
+					$did 				= $collage->db_prepare_input($_GET['delete']);
 					$delete = $collage->deleteContent($did, 2);
 					if ($delete === 1) {
 						$PTMPL['notification'] = messageNotice($LANG['store'].' item deleted successfully', 1, 6);
@@ -642,6 +644,8 @@ function mainContent() {
 			} 
 			elseif ($_GET['view'] == 'store_orders') 
 			{
+				$collage->public 		 = NULL;
+
 				// Show the list of created posts
 				if ($cd_input->get('item_id')) {
 
@@ -698,6 +702,8 @@ function mainContent() {
 					$theme = new themer('moderate/store_order_details');
 				} else {
 					$PTMPL['page_title'] = 'Manage Orders';
+
+					$collage->public	 = NULL;
 
 					if (isset($_GET['delete'])) {
 						$did = $cd_input->get('delete');
@@ -837,15 +843,15 @@ function mainContent() {
 		$url = $SETT['url']; // 'http://admin.collageduceemos.te';
 		if (strpos($url, 'admin') !== NULL) 
 		{
-			if (!isset($_GET['view']) || isset($_GET['view']) && $_GET['view'] != 'access') 
+			if (!isset($_GET['view']) || isset($_GET['view']) && $_GET['view'] != 'access')
 			{
-				$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=moderate&view=access'), 1);
+				$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=moderate&view=access&login=admin'), 1);
 			}
 		}
 
 		if (isset($_GET['view']) && $_GET['view'] == 'access') 
 		{ 
-			$PTMPL['return_btn'] = cleanUrls($SETT['url'].'/index.php?page=homepage');
+			$PTMPL['return_btn']     = cleanUrls($SETT['url'].'/index.php?page=homepage');
 
 			if (isset($_GET['login']) && $_GET['login'] == 'user') 
 			{
@@ -855,25 +861,25 @@ function mainContent() {
 			else 
 			{
 				$PTMPL['page_title'] = 'Admin Login';
-				$PTMPL['u_secret'] = '-secret';
+				$PTMPL['u_secret']   = '-secret';
 			}
 
 			if (isset($_POST['login'])) 
 			{
-				$PTMPL['username'] = $username = $framework->db_prepare_input($_POST['username']);
-				$PTMPL['password'] = $password = $framework->db_prepare_input($_POST['password']);
+				$PTMPL['username']   = $username = $framework->db_prepare_input($_POST['username']);
+				$PTMPL['password']   = $password = $framework->db_prepare_input($_POST['password']);
 
 				if (isset($_POST['remember']) && $_POST['remember'] == 'on') 
 				{
-					$PTMPL['remember'] = ' checked';
-					$framework->remember = 1;
+					$PTMPL['remember'] 		   = ' checked';
+					$framework->remember 	   = 1;
 				}
 
-				$framework->username = $username;
-				$framework->password = hash('md5', $password); 
+				$framework->username 		   = $username;
+				$framework->password 		   = hash('md5', $password); 
 
 				if ((isset($_GET['login']) && $_GET['login'] == 'user') || isset($_POST['user_login'])) {
-					$PTMPL['user_login'] = ' checked';
+					$PTMPL['user_login']       = ' checked';
 					$login = $framework->authenticateUser();
 				} else {
 					$login = $framework->administrator(1);

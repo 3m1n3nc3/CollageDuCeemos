@@ -43,6 +43,7 @@ RewriteRule ^listing/?$												index.php?page=listing										[NC]
 RewriteRule ^listing/sort/([^/]+)/?$								index.php?page=listing&sorting=$1							[NC] 
 RewriteRule ^listing/sort/([^/]+)/([^/]+)?$							index.php?page=listing&sorting=$1&type=$2					[NC] 
 
+RewriteRule ^login/?$												index.php?page=moderate&view=access							[NC] 
 RewriteRule ^login/([^/]+)/?$										index.php?page=moderate&view=access&login=$1				[NC] 
 
 RewriteRule ^moderate/?$											index.php?page=moderate										[NC] 
