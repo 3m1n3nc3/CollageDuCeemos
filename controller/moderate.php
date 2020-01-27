@@ -4,33 +4,34 @@ function mainContent() {
 	global $PTMPL, $LANG, $SETT, $configuration, $admin, $user, $user_role, $framework, $collage, $marxTime, $cd_input, $cd_session; 
 
 	if ($cd_session->userdata('access_token') && $cd_input->get('auth')) {
-   		$PTMPL['misc'] = '<div class="alert alert-danger font-weight-bold text-center">You are currently logged in with an authentication token, please treat the url above as you would your password...</div>';
+   		$PTMPL['misc'] 			= '<div class="alert alert-danger font-weight-bold text-center">You are currently logged in with an authentication token, please treat the url above as you would your password...</div>';
 	}
 
    	if ($admin || $user['founder'] || $user_role >= 4) {
-   		$notification = '';
+   		$notification 			= '';
 
    	 	$PTMPL['upload_script'] = $SETT['url'].'/connection/uploader.php?action=ckeditor';
     	
-    	$PTMPL['page_title']        = 'Admin Dashboard';  
+    	$PTMPL['page_title']    = 'Admin Dashboard';  
 			 
-		$PTMPL['site_url'] = $SETT['url'];
+		$PTMPL['site_url'] 		= $SETT['url'];
 
-		$post_id = $post_ids = $cd_input->get('post_id');
-		$get_post = $collage->fetchPost(1, $post_id)[0];
+		$post_id 				= $post_ids = $cd_input->get('post_id');
+		$get_post 				= $collage->fetchPost(1, $post_id)[0];
 
-		$get_statics = $collage->fetchStatic($post_id)[0];
+		$get_statics 			= $collage->fetchStatic($post_id)[0];
 
-		$item_id = $item_ids = $cd_input->get('item_id');
-		$store_item = $collage->fetchStore(1, $item_id)[0];
+		$collage->public 		= NULL;
+		$item_id 				= $item_ids = $cd_input->get('item_id');
+		$store_item 			= $collage->fetchStore(1, $item_id)[0];
 
-		$option = $option_var = $opt_var = $class = $PTMPL['notification'] = '';
-		$excess_['ap'] = $excess_['cp'] = 0;
+		$option 				= $option_var = $opt_var = $class = $PTMPL['notification'] = '';
+		$excess_['ap'] 			= $excess_['cp'] = 0;
 
-		$PTMPL['categories'] = $collage->postCategoryOptions($get_post);
+		$PTMPL['categories'] 	= $collage->postCategoryOptions($get_post);
 		
-		$PTMPL['return_btn'] = cleanUrls($SETT['url'].'/index.php?page=moderate');
-		$delete_btn = '<button type="submit" name="delete" class="btn btn-danger my-4 btn-block"><i class="fa fa-trash"></i> Delete</a>';
+		$PTMPL['return_btn'] 	= cleanUrls($SETT['url'].'/index.php?page=moderate');
+		$delete_btn 			= '<button type="submit" name="delete" class="btn btn-danger my-4 btn-block"><i class="fa fa-trash"></i> Delete</a>';
 
 		// Set parents select options for static content
 		$parents = array(
