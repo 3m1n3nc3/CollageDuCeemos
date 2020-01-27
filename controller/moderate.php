@@ -621,8 +621,8 @@ function mainContent() {
 				$collage->public 	 = NULL;
 
 				if (isset($_GET['delete'])) {
-					$did 				= $collage->db_prepare_input($_GET['delete']);
-					$delete = $collage->deleteContent($did, 2);
+					$did 					   = $collage->db_prepare_input($_GET['delete']);
+					$delete 				   = $collage->deleteContent($did, 2);
 					if ($delete === 1) {
 						$PTMPL['notification'] = messageNotice($LANG['store'].' item deleted successfully', 1, 6);
 					} elseif ($delete === 0) {
