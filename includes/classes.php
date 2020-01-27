@@ -1890,7 +1890,7 @@ class databaseCL extends framework {
 		if ($type == 1) {
 			$sql = sprintf("SELECT * FROM posts WHERE `id` = '%s' OR `post_id` = '%s' OR `safelink` = '%s'", $this->db_prepare_input($id), $this->db_prepare_input($id), $this->db_prepare_input($id));
 		} elseif ($type == 2) {
-			if (isset($this->manage) && (!$admin || !$user['founder'] || $user_role < 4)) {
+			if (isset($this->manage) && !$admin && !$user['founder'] && $user_role < 4) {
 				$restrict = ' AND `user_id` = \''.$user['uid'].'\'';
 			} else {
 				$restrict = '';
@@ -1929,7 +1929,7 @@ class databaseCL extends framework {
 		if ($type == 1) {
 			$sql = sprintf("SELECT * FROM store WHERE `id` = '%s' OR `safelink` = '%s'", $this->db_prepare_input($id), $this->db_prepare_input($id));
 		} elseif ($type == 2) {
-			if (isset($this->manage) && (!$admin || !$user['founder'] || $user_role < 4)) {
+			if (isset($this->manage) && !$admin && !$user['founder'] && $user_role < 4) {
 				$restrict = ' AND `user_id` = \''.$user['uid'].'\'';
 			} else {
 				$restrict = '';
