@@ -691,48 +691,58 @@ function globalTemplate($type = null, $jar = null) {
     global $LANG, $SETT, $PTMPL, $contact_, $configuration, $framework, $collage, $user, $admin, $user_role, $cd_session;
 
     $PTMPL['home_url'] = cleanUrls($SETT['url'] . '/index.php?page=homepage');
-    $PTMPL['introduction_url'] = cleanUrls($SETT['url'] . '/index.php?page=introduction');
-    $PTMPL['artist_page_url'] = cleanUrls($SETT['url'] . '/index.php?page=listing&sorting=catalog&type=artist');
-    $PTMPL['event_page_url'] = cleanUrls($SETT['url'] . '/index.php?page=events');
-    $PTMPL['about_page_url'] = cleanUrls($SETT['url'] . '/index.php?page=static&view=about');
-    $PTMPL['contact_page_url'] = cleanUrls($SETT['url'] . '/index.php?page=static&view=contact'); 
+    $PTMPL['introduction_url']      = cleanUrls($SETT['url'] . '/index.php?page=introduction');
+    $PTMPL['artist_page_url']       = cleanUrls($SETT['url'] . '/index.php?page=listing&sorting=catalog&type=artist');
+    $PTMPL['event_page_url']        = cleanUrls($SETT['url'] . '/index.php?page=events');
+    $PTMPL['about_page_url']        = cleanUrls($SETT['url'] . '/index.php?page=static&view=about');
+    $PTMPL['contact_page_url']      = cleanUrls($SETT['url'] . '/index.php?page=static&view=contact'); 
 
-    $PTMPL['social_links'] = fetchSocialInfo($configuration, 1);  
-    $PTMPL['social_links'] .= userAction();       
-    $PTMPL['site_name'] = $configuration['site_name'];  
+    $cart_counter            = $cd_session->userdata('cart') && !empty($cd_session->userdata('cart')) ? count($cd_session->userdata('cart')) : 0;
+    $cart_url                       = cleanUrls($SETT['url'] . '/index.php?page=store&view=cart');
+    
+    $social_links                   =
+    '<li class="nav-item">
+        <a class="nav-link waves-effect waves-light" href="'.$cart_url.'" title="Shopping Cart">
+            '. ($cd_session->userdata('cart') ? '<span class="badge danger-color">'.$cart_counter.'</span>' : '') .'
+            <i class="fa fa-shopping-cart"></i>
+        </a>
+    </li>'; 
+
+    $social_links                  .= fetchSocialInfo($configuration, 1);  
+    $social_links                  .= userAction();       
+    $PTMPL['social_links']          = $social_links;       
+    $PTMPL['site_name']             = $configuration['site_name'];  
 
     if ($admin || $user['founder'] || $user_role >= 4) {
-        $moderate = cleanUrls($SETT['url'] . '/index.php?page=moderate');
-        $PTMPL['admin_url'] = '<a href="'.$moderate.'" class="ml-3"><i class="fa fa-cog"></i> Site Admin </a>';   
+        $moderate                   = cleanUrls($SETT['url'] . '/index.php?page=moderate');
+        $PTMPL['admin_url']         = '<a href="'.$moderate.'" class="ml-3"><i class="fa fa-cog"></i> Site Admin </a>';   
     }
  
     // Set footer navigation links
-    $nav_list = $foot_list = $foot_list_var = $content_menu_link = '';
-    $collage->limit = 10;
-    $collage->start = 0;
-    $collage->parent = 'static'; 
-    $collage->priority = null;
-    $navis = $collage->fetchStatic( null, 1 );
+    $nav_list                       = $foot_list = $foot_list_var = $content_menu_link = '';
+    $collage->limit                 = 10;
+    $collage->start                 = 0;
+    $collage->parent                = 'static'; 
+    $collage->priority              = null;
+    $navis                          = $collage->fetchStatic( null, 1 );
 
-    $foot_list .= '<li><a href="'.$PTMPL['contact_page_url'].'">About Us</a></li>';
-    $foot_list_var .= '<li><a href="'.$PTMPL['contact_page_url'].'">Contact Us</a></li>';
+    $foot_list                     .= '<li><a href="'.$PTMPL['contact_page_url'].'">About Us</a></li>';
+    $foot_list_var                 .= '<li><a href="'.$PTMPL['contact_page_url'].'">Contact Us</a></li>';
         
-    $store_page_url = cleanUrls($SETT['url'] . '/index.php?page=store');
-    $content_menu_link .= $configuration['enable_store'] ? '
+    $store_page_url                 = cleanUrls($SETT['url'] . '/index.php?page=store');
+    $content_menu_link             .= $configuration['enable_store'] ? '
     <li class="nav-item ml-3 mb-0">
-        <a href="'.$store_page_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">'.strtoupper($LANG['store']).'</a>
+        <a href="'.$store_page_url.'" class="nav-link waves-effect waves-light font-weight-bold">'.strtoupper($LANG['store']).'</a>
     </li>' : '';
 
-    $cart_counter = $cd_session->userdata('cart') && !empty($cd_session->userdata('cart')) ? count($cd_session->userdata('cart')) : 0;
-    $cart_url = cleanUrls($SETT['url'] . '/index.php?page=store&view=cart');
-    $content_menu_link .= $cd_session->userdata('cart') ? '
-    <li class="nav-item ml-3 mb-0">
-        <a href="'.$cart_url.'" class="nav-link waves-effect waves-light font-weight-bold" href="#">
-            <span class="badge danger-color">'.$cart_counter.'</span>
-            <i class="fa fa-shopping-cart"></i>
-            CART
-        </a>
-    </li>' : '';
+    // $content_menu_link             .= $cd_session->userdata('cart') ? '
+    // <li class="nav-item ml-3 mb-0">
+    //     <a href="'.$cart_url.'" class="nav-link waves-effect waves-light font-weight-bold">
+    //         <span class="badge danger-color">'.$cart_counter.'</span>
+    //         <i class="fa fa-shopping-cart"></i>
+    //         CART
+    //     </a>
+    // </li>' : '';
 
     if ($navis) {
         $i = 1;
