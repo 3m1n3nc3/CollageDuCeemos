@@ -522,8 +522,8 @@ function mainContent() {
 
 				$PTMPL['username'] 		= $cd_input->post('username') ? $cd_input->post('username') : $admin['username'];
 				$PTMPL['email'] 		= $cd_input->post('email') ? $cd_input->post('email') : $admin['email'];
-				$PTMPL['password'] 		= $cd_input->post('password') ? $cd_input->post('password') : '';
-				$PTMPL['re_password'] 	= $cd_input->post('re_password') ? $cd_input->post('re_password') : '';
+				$PTMPL['password'] 		= $cd_input->post('password') ? $cd_input->post('password') : null;
+				$PTMPL['re_password'] 	= $cd_input->post('re_password') ? $cd_input->post('re_password') : null;
 					
 				$na = '';
 				if (isset($_POST['admin_action'])) {
