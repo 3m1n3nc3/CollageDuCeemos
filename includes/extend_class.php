@@ -216,6 +216,7 @@ function showTags($str = '', $extra_class = '') {
     if ($str) {
         foreach ($string as $list) {
             $link = cleanUrls($SETT['url'] . '/index.php?page=search&q='.urlencode('#'.$list).'&rel=search'); 
+            $link = '#'; // If you implement a tag search feature delete this line
             $tags .= '
               <a href="'.$link.'"><span class="badge bg-success '.$extra_class.'">'.$list.'</span></a>';
         }
@@ -1407,44 +1408,49 @@ function postFooter($reverse = null) {
 
 function site_sidebar() {
     global $SETT, $PTMPL, $configuration, $user, $admin, $user_role, $framework, $collage; 
-    $template = new themer('posts/sidebar'); $section = '';
 
-    $collage->public = 1;
-    $post_id = isset($_GET['post_id']) ? $_GET['post_id'] : null;
-    $post = $collage->fetchPost(1, $post_id)[0];
-    $update_id = '';
+    $template                     = new themer('posts/sidebar'); $section = '';
+
+    $collage->public              = 1;
+    $post_id                      = isset($_GET['post_id']) ? $_GET['post_id'] : null;
+    $post                         = $collage->fetchPost(1, $post_id)[0];
+    $update_id                    = '';
+
     if ($post && ($admin || $user['founder'] || $user_role >= 4 || $post['user_id'] == $user['uid'])) {
         // $PTMPL['user_card'] = userCard($post['user_id']);
-        $update_id = '&post_id='.$post['id'];
-        $update_link_label = 'Update Post';
+        $update_id                = '&post_id='.$post['id'];
+        $update_link_label        = 'Update Post';
     } else {
-        $update_link_label = 'Create new blog post';
+        $update_link_label        = 'Create new blog post';
     }
 
     if ($admin || $user['founder'] || $user_role >= 3) {
         if ($admin || $user['founder'] || $user_role >= 4) {
-            $create_post_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=create_post'.$update_id); 
+            $create_post_link     = cleanUrls($SETT['url'].'/index.php?page=moderate&view=create_post'.$update_id); 
         } elseif ($user_role == 3) {
-            $create_post_link = cleanUrls($SETT['url'].'/index.php?page=profile&view=create_post'.$update_id);
+            $create_post_link     = cleanUrls($SETT['url'].'/index.php?page=profile&view=create_post'.$update_id);
         }
         $PTMPL['create_post_btn'] = '<a href="'.$create_post_link.'" class="btn btn-primary font-weight-bolder btn-block mb-2">'.$update_link_label.'</a>';
     }
-    $PTMPL['advert_unit_one'] = $configuration['ads_off'] == 0 && $configuration['ads_1'] ? '
-    <section class="my-5">
-        <div class="card card-body py-0 px-0">
-            <div class="single-post">
-                <p class="font-weight-bold dark-grey-text text-center spacing grey lighten-4 py-2 my-1">
-                    <strong>ADVERT</strong>
-                </p>
-                <div class="pb-0">'.$configuration['ads_1'].'</div>
+
+    if (!isset($admin) || (isset($admin) && $admin['level'] == 1)) {
+        $PTMPL['advert_unit_one'] = $configuration['ads_off'] == 0 && $configuration['ads_1'] ? '
+        <section class="my-5">
+            <div class="card card-body py-0 px-0">
+                <div class="single-post">
+                    <p class="font-weight-bold dark-grey-text text-center spacing grey lighten-4">
+                        <strong>SPONSORED</strong>
+                    </p>
+                    <div class="pb-0">'.$configuration['ads_1'].'</div>
+                </div>
             </div>
-        </div>
-    </section>' : '';
+        </section>' : '';
+    }
 
-    $PTMPL['popular_posts'] = popularCard();
-    $PTMPL['archives'] = archiveLinks();
+    $PTMPL['popular_posts']        = popularCard();
+    $PTMPL['archives']             = archiveLinks();
 
-    $section = $template->make(); 
+    $section                       = $template->make(); 
     return $section; 
 }
 

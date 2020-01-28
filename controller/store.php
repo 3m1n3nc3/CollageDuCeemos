@@ -183,7 +183,7 @@ function mainContent() {
                 </div>';
 
                 $item_figure .= '
-                <figure class="col-md-4"> 
+                <figure class="col-4"> 
                     <a href="'.getImage($image, 1).'" data-size="1600x1067"> 
                         <img src="'.getImage($image, 1).'" class="img-fluid">
                     </a>

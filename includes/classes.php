@@ -2216,13 +2216,13 @@ class databaseCL extends framework {
 	function addToStore() {
 		global $PTMPL, $LANG, $SETT, $user, $admin, $framework, $collage, $marxTime;  
 
-		$item_ids 	= isset($_GET['item_id']) ? $framework->db_prepare_input($_GET['item_id']) : null;
-		$store_item = $collage->fetchStore(1, $item_ids)[0];
+		$item_ids 	    = isset($_GET['item_id']) ? $framework->db_prepare_input($_GET['item_id']) : null;
+		$store_item     = $collage->fetchStore(1, $item_ids)[0];
 
 		if ($user) {
-			$uids = $user['uid'];
+			$uids       = $user['uid'];
 		} else {
-			$uids = $admin['admin_user'];
+			$uids       = $admin['admin_user'];
 		}
 
 		$user_id 		= $framework->db_prepare_input($uids);
@@ -2239,17 +2239,17 @@ class databaseCL extends framework {
 		$promoted 		= $framework->db_prepare_input($this->promoted);
 		$added_date		= date('Y-m-d H:i:s', strtotime('NOW'));
 		
-		$image 			= $framework->multiImageUploader($this->image, null, 'H', TRUE);
+		$image 			= $framework->multiImageUploader($this->image, null, 'V', TRUE);
 
 		$image_errors 	= $collage->imageErrorHandler();
 
-		$safelink = $framework->checkSafeLinks($title);
+		$safelink       = $framework->checkSafeLinks($title);
 
-		$set_image = $set_image_val = null;
+		$set_image      = $set_image_val = null;
 
 		if ($image) 
 		{ 
-			$img_sql = $img_val_sql = $img_upd_sql = [];
+			$img_sql    = $img_val_sql = $img_upd_sql = [];
 			$i = 0;
 			foreach ($image AS $_images) {
 				$i++;
@@ -2259,15 +2259,15 @@ class databaseCL extends framework {
 					deleteFiles($store_item['image'.$i], 3); 
 				}
 
-				$img_sql[] = ', `image'.$i.'`';
-				$img_val_sql[] = ', \''.$_images.'\''; 
+				$img_sql[]      = ', `image'.$i.'`';
+				$img_val_sql[]  = ', \''.$_images.'\''; 
 				$img_upd_sql[] .= ', `image'.$i.'` = \''.$_images.'\''; 
 			}
 			if ($item_ids) {
-				$set_image = implode('', $img_upd_sql);
+				$set_image      = implode('', $img_upd_sql);
 			} else {
-				$set_image = implode('', $img_sql);
-				$set_image_val = implode('', $img_val_sql);
+				$set_image      = implode('', $img_sql);
+				$set_image_val  = implode('', $img_val_sql);
 			}
 		} 
 		else 
