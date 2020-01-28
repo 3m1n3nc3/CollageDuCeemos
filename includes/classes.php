@@ -2044,7 +2044,7 @@ class databaseCL extends framework {
 		$priority 		= $cd_input->post('priority'); 
 		$icon 			= $cd_input->post('icon'); 
 		$title 			= $this->db_prepare_input($cd_input->post('title')); 
-		$main_content 	= addcslashes(mysqli_real_escape_string($cd_input->post('main_content'))); 
+		$main_content 	= mysqli_real_escape_string($cd_input->post('main_content')); 
 		$footer 		= $cd_input->post('footer') ? 1 : 0; 
 		$header 		= $cd_input->post('header') ? 1 : 0; 
 		$restricted 	= $cd_input->post('restricted') ? 1 : 0;
@@ -2150,7 +2150,7 @@ class databaseCL extends framework {
 		$title 			= $this->db_prepare_input($cd_input->post('title'));
 		$sub_title 		= $this->db_prepare_input($cd_input->post('sub_title'));
 		$quote 			= $this->db_prepare_input($cd_input->post('quote'));
-		$details 		= addcslashes(mysqli_real_escape_string($cd_input->post('post_details')));
+		$details 		= mysqli_real_escape_string($cd_input->post('post_details'));
 		$date 			= $cd_input->post('date');
 		$time 			= $cd_input->post('time'); 
 		$date_time 		= $marxTime->timemerger($date, $time, 1);
@@ -2234,7 +2234,7 @@ class databaseCL extends framework {
 		$shipping 		= $framework->db_prepare_input($this->shipping); 
 		$available_qty 	= $framework->db_prepare_input($this->available_qty); 
 		$tags 			= $framework->db_prepare_input($this->tags);  
-		$description 	= addcslashes(mysqli_real_escape_string($this->description));  
+		$description 	= mysqli_real_escape_string($this->description);  
 		$public 		= $framework->db_prepare_input($this->public);  
 		$featured 		= $framework->db_prepare_input($this->featured); 
 		$promoted 		= $framework->db_prepare_input($this->promoted);
