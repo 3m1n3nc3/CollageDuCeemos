@@ -103,7 +103,7 @@ function mainContent() {
 
 				$PTMPL['jarallax'] = $more_info['jarallax'] ? jarallax($more_info['jarallax']) : ''; 
 			} else {
-				$PTMPL['more_info'] = '<div class="m-5">'.notAvailable('', '', 403).'</div>';
+				$PTMPL['more_info'] = '<div class="m-5">'.notAvailable('', '', 404).'</div>';
 			}
 				
 			$theme = new themer('static/about');

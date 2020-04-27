@@ -25,9 +25,9 @@ function mainContent() {
 
     // Check if there are no featured or non featured (No) post
     $collage->public = 1;
-    $yes_posts = $collage->fetchPost(2);
-    if (!$yes_posts) {
-    	$PTMPL['featured_posts'] = notAvailable('No new post to show you', 'text-info', 2);
+    $check_featured_posts = $collage->fetchPost(2);
+    if (!$check_featured_posts) {
+    	$PTMPL['featured_posts'] = notAvailable('No featured posts today!', 'text-info', 2);
     }
 
     // Show the featured posts

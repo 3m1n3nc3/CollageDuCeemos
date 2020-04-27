@@ -114,7 +114,7 @@ class framework {
         } elseif ($type) {
             $auth = $this->userData($this->username);
 
-            if ($this->remember == 1) {
+            if ($auth && $this->remember == 1) {
                 setcookie("username", $auth['username'], time() + 30 * 24 * 60 * 60, COOKIE_PATH);
                 setcookie("usertoken", $auth['token'], time() + 30 * 24 * 60 * 60, COOKIE_PATH);
 
@@ -137,6 +137,43 @@ class framework {
         return false;
     }
 
+    /**
+     * Alias to access administrator() and authenticateUser() methods, with provisions for error handling
+     * @param  string $username Username to compare
+     * @param  string $type     Set to 1 for admin login
+     * @return array            returns an array containing all required keys and value sets for the login 
+     *                          validation and error handling
+     */
+    function loginAccess($username = '', $type = 0)
+    { 
+        if ($type == 1) 
+        {
+            // Administrator login
+            $auth = $this->administrator(1);
+        }
+        else 
+        {
+            // User login
+            $auth = $this->authenticateUser();
+        }
+
+        // Default status
+        $response['status'] = 0;
+
+        if (isset($auth['username']) && $auth['username'] === $username) 
+        {
+            // Login was successful
+            $response['status'] = 1;
+            $response['msg'] = messageNotice('Login Successful, You will now be redirected', 1); 
+        }
+        else
+        {
+            // Login has failed
+            $response['msg'] = messageNotice($auth, 3); 
+        }
+        return $response;
+    }
+
 	function checkUser() {
 		$username = $this->username;
 		$password = $this->password;
@@ -146,23 +183,119 @@ class framework {
 
     // Registeration function
     function registrationCall() {
+        global $cd_input;
+
         // Prevents bypassing the FILTER_VALIDATE_EMAIL
-        $email = htmlspecialchars($_POST['email'], ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars($this->email, ENT_QUOTES, 'UTF-8');
 
-        $token = $this->generateToken();
-        $password = hash('md5', $_POST['password']);
-        $sql = sprintf("INSERT INTO " . TABLE_USERS . " (`email`, `username`, `password`, `f_name`, `l_name`,
-		 `country`, `state`, `city`, `token`) VALUES 
-	        ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", $this->email, $this->username,
-            $this->password, $this->firstname, $this->lastname, $this->country, $this->state, $this->city, $token);
-        $response = $this->dbProcessor($sql, 0, 1);
+        $auth         = $this->generateToken(null, 1);
+        $auth_date    = date('Y-m-d h:i:s', strtotime('now'));
+        $access_token = $this->generateToken();
+        $password = $cd_input->post('password');
 
-        if ($response == 1) {
-            $_SESSION['username'] = $this->username;
-            $_SESSION['password'] = $password;
-            $process = 1;
+        // Default Status
+        $response['status'] = 0;
+        $response['msg'] = '';
+
+        if (strlen($this->username) < 3) 
+        {
+            // Username too short
+            $response['msg'] = messageNotice('Username too short', 3); 
+        }
+        elseif (strlen($password) < 6)
+        {
+            // Password too short
+            $response['msg'] = messageNotice('Password too short', 3); 
+        } 
+        elseif ($this->userData($this->username)) 
+        {
+            // User already exist
+            $response['msg'] = messageNotice('User already exist', 3); 
+        } 
+        elseif ($this->userData($this->email)) 
+        {
+            // Email already used
+            $response['msg'] = messageNotice('Email already used', 3); 
+        }
+        elseif (!$this->accepted) 
+        {
+            // Email already used
+            $response['msg'] = messageNotice('You need to agree to our terms and conditions', 3); 
+        } 
+        else
+        { 
+            $sql = sprintf(
+                "INSERT INTO " . TABLE_USERS . "  
+                (`username`, `email`, `password`, `role`, `access_token`, `auth_token`, `token_date`) 
+                VALUES 
+                ('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+                $this->username, $this->email, MD5($password), '3', $access_token, $auth, $auth_date
+            );
+
+            $this->dbProcessor($sql, 0, 3);
+
+            if (!$this->dbProcessorErrors()) 
+            {
+                $response['status']   = 1;
+                $response['msg']      = messageNotice('Registration was successful', 3); 
+
+                $_SESSION['username'] = $this->username;
+                $_SESSION['password'] = $password; 
+
+                // Send Registration Emails
+                $this->send_account_emails($this->username);
+            } 
+            else
+            {
+                $response['msg'] = $this->dbProcessorErrors();
+            }
         }
         return $response;
+    }
+
+    /**
+     * This function will handle the sending of account related email messages
+     * @param  string  $user_id The id of the user receiving the emails
+     * @param  integer $type    2: Send welcome message, 
+     * @param  integer $type    1: Send verification message, 
+     *                          [default] 0: Send verification or welcome message depending on site config
+     * @return null             mailerDaemon will deliver the email via phpmailer
+     */
+    function send_account_emails($user_id = '', $type = 0) {
+        global $SETT, $LANG, $configuration;
+
+        $email_temp = array();
+        $user = $this->userData($user_id, 1);
+        $userrealname = $this->realName($user['username'], $user['fname'], $user['lname']);
+
+        $activation_link = cleanUrls($SETT['url'].'/index.php?page=profile&update=verify&auth='.$user['access_token']); 
+        $login_link = cleanUrls($SETT['url'].'/index.php?page=profile&auth='.$user['access_token']); 
+ 
+        // Send Account Emails
+        if ($configuration['email_verification'] || $type === 1) 
+        {
+            $email_temp = array(
+                'receiver' => $userrealname,
+                'subject' => sprintf($LANG['activation_required'], $configuration['site_name']),
+                'message' => $LANG['activation_message'],
+                'more_info' => $LANG['click_to_activate'],
+                'btn' => array($activation_link, $LANG['activate_your_account'])
+            );
+            
+        }
+        elseif ($configuration['welcome_email'] || $type === 2) 
+        {
+            $email_temp = array(
+                'receiver' => $userrealname,
+                'subject' => sprintf($LANG['registration_welcome'], $configuration['site_name']),
+                'message' => $LANG['welcome_message'],
+                'more_info' => $LANG['click_to_login'],
+                'btn' => array($login_link, $LANG['login_your_account'])
+            );
+        } 
+
+        $this->message = returnPage('email_template', $email_temp);
+        $this->mailerDaemon($SETT['email'], $user['email'], $email_temp['subject']);
     }
 
     function updateProfile($uid = null) {
@@ -175,21 +308,17 @@ class framework {
         $data = $this->userData($uid, 1);
         $fname = $this->db_prepare_input($this->fname);
         $lname = $this->db_prepare_input($this->lname);
-        $email = $this->db_prepare_input($this->email); 
-        $username = $this->db_prepare_input($this->username); 
+        $email = $this->db_prepare_input($this->email);  
+
         $facebook = $this->db_prepare_input($this->facebook);
         $twitter = $this->db_prepare_input($this->twitter);
         $instagram = $this->db_prepare_input($this->instagram);  
         $intro = $this->db_prepare_input($this->intro);
-        $qualification = $this->db_prepare_input($this->qualification);	
-        if ($this->password == '') {
-        	$password = ''; 
-	    } else {
-	    	$passhash = hash('md5', $this->db_prepare_input($this->password));
-	        $password = " `password` = '$passhash', "; 
-	    }
+        $qualification = $this->db_prepare_input($this->qualification); 
+
+        $this->nulled_upload = TRUE; 
         $image = $this->imageUploader($this->image, 2); 
-        $errors = $collage->imageErrorHandler();
+        $errors = $this->imageErrorHandler();
 	if ($image) { 
 		if ($data) {
 			deleteFiles($data['photo'], 3);
@@ -203,16 +332,27 @@ class framework {
 		} 
 	}
 
-        $sql = sprintf("UPDATE " . TABLE_USERS . " SET `fname` = '%s', `lname` = '%s', " .
-            "`email` = '%s',%s `username` = '%s', `facebook` = '%s', `twitter` = '%s', " . 
-            "`instagram` = '%s', `intro` = '%s', `qualification` = '%s', `photo` = '%s' WHERE `uid` = '%s'", 
-            $fname, $lname, $email, $password, $username, $facebook, $twitter, $instagram, $intro, $qualification, $set_image, $uid);
+    if ($email !== $user['email'] && $this->userData($email)) 
+    { 
+        // Email already used
+        $save = 'Email already used'; 
+    }
+    else
+    {
+        $sql = sprintf("UPDATE " . TABLE_USERS . " SET `fname` = '%s', `lname` = '%s', `email` = '%s', `facebook` = '%s', 
+            `twitter` = '%s',`instagram` = '%s', `intro` = '%s', `qualification` = '%s', `photo` = '%s' WHERE `uid` = '%s'", 
+            $fname, $lname, $email, $facebook, $twitter, $instagram, $intro, $qualification, $set_image, $uid); 
+
         $save = $this->dbProcessor($sql, 0, 1);
-        if ($save == 1) {
-        	$msg = messageNotice('Profile has been updated', 1);
-        } else {
-        	$msg = messageNotice($save);
-        }
+    }
+    if ($save == 1) 
+    {
+    	$msg = messageNotice('Profile has been updated', 1);
+    } 
+    else 
+    {
+    	$msg = messageNotice($save);
+    }
 	if (isset($errors)) {
 		$msg .= messageNotice($errors, 3);
 	}
@@ -338,46 +478,63 @@ class framework {
 		$this->dbProcessor(sprintf("UPDATE `%s` SET `auth_token` = '%s' WHERE `username` = '%s'", $table, $this->generateToken(null, 1), $this->db_prepare_input($this->username)));
 	}
 
-	function account_activation($token, $username) {
+	function account_activation($token, $username) 
+    {
 		global $SETT, $LANG, $configuration, $user, $framework;
-		if($token == 'resend') { 
-			// Check if a token has been sent before, and is not expired
-			$sql = sprintf("SELECT * FROM " . TABLE_USERS . " WHERE username = '%s' AND status = '0'", $this->db_prepare_input($username));
-			$data = $this->dbProcessor($sql, 1)[0];
- 
-			if($user['token'] && date("Y-m-d", strtotime($data['date'])) < date("Y-m-d")) {
-				$date = date("Y-m-d H:i:s");
-				$token = $this->generateToken(null, 2);
-				$sql = sprintf("UPDATE " . TABLE_USERS . " SET `token` = '%s', `date` = '%s'"
+
+        // Check if a token has been sent before, and is not expired
+        $sql = sprintf("SELECT * FROM " . TABLE_USERS . " WHERE username = '%s' AND verified = '0'", $this->db_prepare_input($username));
+        $data = $this->dbProcessor($sql, 1)[0];
+
+        // If this user is already verified or does not exist, do nothing
+        if (!$data) return;
+
+		if($token == 'resend') 
+        {  
+			if(!$user['access_token'] || date("Y-m-d", strtotime($data['token_date'])) < date("Y-m-d")) 
+            {
+				$date  = date("Y-m-d H:i:s");
+				$token = $this->generateToken();
+				$sql   = sprintf("UPDATE " . TABLE_USERS . " SET `access_token` = '%s', `token_date` = '%s'"
 				." WHERE `username` = '%s'", $token, $date, $this->db_prepare_input($username));
-				$return = $this->dbProcessor($sql, 0, 1);
-				if($configuration['activation'] == 'email') {
-					$link = cleanUrls($SETT['url'].'/index.php?a=account&unverified=true&activation='.$token.'&username='.$username);
-					$msg = sprintf($LANG['welcome_msg_otp'], $configuration['site_name'], $token);	
-					$subject = ucfirst(sprintf($LANG['activation_subject'], $username, $configuration['site_name']));
-					
-					$this->username = $username;
-					$this->content = $msg;
-					$this->message = $this->emailTemplate();
-					$this->user_id = $data['id'];  
-					$this->activation = 1;
-	    			$this->mailerDaemon($SETT['email'], $data['email'], $subject);
-	    			return messageNotice($LANG['activation_sent'], 1);
-				}			
-			} else {
+
+				$this->dbProcessor($sql, 0, 3);
+
+                // Show the database errors
+                if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+
+                // Send the verification email
+				$this->send_account_emails($username, 1);
+    			return messageNotice($LANG['activation_sent'].'<br><small>'.($this->mail_error ?? null).'</small>', 1);  	
+			} 
+            else 
+            {
 				return messageNotice($LANG['activation_already_sent']);
 			}
-		} else {
-			$sql = sprintf("SELECT * FROM " . TABLE_USERS . " WHERE username = '%s' AND token = '%s' AND status = '0'", 
+		} 
+        else 
+        {
+			$sql = sprintf("SELECT * FROM " . TABLE_USERS . " WHERE username = '%s' AND access_token = '%s' AND verified = '0'", 
 				$this->db_prepare_input($username), $this->db_prepare_input($token)); 
-			$return = $this->dbProcessor($sql, 0, 1);
-			if ($return == 1) {
-				$sql = sprintf("UPDATE " . TABLE_USERS . " SET `status` = '1', `token` = ''"
+			$auth = $this->dbProcessor($sql, 1);
+
+            // Show the database errors
+            if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+
+			if ($auth) 
+            {
+				$sql = sprintf("UPDATE " . TABLE_USERS . " SET `verified` = '1', `access_token` = ''"
 				." WHERE `username` = '%s'", $this->db_prepare_input($username));
-				$return = $this->dbProcessor($sql, 0, 1);
-				return $return == 1 ? messageNotice('Congratulations, your account was activated successfully', 1) : '';
-			} else {
-				return messageNotice('Invalid OTP', 3);
+				$this->dbProcessor($sql, 0, 3);
+ 
+                // Show the database errors
+                if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+
+                return messageNotice('Congratulations, your account has been activated successfully', 1); 
+			} 
+            else 
+            {
+				return messageNotice($LANG['activation_failed'] . ', ' . $LANG['invalid_auth'], 3);
 			}
 		}
 	}
@@ -435,7 +592,7 @@ class framework {
 				// 0 = off 
 				// 1 = client messages
 				// 2 = client and server messages
-				$mail->SMTPDebug = $configuration['smtp_debug'];
+				$mail->SMTPDebug = 0;//$configuration['smtp_debug'];
 				
 				$mail->CharSet = 'UTF-8';	//Set the CharSet encoding
 				
@@ -476,7 +633,7 @@ class framework {
 				//send the message, check for errors
 				if(!$mail->send()) {
 					// Return the error in the Browser's console
-					//echo $mail->ErrorInfo;
+					$this->mail_error = $mail->SMTPDebug ? $mail->ErrorInfo : '';
 				}
 			} else {
 				$headers  = 'MIME-Version: 1.0' . "\r\n";
@@ -1069,16 +1226,28 @@ class framework {
 	* redirect page
 	*/
 	function redirect($location = '', $type = 0) {
-	    global $SETT;
-	    if ($type) {
-	        header('Location: '.$location);
-	    } else {
-	        if($location) {
-                header('Location: ' . cleanUrls($SETT['url'] . '/index.php?page=' . $location));
-	        } else {
-                header('Location: ' . cleanUrls($SETT['url'] . '/index.php'));
-	        }        
+	    global $SETT, $cd_session;
+
+	    if (!$type) 
+        { 
+	        if($location) 
+            {
+                $location = cleanUrls($SETT['url'] . '/index.php?page=' . $location);
+	        } 
+            else 
+            {
+                $location = cleanUrls($SETT['url'] . '/index.php');
+	        }       
 	    }
+
+        // If there is a redirect_to session, unset it
+        if (isset($_SESSION['redirect_to'])) 
+        {
+            $cd_session->unset_userdata('redirect_to');
+        }
+
+        // Now redirect the page
+        redirect($location); 
 
 	    exit;
 	}
@@ -1220,8 +1389,51 @@ class framework {
 		return $name;
 	}
 
-	function mdbColors($key, $type = null) {
-		$colors = array(
+    function mdbSkins($type = 0, $key = '') 
+    {
+        $colors = array(
+            'grey-skin',
+            'light-blue-skin',
+            'indigo-skin',
+            'pink-skin', 
+            'deep-purple-skin',
+            'mdb-skin',
+            'cyan-skin',
+            'black-skin',
+            'white-skin'
+        );
+
+        if ($type === 0) 
+        {
+            $select = '';
+            foreach ($colors as $option) {
+                $title = ucwords(str_ireplace('-', ' ', $option));
+                $sel   = ($key == $option ? 'selected="selected"' : ''); 
+                $select .= '<option value="'.$option.'"'.$sel.'>'.$title.'</option>';
+            }
+            return $select;
+        }
+        elseif ($type === 1 || $type === 2) 
+        {   
+            // echo$search = str_ireplace($key.'-skin', $key, $key); 
+            $color_key   = array_search($key, $colors, true); 
+            if ($type === 1) 
+            {
+                return $colors[$color_key];
+            }
+            elseif ($type === 2) 
+            {
+                if ($colors[$color_key] == 'mdb-skin') {
+                    $colors[$color_key] = str_ireplace('-skin', '-color-skin', $colors[$color_key]);
+                }
+                return $colors[$color_key] = str_ireplace('-skin', '', $colors[$color_key]);
+            }
+        }
+    }
+
+    function mdbColors($key, $type = null) 
+    {
+        $colors = array(
 			0 	=>	'light-text',
 			1 	=> 	'pink-text',
 			2 	=> 	'cyan-text',
@@ -1389,7 +1601,7 @@ class framework {
 		$size_format = $marxTime->swissConverter($size);
 
 		// Generate the image properties  
-		if (isset($file['name'])) { 
+		if (!empty($file['name'])) { 
 			$_FILE = $file;
 
 			$file_name = $_FILE['name'];
@@ -1402,10 +1614,10 @@ class framework {
 
 		    // Check if file is allowed for upload type
 			if(in_array($file_ext,$allowed)=== false){
-			    $errors[] .= 'File type not allowed, use a JPEG, JPG or PNG file.';
+			    $errors[] .= 'This image type is not allowed, use a JPEG, JPG or PNG file.';
 			}
 			if($file_size > $size){
-	    		$errors[] .= 'Upload should not be more than '.$size_format;
+	    		$errors[] .= 'Uploaded image should not be more than '.$size_format.'.';
 			}
 
 			/*
@@ -1442,16 +1654,19 @@ class framework {
 						return array($new_image, 1);
 					} else  {
 						// chmod($dir.'/default.jpg', 0755);
-						$this->image_error = 'You do not have enough permissions to write this file';
+						$this->image_error = 'You do not have enough permissions to write this file.';
 					}
 				} else {
 					$this->image_error = $errors[0];
 				}
 			}	
-		} else {
-			$this->image_error = 'Please select a file to upload';
+		} else 
+        {
+			if (!isset($this->nulled_upload)) $this->image_error = 'Please upload an image.';
 		}	
-		$collage->image_error = $framework->image_error = $this->image_error;
+        if (isset($this->image_error)) {
+            $collage->image_error = $framework->image_error = $this->image_error;
+        }
 	}
 
 	public function multiImageUploader($files = null, $type = null, $direction = 'H', $skip_upload = FALSE) {
@@ -1499,10 +1714,10 @@ class framework {
 
 			    // Check if file is allowed for upload type
 				if(in_array($file_ext,$allowed)=== false){
-				    $errors[] .= '<b>File ' . $i . ' Error:</b> File type not allowed, use a JPEG, JPG or PNG file.<br>';
+				    $errors[] .= '<b>File ' . $i . ' Error:</b> This image type is not allowed, use a JPEG, JPG or PNG file.<br>';
 				}
 				if($file_size > $size){
-		    		$errors[] .= '<b>File ' . $i . ' Error:</b> Upload should not be more than '.$size_format.'<br>';
+		    		$errors[] .= '<b>File ' . $i . ' Error:</b> Uploaded image should not be more than '.$size_format.'.<br>';
 				}
 
 				/*
@@ -1538,14 +1753,14 @@ class framework {
 				        	$image->save($dir.$new_image);     
 						} else  {
 							// chmod($dir.'/default.jpg', 0755);
-							$this->image_error .= '<b>File ' . $i . ' Error:</b> You do not have enough permissions to write this file<br>';
+							$this->image_error .= '<b>File ' . $i . ' Error:</b> You do not have enough permissions to write this file.<br>';
 						}
 					} else {
 						$this->image_error .= $errors[0];
 					}
 				}	
 			} else {
-				$this->image_error .= '<b>File ' . $i . ' Error:</b> Please select a file to upload<br>';
+				$this->image_error .= '<b>File ' . $i . ' Error:</b> Please upload an image.<br>';
 			}
 		}
 
@@ -1610,7 +1825,7 @@ class framework {
 	    return $msg; 
 	} 
 
-	public function dbProcessorErrors($error = '', $ld = '<p>', $rd = '</p>')
+	public function dbProcessorErrors($ld = '<p>', $rd = '</p>')
 	{	 
 		if (isset($this->db_processor_errors)) 
 		{
@@ -1622,10 +1837,12 @@ class framework {
 	/**
 	/* Function to process all database calls
 	**/
-	function dbProcessor($sql = 0, $type = 0, $response='') {
+	function dbProcessor($sql = 0, $type = 0, $response='') 
+    {
 		global $DB;
 		// Type 0 = Insert, Update, Delete
-		// Type 1 = Select 
+        // Type 1 = Select 
+		// Type 11 = Select Single row
 		// Type 2 = Just return the response
 		// Response 5 = Debug
 		// Response 1 = Return 1 on success or error notice on fail
@@ -1633,49 +1850,84 @@ class framework {
 		// Response 3 = Return last insert id on success or 0 on fail
 
 		$data = null; 
-		if ($type == 2) {
+		if ($type == 2) 
+        {
 			$data = $response;
-		} else {
-			try {
+		} 
+        else 
+        {
+			try 
+            {
 				$stmt = $DB->prepare($sql);	 	
 				$stmt->execute();
 				$last_id = $DB->lastInsertId();
-			} catch (Exception $ex) {
-			   $error = messageNotice($ex->getMessage(), 3);
+			} catch (Exception $ex) 
+            {
+                $error_query = '<div class="text-info"><small>'.$sql.'</small></div>';
+			   $error = messageNotice($ex->getMessage() . $error_query, 3);
 			}
-			if (isset($error)) {
+
+			if (isset($error)) 
+            {
 				$this->db_processor_errors = $error;
 			    $data = $error;
-			} else {
-				if ($type == 0) {
-					if ($stmt->rowCount() > 0) {  
-						if ($response == 2) {
+			} 
+            else 
+            {
+				if ($type === 0) 
+                {
+					if ($stmt->rowCount() > 0) 
+                    {  
+						if ($response == 2) 
+                        {
 							$data = 1;
-						} elseif ($response == 3) {
+						} elseif ($response == 3) 
+                        {
 							$data = $last_id;
-						} else {
+						} 
+                        else 
+                        {
 							$data = $response;
 						}
-					} else {
-						if ($response == 2 || $response == 3) {
+					} 
+                    else 
+                    {
+						if ($response == 2 || $response == 3) 
+                        {
 							$data = 0;
-						} else {
+						} 
+                        else 
+                        {
 							$data = 'No changes were made';
 						}
 					}		 
-				} elseif ($type == 1) {
-					$results = $stmt->fetchAll();
-				    if (count($results)>0) { 
-				    	$data = $results; 
-				    }
-				}
+				} 
+                elseif ($type === 1 || $type === 11) 
+                {
+                    $results = $stmt->fetchAll();
+                    if (count($results)>0) 
+                    { 
+                        if ($type === 1) 
+                        {
+                            $data = $results;  
+                        }
+                        else
+                        {
+                            $data = $results[0];  
+                        }
+                    }
+                }  
 			}		
 		} 
-		if ($response == 5) {
+
+		if ($response == 5) 
+        {
 			$data .= messageNotice('Debug is on, response is set to : '.$data, 2);
 			$data .= messageNotice('Query String: '.$sql);
 		}
+
 		$data = (isset($error) ? $error : $data);
+
 		return $data;
 	}
 
@@ -1792,92 +2044,143 @@ class doRecovery extends framework {
 	function verify_user() {
 		global $LANG;
 		// Query the database and check if the username exists
-		$result = $this->userData($this->email_address);  
+		$data = $this->userData($this->username);   
 		
 		// If user is verified or found
-		if ($result) {
-
-			// Generate the recovery key
-			$data = $result;
-			$this->list = array($data['id'], $data['username'], $data['email']);
-			$sentToken = $this->setToken($data['username']);
-			
-			// If the recovery key has been generated
-			if($sentToken) {
-				// Return the username, email and recovery key
-				return $sentToken;
-			}
-		} else {
-			return messageNotice($LANG['not_found_email'], 2);
+		if ($data) 
+        {
+			// Generate the recovery key 
+			return $this->setToken($data['username']);  
+		} 
+        else 
+        {
+			return messageNotice($LANG['no_account_found'], 3);
 		}
 	}
 	
 	function setToken($username) {
 		global $SETT, $LANG, $configuration;
 		// Generate the token
-		$key = $this->generateToken(5, 1);
+		$token = $this->generateToken();
 				
 		// Prepare to update the database with the token
 		$date = date("Y-m-d H:i:s");
-		$sql = sprintf("UPDATE ".TABLE_USERS." SET `token` = '%s', `date` = '%s' WHERE `username` = '%s'", $this->db_prepare_input($key), $date, $this->db_prepare_input(mb_strtolower($username))); 
+		$sql = sprintf("UPDATE ".TABLE_USERS." SET `access_token` = '%s', `token_date` = '%s' WHERE `username` = '%s'", $this->db_prepare_input($token), $date, $this->db_prepare_input(mb_strtolower($username))); 
 		 
-		$result = $this->dbProcessor($sql, 0, 1); 
+		$results = $this->dbProcessor($sql, 0, 1); 
 
-		$link = cleanUrls($SETT['url'].'/index.php?page=account&password_reset=true&username='.$username.'&token='.$key);
-		$msg = sprintf($LANG['recovery_msg'], $configuration['site_name'], $link, $link);	
-		$subject = ucfirst(sprintf($LANG['recovery_subject'], $username, $configuration['site_name']));
-		
-		list($uid, $username, $email) = $this->list;
+        // Show the database errors
+        if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+        
+        if ($configuration['cleanurl']) 
+        {
+            $recovery_link = cleanUrls($SETT['url'].'/login/recovery/'.$username.'/auth/'.$token);
+        }
+        else
+        {
+          $recovery_link = cleanUrls($SETT['url'].'/index.php?page=moderate&view=access&login=recovery&username='.$username.'&auth='.$token);
+        }
+        
+        $user = $this->userData($username); 
+        $userrealname = $this->realName($user['username'], $user['fname'], $user['lname']);
 
-		$this->username = $username;
-		$this->content = $msg;
-		$this->message = $this->emailTemplate();
-		$this->user_id = $uid;  
-		$this->activation = 1;
-		$this->mailerDaemon($SETT['email'], $email, $subject);
+        $email_temp = array(
+            'receiver' => $userrealname,
+            'subject' => sprintf($LANG['change_your_password'], $configuration['site_name']),
+            'message' => sprintf($LANG['change_password_message'], $configuration['site_name']),
+            'more_info' => $LANG['click_to_change_password'],
+            'btn' => array($recovery_link, $LANG['change_password'])
+        ); 
+
+        $this->message = returnPage('email_template', $email_temp);
+        $this->mailerDaemon($SETT['email'], $user['email'], $email_temp['subject']);
 
 		// If token was updated return token
-		if($result == 1) {
-			return messageNotice($LANG['recovery_sent'], 1);
-		} else {
-			return false;
+		if($results) 
+        {
+            return messageNotice($LANG['recovery_email_sent'].'<br><small>'.($this->mail_error ?? null).'</small>', 1); 
 		}
+		return false;
 	}
 	
 	function changePassword($username, $password, $token) {
-		global $framework;
-		// Check if the username and the token exists
-		$sql = sprintf("SELECT `username` FROM ".TABLE_USERS." WHERE `username` = '%s' AND `token` = '%s'", $this->db_prepare_input(mb_strtolower($username)), $this->db_prepare_input($token));
-		$result = $this->dbProcessor($sql, 1);
-		
-		// If a valid match was found
-		if ($result) {
-			$password = hash('md5', $framework->db_prepare_input($password));
-			
-			// Change the password
-			$sql = sprintf("UPDATE ".TABLE_USERS." SET `password` = '%s', `token` = '' WHERE `username` = '%s'", $password, $this->db_prepare_input(mb_strtolower($username)));  
+		global $LANG, $framework, $marxTime, $cd_session;
 
-			$result = $this->dbProcessor($sql, 0, 1);
+        if (strlen($password) < 6) 
+        {
+            // Password too short
+            return messageNotice('Password too short', 3); 
+        } 
+        else
+        {
+    		// Check if the username and the token exists
+    		$sql = sprintf("SELECT `username`, `token_date` FROM ".TABLE_USERS." WHERE `username` = '%s' AND `access_token` = '%s'", $this->db_prepare_input(mb_strtolower($username)), $this->db_prepare_input($token));
+    		$result = $this->dbProcessor($sql, 11);
 
-			if($result == 1) {
-				return true;
-			} else {
-				return false;
-			}
-		}
+            // Show the database errors
+            if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+            
+            $validity = $marxTime->timeDifference(date("Y-m-d H:i:s"), date("Y-m-d H:i:s", strtotime($result['token_date'])));
+    		// If a valid match was found 
+            if( round($validity) < 5 )
+            {
+    			$password = MD5($framework->db_prepare_input($password));
+    			
+    			// Change the password
+    			$sql = sprintf("UPDATE ".TABLE_USERS." SET `password` = '%s', `access_token` = '' WHERE `username` = '%s'", $password, $this->db_prepare_input(mb_strtolower($username)));  
+
+    			$result = $this->dbProcessor($sql, 0, 1);
+
+                // Show the database errors
+                if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+
+    			if($result == 1) {
+                    // Log the user in and redirect to profile
+                    if (!isset($_SESSION['username'])) 
+                    {
+                        $_SESSION['username'] = $username; 
+                        $_SESSION['password'] = $password;
+                    } 
+
+                    if ($cd_session->userdata('redirect_to')) 
+                    {
+                        $this->redirect($cd_session->userdata('redirect_to'), 1);
+                    } 
+                    else 
+                    {
+                        $this->redirect('profile');
+                    }
+
+    				return messageNotice($LANG['password_changed'], 1);
+    			} else {
+    				return messageNotice($LANG['password_reset_failed'] . ', ' . $LANG['invalid_auth'], 3);
+    			}
+    		}
+            else
+            {
+                return messageNotice($LANG['password_reset_failed'] . ', ' . $LANG['expired_auth'], 3);
+            }
+        }
 	}
 }
 
 /**
  * Class to manage all database entries
  */
-class databaseCL extends framework {
+class databaseCL extends framework 
+{
 	 
-  	function fetchFounder() {
-  		return $this->dbProcessor("SELECT * FROM users WHERE `founder` = '1'", 1)[0];
+  	function fetchFounder() 
+    {
+  		$query = $this->dbProcessor("SELECT * FROM users WHERE `founder` = '1'", 1)[0]; 
+
+        // Show the database errors
+        if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+        return $query;
   	}
 
-	function fetchPost($type = null, $id = null) {
+	function fetchPost($type = null, $id = null) 
+    {
 		global $admin, $user, $user_role, $configuration;	
 
 		$public = isset($this->public) ? ' AND `public` = \''.$this->public.'\'' : '';
@@ -1885,39 +2188,62 @@ class databaseCL extends framework {
 		$promoted = isset($this->promoted) ? ' AND `promoted` = \''.$this->promoted.'\' OR `featured` = \'1\'' : '';
 		$sort = isset($this->sort) ? ' AND `category` = \''.$this->sort.'\'' : '';
 		$archive = isset($this->archive) ? ' AND MONTH(date) = \''.date('m', strtotime($this->archive)).'\'' : '';
-		$limit = isset($this->limit) ? sprintf(' ORDER BY `date` DESC LIMIT %s, %s', $this->start, $this->limit) : '';
+		$limit = isset($this->limit) && $this->limit ? sprintf(' ORDER BY `date` DESC LIMIT %s, %s', $this->start, $this->limit) : ' ORDER BY `date` DESC';
 
-		if ($type == 1) {
+		if ($type == 1) 
+        {
 			$sql = sprintf("SELECT * FROM posts WHERE `id` = '%s' OR `post_id` = '%s' OR `safelink` = '%s'", $this->db_prepare_input($id), $this->db_prepare_input($id), $this->db_prepare_input($id));
-		} elseif ($type == 2) {
-			if (isset($this->manage) && !$admin && !$user['founder'] && $user_role < 4) {
+		} 
+        elseif ($type == 2) 
+        {
+			if (isset($this->manage) && !$admin && !$user['founder'] && $user_role < 4) 
+            {
 				$restrict = ' AND `user_id` = \''.$user['uid'].'\'';
-			} else {
+			} 
+            else 
+            {
 				$restrict = '';
 			}
-			$sql = sprintf("SELECT * FROM posts WHERE 1%s%s%s%s%s%s", $restrict, $featured, $promoted, $public, $sort, $archive, $limit);
-		} else { 
+			$sql = sprintf("SELECT * FROM posts WHERE 1%s%s%s%s%s%s%s", $restrict, $featured, $promoted, $public, $sort, $archive, $limit).' '; 
+		} 
+        else 
+        { 
 			$rev = isset($this->reverse) ? 'ASC' : 'DESC';
 
 			$sql = sprintf("SELECT * FROM posts WHERE 1%s ORDER BY `date` %s", $public, $rev);
 		}
-		return $this->dbProcessor($sql, 1);
+		$query = $this->dbProcessor($sql, 1);
+
+        // Show the database errors
+        if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+        return $query;
 	}
 
-	function fetchSpecialPosts($type = null, $category = 'event') {
+	function fetchSpecialPosts($type = null, $category = 'event') 
+    {
 		$public = isset($this->public) ? ' AND `public` = \''.$this->public.'\'' : '';
 		$limit = isset($this->limit) ? sprintf(' ORDER BY `date` DESC LIMIT %s, %s', $this->start, $this->limit) : '';
 
 		$sql = sprintf("SELECT * FROM `posts` WHERE `category` = '$category'%s%s", $public, $limit);
-		return $this->dbProcessor($sql, 1);
+        $query = $this->dbProcessor($sql, 1);
+
+        // Show the database errors
+        if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+        return $query;
 	}
 
-	function fetchPopular() {
+	function fetchPopular() 
+    {
 		$sql = sprintf("SELECT post, image, date, title, posts.id AS id, COUNT(post) AS views FROM views LEFT JOIN posts ON views.post = posts.id GROUP BY post ORDER BY views DESC LIMIT 10");
-		return $this->dbProcessor($sql, 1);
+        $query = $this->dbProcessor($sql, 1);
+
+        // Show the database errors
+        if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+        return $query;
 	}
 
-	function fetchStore($type = null, $id = null) {
+	function fetchStore($type = null, $id = null) 
+    {
 		global $admin, $user, $user_role, $configuration;	
 
 		$public = isset($this->public) ? ' AND `public` = \''.$this->public.'\'' : '';
@@ -1926,33 +2252,52 @@ class databaseCL extends framework {
 		$archive = isset($this->archive) ? ' AND MONTH(added_date) = \''.date('m', strtotime($this->archive)).'\'' : '';
 		$limit = isset($this->limit) ? sprintf(' ORDER BY `added_date` DESC LIMIT %s, %s', $this->start, $this->limit) : '';
 
-		if ($type == 1) {
+		if ($type == 1) 
+        {
 			$sql = sprintf("SELECT * FROM store WHERE `id` = '%s' OR `safelink` = '%s'", $this->db_prepare_input($id), $this->db_prepare_input($id));
-		} elseif ($type == 2) {
-			if (isset($this->manage) && !$admin && !$user['founder'] && $user_role < 4) {
+		} 
+        elseif ($type == 2) 
+        {
+			if (isset($this->manage) && !$admin && !$user['founder'] && $user_role < 4) 
+            {
 				$restrict = ' AND `user_id` = \''.$user['uid'].'\'';
-			} else {
+			} 
+            else 
+            {
 				$restrict = '';
 			}
 			$sql = sprintf("SELECT * FROM store WHERE 1%s%s%s%s%s%s", $restrict, $featured, $promoted, $public, $archive, $limit);
-		} elseif ($type == 3) {
+		} 
+        elseif ($type == 3) 
+        {
 			// Fetch Store Orders 
-			if ($id) {
+			if ($id) 
+            {
 				$sql = sprintf("SELECT * FROM orders WHERE `id` = '%s'", $id);
-			} else {
+			} 
+            else 
+            {
 				$limit = isset($this->limit) ? sprintf(' ORDER BY `date` DESC LIMIT %s, %s', $this->start, $this->limit) : '';
 				$sql = sprintf("SELECT * FROM orders WHERE 1%s", $limit);
 			}
-		} elseif ($type == 4) {
+		} 
+        elseif ($type == 4) 
+        {
 			// Fetch Store Order Items 
 			$limit = isset($this->limit) ? sprintf(' ORDER BY `id` DESC LIMIT %s, %s', $this->start, $this->limit) : '';
 			$sql = sprintf("SELECT (SELECT count(id) FROM order_item WHERE `order_id` = '%s') as count, item_id, order_id FROM order_item WHERE `order_id` = '%s'%s", $id, $id, $limit);
-		} else { 
+		} 
+        else 
+        { 
 			$rev = isset($this->reverse) ? 'ASC' : 'DESC';
 
 			$sql = sprintf("SELECT * FROM store WHERE 1%s ORDER BY `date` %s", $public, $rev);
 		}
-		return $this->dbProcessor($sql, 1);
+        $query = $this->dbProcessor($sql, 1);
+
+        // Show the database errors
+        if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+        return $query;
 	}
 
 	function fetchStatic($id = null, $type = null) {
@@ -1969,7 +2314,11 @@ class databaseCL extends framework {
 		} else {
 			$sql = sprintf("SELECT * FROM static_pages WHERE `id` = '%s' OR `safelink` = '%s'", $this->db_prepare_input($id), $this->db_prepare_input($id));
 		} 
-		return $this->dbProcessor($sql, 1);
+        $query = $this->dbProcessor($sql, 1);
+
+        // Show the database errors
+        if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+        return $query;
 	}
 
 	function fetchStatistics($type = null, $id = null, $set = '1') {
@@ -1983,7 +2332,11 @@ class databaseCL extends framework {
 			}
 			$sql = sprintf("SELECT (SELECT count(`post`) FROM `views` WHERE `post` IN (%s)) as total, (SELECT count(`post`) FROM `views` WHERE `post` IN (%s) AND CURDATE() = date(`time`)) as today, (SELECT count(`post`) FROM `views` WHERE `post` IN (%s) AND CURDATE()-1 = date(`time`)) as yesterday, (SELECT count(`post`) FROM `views` WHERE `post` IN (%s) AND `time` BETWEEN DATE_SUB( CURDATE( ) ,INTERVAL 14 DAY ) AND DATE_SUB( CURDATE( ) ,INTERVAL 7 DAY )) as last_week, (SELECT count(`post`) FROM `views` WHERE `post` IN (%s) AND `time` >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) as last_month", $this->track_list, $this->track_list, $this->track_list, $this->track_list, $this->track_list);
 		}
-		return $this->dbProcessor($sql, 1);
+        $query = $this->dbProcessor($sql, 1);
+
+        // Show the database errors
+        if ($this->dbProcessorErrors()) return $this->dbProcessorErrors(); 
+        return $query;
 	}
 
 	/**
@@ -2159,7 +2512,7 @@ class databaseCL extends framework {
 		$promote 		= $cd_input->post('promote') ? 1 : 0;
 
 		$image = $framework->imageUploader($this->image);
-		$image_errors = $collage->imageErrorHandler();
+	    $image_errors = $collage->imageErrorHandler('','<span>','</span>');
 		
 		$post_id = $framework->token_generator(null, 6);
 		$safelink = $framework->checkSafeLinks($title); 
@@ -2177,7 +2530,7 @@ class databaseCL extends framework {
 			}
 		}
 
-		$date_set = ($category == 'event' || $category == 'exhibition') && (!$date || !$time) ? 0 : 1;
+		$date_set = ($category == 'event' || $category == 'events' || $category == 'exhibition') && (!$date || !$time) ? 0 : 1;
 		if (!$date_set) {
 			$post = messageNotice('If this post is an Event or an Exhibition you need to add date or time', 3);
 		} else {
@@ -2191,7 +2544,7 @@ class databaseCL extends framework {
 					$user_id, $category, $set_image, $title, $sub_title, $quote, $details, 
 					$date_time, $public, $featured, $promote, $post_ids);
 				$post = $this->dbProcessor($sql, 0, 1);
-				$post = $post == 1 ? $post : messageNotice($post, 2);
+				$post = ($post == 1 ? messageNotice('Your post has been updated', 1) : messageNotice($post, 2));
 			} else {
 				if ($set_image) { 
 					$sql = sprintf("INSERT INTO posts (`user_id`, `category`, `image`, `title`, `sub_title`, `quote`, `details`, 
@@ -2200,18 +2553,14 @@ class databaseCL extends framework {
 						$user_id, $category, $set_image, $title, $sub_title, $quote, $details, $date_time, 
 						$public, $featured, $promote, $post_id, $safelink);
 					$post = $this->dbProcessor($sql, 0, 1);
-					$post = $post == 1 ? $post : messageNotice($post, 2);
+					$post = ($post == 1 ? messageNotice('Your post has been created', 1) : messageNotice($post, 2));
 				} else {
-					$post = $image_errors;
+					$post = messageNotice($image_errors, 3);
 				}
 			}
 		}
-		if ($post == 1) {
-			$msg = messageNotice('Your post has been saved', 1);
-		} else {
-			$msg = $post;
-		}	
-		return $msg;	
+
+		return $post;	
 	}
 
 	function addToStore() {
@@ -2454,7 +2803,7 @@ class databaseCL extends framework {
 	}
 
 	function managePostsList() {
-		global $SETT, $framework;
+		global $SETT, $framework, $admin, $user, $user_role;
 
 		$this->manage = true;
 	    $framework->all_rows = $this->fetchPost(2);
@@ -2490,8 +2839,10 @@ class databaseCL extends framework {
 				</tr>';
 			}
 		} else {
+            $unverified = (!$admin && !$user['founder'] && !$user['verified'] && $user_role < 4 ? ', Activate your account to start creating posts' : ''); 
+
 			$table_row .= '
-			<tr><td colspan="8">'.notAvailable('You have not created any posts', '', 1).'</td></tr>';
+			<tr><td colspan="8">'.notAvailable('You have not created any posts' . $unverified, '', 1).'</td></tr>';
 		}		
 			return $table_row;
 	}

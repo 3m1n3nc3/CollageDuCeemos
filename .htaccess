@@ -10,7 +10,7 @@ RewriteRule ^introduction/logout/([^/]+)/?$							index.php?page=introduction&lo
 RewriteRule ^homepage/?$											index.php?page=homepage										[NC] 
 RewriteRule ^homepage/archive/([^/]+)/?$							index.php?page=homepage&archive=$1							[NC] 
 RewriteRule ^homepage/archive/([^/]+)/data/([^/]+)?$				index.php?page=homepage&archive=$1&data=$2					[NC] 
-RewriteRule ^homepage/archive/([^/]+)/data/([^/]+)/page/([^/]+)?$	index.php?page=homepage&archive=$1&data=$2&pagination=$3	[NC] 
+RewriteRule ^homepage/archive/([^/]+)/data/([^/]+)/page/([^/]+)?$   index.php?page=homepage&archive=$1&data=$2&pagination=$3	[NC] 
 RewriteRule ^homepage/pagination/([^/]+)?$							index.php?page=homepage&pagination=$1						[NC] 
 
 RewriteRule ^offline/?$												index.php?page=offline										[NC]
@@ -19,11 +19,16 @@ RewriteRule ^post/?$												index.php?page=post											[NC]
 RewriteRule ^post/([^/]+)/?$								 		index.php?page=post&post_id=$1								[NC] 
 
 RewriteRule ^profile/?$												index.php?page=profile										[NC] 
+RewriteRule ^profile/auth/([^/]+)?$                                 index.php?page=profile&auth=$1                              [NC]  
 RewriteRule ^profile/view/([^/]+)?$									index.php?page=profile&view=$1								[NC]  
 RewriteRule ^profile/view/([^/]+)/([^/]+)?$							index.php?page=profile&view=$1&post_id=$2					[NC]  
 RewriteRule ^profile/view/([^/]+)/set/([^/]+)?$						index.php?page=profile&view=$1&set=$2						[NC] 
 RewriteRule ^profile/view/([^/]+)/set/([^/]+)/delete/([^/]+)?$		index.php?page=profile&view=$1&set=$2&delete=$3				[NC] 
-RewriteRule ^profile/update/([^/]+)/set/([^/]+)?$					index.php?page=profile&update=$1&set=$2						[NC] 
+RewriteRule ^profile/update?$                                       index.php?page=profile&update                               [NC] 
+RewriteRule ^profile/update/([^/]+)?$                               index.php?page=profile&update=$1                            [NC] 
+RewriteRule ^profile/update/([^/]+)/auth/([^/]+)?$                  index.php?page=profile&update=$1&auth=$2                    [NC] 
+RewriteRule ^profile/update/auth/([^/]+)?$                          index.php?page=profile&update&auth=$1                       [NC] 
+RewriteRule ^profile/update/([^/]+)/set/([^/]+)?$                   index.php?page=profile&update=$1&set=$2                     [NC] 
 RewriteRule ^profile/([^/]+)/set/([^/]+)?$							index.php?page=profile&user_id=$1&set=$2					[NC]  
 
 RewriteRule ^static/?$												index.php?page=static										[NC] 
@@ -44,7 +49,8 @@ RewriteRule ^listing/sort/([^/]+)/?$								index.php?page=listing&sorting=$1			
 RewriteRule ^listing/sort/([^/]+)/([^/]+)?$							index.php?page=listing&sorting=$1&type=$2					[NC] 
 
 RewriteRule ^login/?$												index.php?page=moderate&view=access							[NC] 
-RewriteRule ^login/([^/]+)/?$										index.php?page=moderate&view=access&login=$1				[NC] 
+RewriteRule ^login/([^/]+)/?$                                       index.php?page=moderate&view=access&login=$1                [NC] 
+RewriteRule ^login/([^/]+)/([^/]+)/auth/([^/]+)/?$			index.php?page=moderate&view=access&login=$1&username=$2&auth=$3    [NC] 
 
 RewriteRule ^moderate/?$											index.php?page=moderate										[NC] 
 RewriteRule ^moderate/auth/([^/]+)?$								index.php?page=moderate&auth=$1								[NC] 

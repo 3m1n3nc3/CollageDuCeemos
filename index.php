@@ -16,35 +16,41 @@ if (strpos($url, 'admin') && (!isset($admin) && !isset($user))) {
 	}
 }
 
-$PTMPL['site_title']        = $configuration['site_name']; 
-$PTMPL['site_slug']         = $configuration['slug'];
-$PTMPL['site_company']      = $configuration['company'];
-$PTMPL['site_company_url']  = $configuration['company_url'];
-$PTMPL['site_logo']         = getImage($configuration['logo']);
-$PTMPL['site_url']          = $SETT['url'];
-$PTMPL['template_url']      = $PTMPL['template_url'];
-$PTMPL['favicon']           = getImage($configuration['intro_logo']);
-$PTMPL['tracking_code']     = $configuration['tracking'];
-$PTMPL['seo_meta']          = seo_plugin();
+$PTMPL['site_title']       = $configuration['site_name']; 
+$PTMPL['site_slug']        = $configuration['slug'];
+$PTMPL['site_company']     = $configuration['company'];
+$PTMPL['site_company_url'] = $configuration['company_url'];
+$PTMPL['site_logo']     = getImage($configuration['logo']);
+$PTMPL['site_url']      = $SETT['url'];
+$PTMPL['template_url']  = $PTMPL['template_url'];
+$PTMPL['favicon']       = getImage($configuration['intro_logo']);
+$PTMPL['tracking_code'] = $configuration['tracking'];
+$PTMPL['seo_meta']      = seo_plugin();
 
-$captcha_url                = '/includes/vendor/goCaptcha/goCaptcha.php?gocache='.strtotime('now');
-$PTMPL['captcha_url']       = $SETT['url'].$captcha_url;
+$captcha_url            = '/includes/vendor/goCaptcha/goCaptcha.php?gocache='.strtotime('now');
+$PTMPL['captcha_url']   = $SETT['url'].$captcha_url;
+
+$PTMPL['set_login_url']  = cleanUrls($SETT['url'] . '/index.php?page=moderate&view=access&login=user');
+$PTMPL['set_signup_url'] = cleanUrls($SETT['url'] . '/index.php?page=moderate&view=access&login=register');
+$PTMPL['set_recovery_url'] = cleanUrls($SETT['url'] . '/index.php?page=moderate&view=access&login=recovery');
+$PTMPL['set_admin_login_url'] = cleanUrls($SETT['url'] . '/index.php?page=moderate&view=access&login=admin');
+$PTMPL['set_terms_url'] = cleanUrls($SETT['url'] . '/index.php?page=static&view=terms-and-conditions');
 
 //$PTMPL['token'] = $_SESSION['token_id'];  
 
-$PTMPL['site_copy']         = '&copy; Copyright '.date('Y').' <a href="'.$PTMPL['site_url'].'">'.$configuration['site_name'].'</a> <a href="https://twitter.com/'.$configuration['twitter'].'"><i class="fa fa-twitter"></i></a>';  
+$PTMPL['site_copy']       = '&copy; Copyright '.date('Y').' <a href="'.$PTMPL['site_url'].'">'.$configuration['site_name'].'</a> <a href="https://twitter.com/'.$configuration['twitter'].'"><i class="fa fa-twitter"></i></a>';  
 
-$PTMPL['language']          = isset($_COOKIE['lang']) ? $_COOKIE['lang'] : ''; 
+$PTMPL['language']        = isset($_COOKIE['lang']) ? $_COOKIE['lang'] : ''; 
 
-$theme                      = new themer('navigation/carousel');
-$PTMPL['carousel']          = $theme->make();
+$theme                    = new themer('navigation/carousel');
+$PTMPL['carousel']        = $theme->make();
  
-$PTMPL['country_options']   = countries(1, '');
+$PTMPL['country_options'] = countries(1, '');
 
-$PTMPL['page_sidebar']      = site_sidebar();
-$PTMPL['content_footer']    = postFooter();
+$PTMPL['page_sidebar']    = site_sidebar();
+$PTMPL['content_footer']  = postFooter();
 
-$adspace                    = '
+$adspace                  = '
 <section class="mb-5">
     <div class="card card-body py-0 px-0">
         <div class="single-post">
@@ -56,7 +62,8 @@ $adspace                    = '
     </div>
 </section>';
 
-if (!isset($admin) || (isset($admin) && $admin['level'] == 1)) {
+if (!isset($admin) || (isset($admin) && $admin['level'] == 1)) 
+{
     $PTMPL['advert_unit_one']   = $configuration['ads_off'] == 0 && $configuration['ads_1'] ? sprintf($adspace, $configuration['ads_1']) : '';
     $PTMPL['advert_unit_two']   = $configuration['ads_off'] == 0 && $configuration['ads_2'] ? sprintf($adspace, $configuration['ads_2']) : '';
     $PTMPL['advert_unit_three'] = $configuration['ads_off'] == 0 && $configuration['ads_3'] ? sprintf($adspace, $configuration['ads_3']) : ''; 
@@ -64,20 +71,22 @@ if (!isset($admin) || (isset($admin) && $admin['level'] == 1)) {
 }
 
 // Render the page
-$PTMPL['content']              = mainContent();
+$PTMPL['content'] = mainContent(); 
 
-if ($page_name !== 'introduction') {
-	$PTMPL['skin']             = ' class="'.$configuration['skin'].'"'; 
-	$scripts                   = new themer('coder/scripts');
-	$PTMPL['body_scripts']     = $scripts->make(); 
+if ($page_name !== 'introduction') 
+{
+	$PTMPL['skin'] = ' class="'.$configuration['skin'].'"'; 
+    $PTMPL['nav_skin'] = $framework->mdbSkins(2, $configuration['skin']);
+	$scripts       = new themer('coder/scripts');
+	$PTMPL['body_scripts'] = $scripts->make(); 
 	
 	// Dynamically included pages
-	$PTMPL['header']           = globalTemplate(1);  
-	$PTMPL['footer']           = globalTemplate();  
+	$PTMPL['header'] = globalTemplate(1);  
+	$PTMPL['footer'] = globalTemplate();  
 	// End Dynamically included pages
 }
 
-$theme                         = new themer('container'); 
+$theme = new themer('container'); 
 
 echo $theme->make();
  

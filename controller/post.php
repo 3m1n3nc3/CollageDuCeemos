@@ -30,6 +30,10 @@ function mainContent() {
 	    $PTMPL['intro_content'] = postIntro($posts['title'], $posts['quote'], $sub_title);
 	    $PTMPL['post_image'] = getImage($posts['image'], 1);
 	    $PTMPL['post_details'] = $posts['details'];
+
+	    $profile = $framework->userData($posts['user_id'], 1);
+	    $PTMPL['author'] = author_link($profile, 1);
+
 	    $PTMPL['sharing'] = sharingLinks(urlencode($page), urlencode($sub_title.'. '.$posts['quote']));
 	    $PTMPL['count_views'] = $views['total'];
 	 

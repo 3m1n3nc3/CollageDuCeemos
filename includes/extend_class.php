@@ -2,6 +2,11 @@
 
 use wapmorgan\Mp3Info\Mp3Info;
 
+function important_notice($notice = '') {
+    global $framework;
+
+}
+
 function messageNotice($str, $type = null, $size = '3', $iS = '2') {
     switch ($type) {
         case 1:
@@ -156,7 +161,7 @@ function fileInfo($file, $type = null) {
     return;
 }
 
-function returnPage($controller = 'email', $data = array())
+function returnPage($controller = 'email_template', $data = array())
 {
     require_once(__DIR__ . '/autoload.php');
     require_once(__DIR__ . '../../controller/'.$controller.'.php');
@@ -446,9 +451,9 @@ function urlCleanUp($url)
         } elseif (strpos($url, $pager['listing'])) {
             $url = str_replace(array($pager['listing'], '&sorting=', '&type='), array('listing', '/sort/', '/'), $url);
         } elseif (strpos($url, $pager['moderate'])) {
-            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&item_id=', '&delete=', '&pagination=', '&auth=', '&login=', '&set=', '&msg='), array('moderate', '/', '/', '/item/', '/delete/', '/pagination/', '/auth/', '/', '/set/', '/msg/'), $url);
+            $url = str_replace(array($pager['moderate'], '&view=', '&post_id=', '&item_id=', '&delete=', '&pagination=', '&login=', '&auth=', '&username=', '&set=', '&msg='), array('moderate', '/', '/', '/item/', '/delete/', '/pagination/', '/', '/auth/', '/', '/set/', '/msg/'), $url);
         } elseif (strpos($url, $pager['profile'])) {
-            $url = str_replace(array($pager['profile'], '&update=', '&view=', '&set=', '&delete=', '&user_id=', '&post_id='), array('profile', '/update/', '/view/', '/set/', '/delete/', '/', '/'), $url);
+            $url = str_replace(array($pager['profile'], '&update=', '&view=', '&set=', '&delete=', '&user_id=', '&post_id=', '&auth='), array('profile', '/update/', '/view/', '/set/', '/delete/', '/', '/', '/auth/'), $url);
         }
     }
     return $url;
@@ -614,29 +619,41 @@ function deleteFiles($name, $type = null, $fb = null) {
 }
 
 function notAvailable($string, $pad='', $type = null) {
-    if (strlen($type) >= 3) {
+    global $PTMPL;
+
+    if (strlen($type) >= 3) 
+    {
         $title = '- '.$type.' -';
         $pad = 'text-danger';
-        if ($type == 403) {
+
+        if ($type == 403) 
+        {
+            $PTMPL['page_title'] = 'Insufficient Privilege'; 
             $string = 'You do not have sufficient privileges to access the resource you requested!';
-        } elseif ($type == 404) {
+        } 
+        elseif ($type == 404) 
+        {
+            $PTMPL['page_title'] = '404 Page not found'; 
             $string = 'The resource you requested was not found on this server!';
         }
         $type = 2;
     } else {
         $title = 'No content to see here';
     }
-    if ($type == 1) {
+    if ($type == 1) 
+    {
         $return = 
-        '<div class="p-5 text-center shadow-sm border border-info '.$pad.'">
+        '<div class="p-5 mt-5 pt-5 text-center shadow-sm border border-info '.$pad.'">
             <div class="'.$pad.'pad-section">  
                 <i class="'.$pad.' fa fa-question-circle"></i>
                 <p class="small">' . $string . '</p> 
             </div>
         </div>';
-    } elseif ($type == 2) {
+    } 
+    elseif ($type == 2) 
+    {
         $return = 
-        '<div class="mb-4"> 
+        '<div class="mb-4 mt-5 pt-5"> 
             <div class="my-5"> 
                 <div class="card"> 
                     <div class="card-body p-5"> 
@@ -652,12 +669,14 @@ function notAvailable($string, $pad='', $type = null) {
                 </div>
             </div>
         </div>';
-    } else {
+    } 
+    else 
+    {
         if ($pad == '') {
             $pad = 'display-1';
         }
         $return = 
-        '<div class="text-center">
+        '<div class="text-center mt-5 pt-5">
             <div class="p-4 m-4 border rounded border-info bg-light text-info">
                 <i class="'.$pad.' ion-ios-help-circle-outline"></i>
                 <p class="'.$pad.'">'.$string.'</p>
@@ -1181,13 +1200,17 @@ function cardLayout($type = 0, $image = '', $title = '', $details = '', $author 
             <div class="card mb-4'.$hide.'">
                 <div class="view overlay">
                     <img src="'.$image.'" class="card-img-top" alt="'.$title.'">
-                    <a>
+                    <a href="'.$link.'">
                         <div class="mask"></div>
                     </a>
                 </div>
                 <div class="card-body">
                     <a class="activator mr-3"><i class="fa fa-share-alt"></i></a> 
-                    <h4 class="card-title">'.$title.'</h4>
+                    <a href="'.$link.'"> 
+                        <h4 class="card-title text-info">
+                            <strong>'.$title.'</strong>
+                        </h4>
+                    </a>
                     <hr>
                     <p class="card-text text-justify">'.$details.'</p>
                     <a class="link-text" href="'.$link.'">
@@ -1202,14 +1225,16 @@ function cardLayout($type = 0, $image = '', $title = '', $details = '', $author 
                 <div class="card"> 
                     <div class="view overlay" style="max-height: 350px;">
                         <img src="'.$image.'" class="card-img-top" alt="'.$title.'">
-                        <a>
+                        <a href="'.$link.'">
                             <div class="mask rgba-white-slight"></div>
                         </a>
                     </div> 
-                    <div class="card-body mx-4"> 
-                        <h4 class="card-title">
-                        <strong>'.$title.'</strong>
-                        </h4>
+                    <div class="card-body mx-4">
+                        <a href="'.$link.'"> 
+                            <h4 class="card-title text-info">
+                                <strong>'.$title.'</strong>
+                            </h4>
+                        </a>
                         <hr> 
                         <p class="dark-grey-text mb-3 text-justify">'.$details.'</p>
                         <p class="font-small font-weight-bold blue-grey-text mb-1">
@@ -1294,13 +1319,27 @@ function listCardLayout($type = 0, $image = '', $title = '', $details = '', $dat
     return $card;
 }
 
+function author_link($profile = array(), $awb = 0) 
+{
+    global $SETT, $framework;
+
+    $author_link = cleanUrls($SETT['url'].'/index.php?page=profile&user_id='.$profile['uid'].'&set=profile');
+
+    $written_by = ($awb ? '<span class="text-info font-weight-bold">Written by </span>' : '');
+
+    $author = $written_by . '<a href="'.$author_link.'" class="text-info font-weight-bold">'.$framework->realName($profile['username'],$profile['fname'], $profile['lname']).'</a>';
+
+    return $author;
+}
+
 /**
  * generates the card layout for the post supplied with details
  * @param  variable  $post_id is the id of the post to fetch
  * @param  integer $type    is the type of card to return
  * @return variable           containing the formated card details
  */
-function big_postCard($post_id = null, $type = 0) {
+function big_postCard($post_id = null, $type = 0) 
+{
     global $SETT, $PTMPL, $user, $framework, $collage, $marxTime; 
 
     $post = $collage->fetchPost(1, $post_id)[0]; 
@@ -1308,9 +1347,8 @@ function big_postCard($post_id = null, $type = 0) {
 
     $image = getImage($post['image'], 1);
     $date = $marxTime->dateFormat($post['date'], 2);
-    $link = cleanUrls($SETT['url'].'/index.php?page=post&post_id='.$post['safelink']);
-
-    $author = $framework->realName($profile['username'],$profile['fname'], $profile['lname']);
+    $link = cleanUrls($SETT['url'].'/index.php?page=post&post_id='.$post['safelink']); 
+    $author = author_link($profile);
 
     $card = cardLayout($type, $image, $post['title'], $post['details'], $author, $date, $link, $post['category']); 
     return $card;
@@ -1508,7 +1546,8 @@ function moderate_sidebar() {
     return $section; 
 }
 
-function profile_sidebar($id = null) {
+function profile_sidebar($id = null) 
+{
     global $SETT, $PTMPL, $user, $framework, $collage; 
     $template = new themer('profile/sidebar'); $section = '';
 
@@ -1522,7 +1561,7 @@ function profile_sidebar($id = null) {
         'Manage Posts' => array('post', 'view=posts&set=post')
     );
 
-    if (!isset($_GET['user_id']) || isset($_GET['user_id']) && $_GET['user_id'] == $user['uid']) {
+    if ($user) {
         $links = '';
         foreach ($linkers as $title => $url) { 
             $active = (isset($_GET['set']) && $url[0] == $_GET['set']) ? ' active' : ''; 

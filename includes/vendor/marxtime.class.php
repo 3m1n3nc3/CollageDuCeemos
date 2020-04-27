@@ -192,6 +192,15 @@ class marxTime
         return $interval->format($differenceFormat);
         
     }
+    
+    public function timeDifference($date_1, $date_2)
+    {
+        $datetime1 = strtotime($date_1);
+        $datetime2 = strtotime($date_2);
+        $interval = abs($datetime2 - $datetime1) / 3600;
+
+        return $interval;
+    }
 
     // Event Time remaining
     function time2go($event_date, $event_time) {
@@ -320,5 +329,5 @@ class marxTime
         return $arr;    
     }
 }
-$marxTime = $mxtm = new marxTime;
+$marxTime = $mxt = new marxTime;
 ?>

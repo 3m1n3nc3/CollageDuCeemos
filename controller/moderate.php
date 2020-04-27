@@ -1,37 +1,39 @@
 <?php
 
 function mainContent() {
-	global $PTMPL, $LANG, $SETT, $configuration, $admin, $user, $user_role, $framework, $collage, $marxTime, $cd_input, $cd_session; 
+	global $PTMPL, $LANG, $SETT, $configuration, $admin, $user, $user_role, $framework, $collage, $recovery, $marxTime, $cd_input, $cd_session; 
 
-	if ($cd_session->userdata('access_token') && $cd_input->get('auth')) {
-   		$PTMPL['misc'] 			= '<div class="alert alert-danger font-weight-bold text-center">You are currently logged in with an authentication token, please treat the url above as you would your password...</div>';
+	if ($cd_session->userdata('access_token') && $cd_input->get('auth')) 
+	{
+   		$PTMPL['misc'] = '<div class="alert alert-danger font-weight-bold text-center">You are currently logged in with an authentication token, please treat the url above as you would your password...</div>';
 	}
 
-   	if ($admin || $user['founder'] || $user_role >= 4) {
+	// Check if this is a privileged user
+   	if ($admin || $user['founder'] || $user_role >= 4) 
+   	{
    		$notification 			= '';
 
    	 	$PTMPL['upload_script'] = $SETT['url'].'/connection/uploader.php?action=ckeditor';
     	
-    	$PTMPL['page_title']    = 'Admin Dashboard';  
-			 
-		$PTMPL['site_url'] 		= $SETT['url'];
+    	$PTMPL['page_title']  = 'Admin Dashboard';  
+		$PTMPL['site_url']    = $SETT['url'];
 
-		$post_id 				= $post_ids = $cd_input->get('post_id');
-		$get_post 				= $collage->fetchPost(1, $post_id)[0];
+		$post_id  = $post_ids = $cd_input->get('post_id');
+		$get_post = $collage->fetchPost(1, $post_id)[0];
 
-		$get_statics 			= $collage->fetchStatic($post_id)[0];
+		$get_statics = $collage->fetchStatic($post_id)[0];
 
-		$collage->public 		= NULL;
-		$item_id 				= $item_ids = $cd_input->get('item_id');
-		$store_item 			= $collage->fetchStore(1, $item_id)[0];
+		$collage->public = NULL;
+		$item_id 		 = $item_ids = $cd_input->get('item_id');
+		$store_item 	 = $collage->fetchStore(1, $item_id)[0];
 
-		$option 				= $option_var = $opt_var = $class = $PTMPL['notification'] = '';
-		$excess_['ap'] 			= $excess_['cp'] = 0;
+		$option          = $option_var = $opt_var = $class = $PTMPL['notification'] = '';
+		$excess_['ap'] 	 = $excess_['cp'] = 0;
 
-		$PTMPL['categories'] 	= $collage->postCategoryOptions($get_post);
+		$PTMPL['categories'] = $collage->postCategoryOptions($get_post);
 		
-		$PTMPL['return_btn'] 	= cleanUrls($SETT['url'].'/index.php?page=moderate');
-		$delete_btn 			= '<button type="submit" name="delete" class="btn btn-danger my-4 btn-block"><i class="fa fa-trash"></i> Delete</a>';
+		$PTMPL['return_btn'] = cleanUrls($SETT['url'].'/index.php?page=moderate');
+		$delete_btn = '<button type="submit" name="delete" class="btn btn-danger my-4 btn-block"><i class="fa fa-trash"></i> Delete</a>';
 
 		// Set parents select options for static content
 		$parents = array(
@@ -42,52 +44,73 @@ function mainContent() {
 			'footer'	=>	'Footer Text',
 			'store'		=>  $LANG['store']
 		);
-		foreach ($parents as $key => $row) { 
+
+		foreach ($parents as $key => $row) 
+		{ 
 			$sel = (isset($_POST['parent']) && $_POST['parent'] == $key) || ($get_statics['parent'] == $key) ? ' selected="selected"' : ''; 
 			$option_var .= '<option value="'.$key.'"'.$sel.'>'.$row.'</option>';
 		}
+
 		$PTMPL['static_parents'] = $option_var; 
 
 		// Set priority select options for static content
 		$parents = array(0, 1, 2, 3);
-		foreach ($parents as $key => $row) { 
+
+		foreach ($parents as $key => $row) 
+		{ 
 			$sel = (isset($_POST['priority']) && $_POST['priority'] == $row) || ($get_statics['priority'] == $row) ? ' selected="selected"' : ''; 
 			$opt_var .= '<option value="'.$row.'"'.$sel.'>'.$row.'</option>';
 		}
+
 		$PTMPL['priority'] = $opt_var; 
 
 		// Set icons for static content
 		$set_icon = isset($_POST['icon']) ? $_POST['icon'] : $get_statics['icon'] ? $get_statics['icon'] : ''; 
 		$PTMPL['icons'] = icon(1, $set_icon);
 
-		if (isset($_GET['view'])) 
+		if ($cd_input->get('view'))
 		{
-			if ($_GET['view'] == 'config') {
+			if ($cd_input->get('view') == 'config') 
+			{
 				$PTMPL['page_title'] = 'Site Configuration'; 
 
 				// Set config option to update
 				$sett = $alld = '';
 				$allowed = $collage->dbProcessor("SELECT * FROM allowed_config", 1); 
-				foreach ($configuration as $key => $config) { 
-					if (isset($_POST['setting'])) {
+				foreach ($configuration as $key => $config) 
+				{ 
+					if (isset($_POST['setting'])) 
+					{
 						$sel = (isset($_POST['setting']) && $_POST['setting'] == $key) ? ' selected="selected"' : ''; 
-					} else {
+					} 
+					else 
+					{
 						$sel = (isset($_POST['allowed_setting']) && $_POST['allowed_setting'] == $key) ? ' selected="selected"' : ''; 
 					}
 					$marxTime->explode = '_';
 					$title = ucwords($marxTime->reconstructString($key));
 
-					if ($admin['level'] == 1) {
+					if ($admin['level'] == 1) 
+					{
 						$sett .= '<option value="'.$key.'"'.$sel.'>'.$title.'</option>';
-						if (in_array($key, $marxTime->dekeyArray($allowed))) {
+
+						if (in_array($key, $marxTime->dekeyArray($allowed))) 
+						{
 							$alld .= '<option value="'.$key.'" class="text-success"'.$sel.'>'.$title.'</option>';
-						} else {
+						} 
+						else 
+						{
 							$alld .= '<option value="'.$key.'"'.$sel.'"">'.$title.'</option>';
 						}
-					} else {
-						if (in_array($key, $marxTime->dekeyArray($allowed))) {
+					} 
+					else 
+					{
+						if (in_array($key, $marxTime->dekeyArray($allowed))) 
+						{
 							$sett .= '<option value="'.$key.'"'.$sel.'>'.$title.'</option>';
-						} else {
+						} 
+						else 
+						{
 							$sett .= '<option disabled>'.$title.'</option>';
 						}
 					}
@@ -97,26 +120,40 @@ function mainContent() {
  
 				// Set variables to show that this update is an image 
 				$clear_image = '';
-				if (isset($_POST['setting'])) { 
-
+				if (isset($_POST['setting'])) 
+				{ 
+					// Selectable settings options
 					$selectables = array(
-						'ads_off', 'allow_login', 'rave_mode', 'smtp_auth', 'sms', 
-						'smtp', 'smtp_secure', 'captcha', 'fbacc', 'clean_url', 'cleanurl'
+						'ads_off', 'allow_login', 'rave_mode', 'smtp_auth', 'sms', 'smtp', 'smtp_secure', 
+						'smtp_debug', 'skin', 'captcha', 'fbacc', 'clean_url', 'cleanurl', 'enable_store', 
+						'welcome_email', 'email_verification'
 					);
+
+					// Image settings Options
 					$imageables = array(
 						'logo', 'intro_logo', 'banner', 'intro_banner', 'image'
 					);
+
+					// Textarea settings options
 					$textareable = array(
 						'site_office', 'tracking', 'ads_1', 'ads_2', 'ads_3', 'ads_4'
 					);
 
-					if (in_array($_POST['setting'], $selectables)) {
+					if (in_array($cd_input->post('setting'), $selectables)) 
+					{
+						// If the input should be a select option
 						$this_is_a_select = 1; 
-					} elseif (in_array($_POST['setting'], $imageables)) {
+					} 
+					elseif (in_array($cd_input->post('setting'), $imageables)) 
+					{
+						// If the input should be a file
 						$this_is_an_image = 1;
 						$clear_image = 
 						'<button class="btn btn-danger my-4 btn-block flex-grow-1" type="submit" name="clear_image">Clear Image</button>';
-					} elseif (in_array($_POST['setting'], $textareable)) {
+					} 
+					elseif (in_array($cd_input->post('setting'), $textareable)) 
+					{
+						// If the input should be a text area
 						$this_is_a_text_field = 1;
 					}
 				} 
@@ -130,7 +167,8 @@ function mainContent() {
 				if ($admin['level'] == 1) { 
 
 					// Set the configuration allowed for lower admin
-					if (isset($_POST['show_btn'])) {
+					if (isset($_POST['show_btn'])) 
+					{
 						$allow_btn = '
 						<div class="col">
 	                      	<button class="btn btn-success btn-md" type="submit" name="allow">Allow</button>
@@ -138,12 +176,15 @@ function mainContent() {
 	                    <div class="col">
 	                      	<button class="btn btn-danger btn-md" type="submit" name="remove">Remove</button>
 	                    </div>';
-					} else {
+					} 
+					else 
+					{
 						$allow_btn = '
 						<div class="col">
 	                      	<button class="btn btn-success btn-md" type="submit" name="show_btn">Show Actions</button>
 	                    </div>';						
 					}
+
 					$allowed = '';
 					$PTMPL['allowed_conf'] = '
 					<form style="color: #757575;" method="post" action="">
@@ -159,82 +200,113 @@ function mainContent() {
 						</div>
 					</form>';
 
-					if (isset($_POST['allow']) || isset($_POST['remove'])) { 
-						$value = $_POST['allowed_setting'];
-						if ($value != '') {
-							if (isset($_POST['allow'])) {
+					if ($cd_input->post('allow') !== NULL || $cd_input->post('remove') !== NULL) 
+					{ 
+						$value = $cd_input->post('allowed_setting');
+						if ($value != '') 
+						{
+							if ($cd_input->post('allow') !== NULL) 
+							{
 								$msg = ucwords($marxTime->reconstructString($value)).' has been allowed';
 								$allowed = $collage->dbProcessor("INSERT INTO allowed_config (`name`) VALUES ('$value')", 0, $msg);
-							} elseif (isset($_POST['remove'])) {
+							} 
+							elseif ($cd_input->post('remove') !== NULL) 
+							{
 								$msg = ucwords($marxTime->reconstructString($value)).' has been removed';
 								$allowed = $collage->dbProcessor("DELETE FROM allowed_config WHERE `name` = '$value'", 0, $msg);
 							}
 							$PTMPL['notification'] = (isset($allowed) ? messageNotice($allowed) : '');
 						}
 					}
-				} else { 
+				} else 
+				{ 
 					$PTMPL['notification'] = messageNotice('Some settings have been disabled, due to their sensitivity and risk of breaking the site!', 2, 7);
 				}
 
 				$PTMPL['conf_value'] = '';
-				if (isset($_POST['view'])) {
-					$PTMPL['conf_value'] = $configuration[$_POST['setting']]; 
-				} elseif (isset($_POST['update']) || isset($_POST['clear_image'])) {
+				if ($cd_input->post('view') !== NULL) 
+				{
+					$PTMPL['conf_value'] = $configuration[$cd_input->post('setting')]; 
+				} 
+				elseif ($cd_input->post('update') !== NULL || $cd_input->post('clear_image') !== NULL) 
+				{
 					// Save the new image
-					if (isset($_POST['clear_image'])) { 
+					if ($cd_input->post('clear_image') !== NULL) 
+					{ 
 						$set_image = null;
-					} elseif (isset($_FILES['image'])) {
+					} 
+					elseif (isset($_FILES['image'])) 
+					{
 						$image = $framework->imageUploader($_FILES['image'], 1);
 						$image_error = $collage->imageErrorHandler();
-						if (is_array($image)) {  
-							deleteFiles($configuration[$_POST['setting']], 2); 
+						if (is_array($image)) 
+						{  
+							deleteFiles($configuration[$cd_input->post('setting')], 2); 
 							$set_image = $image[0];
-						} else {
-							if (isset($this_is_an_image) && isset($image)) {
+						} 
+						else 
+						{
+							if (isset($this_is_an_image) && isset($image)) 
+							{
 								$errors = messageNotice($image);
 							}
-							if (isset($configuration[$_POST['setting']])) {
-								$set_image = $configuration[$_POST['setting']];
-							} else {
+							if (isset($configuration[$cd_input->post('setting')])) {
+								$set_image = $configuration[$cd_input->post('setting')];
+							} 
+							else 
+							{
 								$set_image = null;
 							}
 						}
 					}
-					if (isset($image_error)) {
+					if (isset($image_error)) 
+					{
 						$notification .= $image_error;
 					}
-					if (isset($errors)) {
+					if (isset($errors)) 
+					{
 						$notification .= $errors;
-					} else {
-						$PTMPL['conf_value'] = $value = isset($_POST['value']) ? $_POST['value'] : $set_image;
-						if (isset($_POST['setting']) && $value != '' || !isset($set_image)) {
-							$sql = sprintf("UPDATE configuration SET `%s` = '%s'", $_POST['setting'], addslashes($value));
+					} 
+					else 
+					{
+						$PTMPL['conf_value'] = $value = ($cd_input->post('value') ? $cd_input->post('value') : $set_image);
+						if ($cd_input->post('setting') !== NULL && $value != '' || !isset($set_image)) 
+						{
+							$sql = sprintf("UPDATE configuration SET `%s` = '%s'", $cd_input->post('setting'), addslashes($value));
 							$set = $collage->dbProcessor($sql, 0, 1);
 							$notification = $set == 1 ? messageNotice('Configuration Updated', 1) : messageNotice($set);
 						}
 					}
-					if (isset($notification)) {
+					if (isset($notification)) 
+					{
 						$PTMPL['notification'] = $notification;
 					}
 				}
 
 				// Determine to show text field or upload form
-				if (isset($_POST['view']) || isset($_POST['update'])) { 
+				if ($cd_input->post('view') !== NULL || $cd_input->post('update') !== NULL) 
+				{ 
  
-					if ($PTMPL['conf_value'] == '0') {
+					if ($PTMPL['conf_value'] == '0') 
+					{
 						$cst = 'Off';
-					} elseif ($PTMPL['conf_value'] == '1') {
+					} 
+					elseif ($PTMPL['conf_value'] == '1') 
+					{
 						$cst = 'On';
-					} else {
+					} 
+					else 
+					{
 						$cst = $PTMPL['conf_value'];
 					}
 
-					$cst = $_POST['setting'] == 'tracking' ? '<br><code>'.htmlspecialchars($cst).'</code>' : $cst;
+					$cst = ($cd_input->post('setting') == 'tracking' ? '<br><code>'.htmlspecialchars($cst).'</code>' : $cst);
 					$PTMPL['current_setting'] = 
 					'<h4><div class="container border border-dark p-3 rounded bg-light"> Current Setting: <span class="text-dark"> '.$cst.' </span></div></h4>';
 
-					if (isset($this_is_an_image)) {
-						$post_value = ucwords($marxTime->reconstructString($_POST['setting']));
+					if (isset($this_is_an_image)) 
+					{
+						$post_value = ucwords($marxTime->reconstructString($cd_input->post('setting')));
 						$PTMPL['input_field'] = '
 						<label for="upload-col">Upload '.$post_value.' Image</label>
 						<div class="input-group mb-4" id="upload-col">
@@ -246,7 +318,9 @@ function mainContent() {
 								<label class="custom-file-label" for="fileInput">File Name</label>
 							</div>
 						</div>';
-					} elseif (isset($this_is_a_text_field)) {
+					} 
+					elseif (isset($this_is_a_text_field)) 
+					{
 						$PTMPL['input_field'] = '
 						<div class="mb-4 mx-0">
 							<label for="content_title">New Value</label>
@@ -255,14 +329,31 @@ function mainContent() {
 								Please provide a valid value.
 							</div>
 						</div>';
-					} elseif (isset($this_is_a_select)) {
-						if ($_POST['setting'] == 'smtp_secure') {
+					} 
+					elseif (isset($this_is_a_select)) 
+					{
+						if ($cd_input->post('setting') == 'smtp_secure') 
+						{
 							$opts = '
 								<option value="0">Off</option>
 								<option value="ssl">SSL</option>
 								<option value="tls">TLS</option>
 							';
-						} else {
+						} 
+						elseif ($cd_input->post('setting') == 'smtp_debug')
+						{
+							$opts = '
+								<option value="0">Off</option>
+								<option value="1">1 (Basic Info)</option>
+								<option value="2">2 (Advanced Debugging)</option>
+							';
+						}
+						elseif ($cd_input->post('setting') == 'skin')
+						{
+							$opts = $framework->mdbSkins(0, $cd_input->post('value') ?? $configuration['skin']);
+						} 
+						else 
+						{
 							$opts = '
 								<option value="0">Off</option>
 								<option value="1">On</option>
@@ -278,7 +369,9 @@ function mainContent() {
 								Please provide a valid value.
 							</div>
 						</div>';						
-					} else {
+					} 
+					else 
+					{
 						$PTMPL['input_field'] = '
 						<div class="mb-4 mx-0">
 							<label for="content_title">New Value</label>
@@ -293,7 +386,7 @@ function mainContent() {
 				$theme = new themer('moderate/config');
 
 			} 
-			elseif ($_GET['view'] == 'posts') 
+			elseif ($cd_input->get('view') == 'posts') 
 			{
 				// Show the list of created posts
 
@@ -318,7 +411,7 @@ function mainContent() {
 
 				$theme = new themer('moderate/posts_content');
 			} 
-			elseif ($_GET['view'] == 'static') 
+			elseif ($cd_input->get('view') == 'static') 
 			{
 				// Show the list of static pages
 				// 
@@ -390,7 +483,7 @@ function mainContent() {
 
 				$theme = new themer('moderate/static_content');
 			} 
-			elseif ($_GET['view'] == 'create_static') 
+			elseif ($cd_input->get('view') == 'create_static') 
 			{
 				$PTMPL['up_btn'] 		= $get_statics ? 'Update Content' : 'Create Content';
 				$PTMPL['page_title'] 	= $get_statics ? 'Update '.$get_statics['title'] : 'Create new Static Content';
@@ -421,7 +514,7 @@ function mainContent() {
 
 				$theme = new themer('moderate/create_static');
 			} 
-			elseif ($_GET['view'] == 'categories') 
+			elseif ($cd_input->get('view') == 'categories') 
 			{
 	    		$page = $SETT['url'].$_SERVER['REQUEST_URI'];
 	    		$set_msg = isset($_GET['msg']) ? $_GET['msg'] : '';
@@ -512,7 +605,7 @@ function mainContent() {
 
 				$theme = new themer('moderate/categories');
 			} 
-			elseif ($_GET['view'] == 'admin') 
+			elseif ($cd_input->get('view') == 'admin') 
 			{
 				$this_admin = isset($admin) ? ' ('.$admin['username'].')' : '';
 				$PTMPL['page_title'] = 'Update Admin'.$this_admin; 
@@ -567,34 +660,53 @@ function mainContent() {
 					$auth 			= $framework->generateToken(null, 1);
 					$access_token	= $framework->generateToken();
 
-					if ($cd_input->post('password') && $cd_input->post('re_password') !== $cd_input->post('password')) {
+					if ($cd_input->post('password') && $cd_input->post('re_password') !== $cd_input->post('password')) 
+					{
 						$msg = messageNotice('Repeat password does not match with Password', 3);
-					} elseif ($cd_input->post('email') && !filter_var($cd_input->post('email'), FILTER_VALIDATE_EMAIL)) {
+					} 
+					elseif ($cd_input->post('email') && !filter_var($cd_input->post('email'), FILTER_VALIDATE_EMAIL)) 
+					{
 						$msg = messageNotice('Invalid Email Address', 3);
-					} else {
-		 				if ($admin && $_POST['admin_action'] == 'update_admin') {
+					} else 
+					{
+		 				if ($admin && $_POST['admin_action'] == 'update_admin') 
+		 				{
 		 					$sql = "UPDATE admin SET `username` = '$username', `email` = '$email', `password` = '$password', `access_token` = '$access_token' WHERE `id` = '$admin_id'";
 		 					$msg = messageNotice($username.' has been updated', 1);
-		 				} elseif ($admin && $cd_input->post('admin_action') == 'new_user') {
+		 				}
+		 				elseif ($admin && $cd_input->post('admin_action') == 'new_user') 
+		 				{
 		 					$auth_date = date('Y-m-d h:i:s', strtotime('now'));
 		 					$sql = "INSERT INTO users (`username`, `email`, `password`, `role`, `access_token`, `auth_token`, `token_date`) VALUES ('$username', '$email', '$password', 3, '$access_token', '$auth', date('$auth_date'))";
 		 					$msg = messageNotice('New user account created', 1);
-		 				} else {
+		 				} 
+		 				else 
+		 				{
 		 					$sql = "INSERT INTO admin (`username`, `email`, `password`, `access_token`, `auth_token`) VALUES ('$username', '$email', '$password', '$access_token', '$auth')";
 		 					$msg = messageNotice('New admin user created', 1);
 		 				}
-	 					if ($_POST['admin_action'] == 'update_admin' && $username !== $admin['username'] && $framework->administrator(2, $username)) {
+	 					if ($_POST['admin_action'] == 'update_admin' && $username !== $admin['username'] && $framework->administrator(2, $username)) 
+	 					{
 	 						$msg = messageNotice('This Username is already in use!');
-	 					} elseif ($cd_input->post('admin_action') == 'new_admin' && $framework->administrator(2, $username)) {
+	 					} 
+	 					elseif ($cd_input->post('admin_action') == 'new_admin' && $framework->administrator(2, $username)) 
+	 					{
 	 						$msg = messageNotice('This Admin already exists!');
-	 					} elseif ($cd_input->post('admin_action') == 'new_user' && $framework->userData($username, 2)) {
+	 					} 
+	 					elseif ($cd_input->post('admin_action') == 'new_user' && $framework->userData($username, 2)) 
+	 					{
 	 						$msg = messageNotice('This User already exists!');
-	 					} else {
+	 					} 
+	 					else 
+	 					{
 	 						$msg = $msg;
 	 						$do = $framework->dbProcessor($sql, 0, 1);
-	 						if ($do == 1) {
+	 						if ($do == 1) 
+	 						{
 	 							$msg = $msg;
-	 						} else {
+	 						} 
+	 						else 
+	 						{
 	 							$msg = messageNotice($do);
 	 						}
 	 					}
@@ -605,14 +717,14 @@ function mainContent() {
 				// Set the active landing page_title 
 				$theme = new themer('moderate/admin');
 			} 
-			elseif ($_GET['view'] == 'filemanager') 
+			elseif ($cd_input->get('view') == 'filemanager') 
 			{
 				$PTMPL['page_title'] = 'File Manager';
 
 				// Set the active landing page_title 
 				$theme = new themer('moderate/filemanager');
 			} 
-			elseif ($_GET['view'] == 'store') 
+			elseif ($cd_input->get('view') == 'store') 
 			{
 				// Show the list of created posts
 
@@ -620,14 +732,19 @@ function mainContent() {
 				
 				$collage->public 	 = NULL;
 
-				if (isset($_GET['delete'])) {
-					$did 					   = $collage->db_prepare_input($_GET['delete']);
-					$delete 				   = $collage->deleteContent($did, 2);
+				if (isset($_GET['delete'])) 
+				{
+					$did 	= $collage->db_prepare_input($_GET['delete']);
+					$delete = $collage->deleteContent($did, 2);
 					if ($delete === 1) {
 						$PTMPL['notification'] = messageNotice($LANG['store'].' item deleted successfully', 1, 6);
-					} elseif ($delete === 0) {
+					} 
+					elseif ($delete === 0)
+					{
 						$PTMPL['notification'] = messageNotice($LANG['store'].' item does not exist, or may have already been deleted', 2, 6);
-					} else {
+					} 
+					else 
+					{
 						$PTMPL['notification'] = messageNotice($delete, 3, 7);
 					}
 				}
@@ -643,13 +760,13 @@ function mainContent() {
 
 				$theme = new themer('moderate/store_content');
 			} 
-			elseif ($_GET['view'] == 'store_orders') 
+			elseif ($cd_input->get('view') == 'store_orders') 
 			{
 				$collage->public 		 = NULL;
 
 				// Show the list of created posts
-				if ($cd_input->get('item_id')) {
-
+				if ($cd_input->get('item_id')) 
+				{
 					$PTMPL['page_title'] = 'Order Details';
 
 					$order = $collage->fetchStore(3, $cd_input->get('item_id'))[0];
@@ -669,15 +786,19 @@ function mainContent() {
 		                $store_cart = $collage->fetchStore(4, $cd_input->get('item_id'));
 
 		                $shopping_cart = '';
-		                foreach ($store_cart as $cart_item) {
+		                foreach ($store_cart as $cart_item) 
+		                {
 		                    $details = $collage->fetchStore(1, $cart_item['item_id'])[0];
 		                    $shopping_cart .= storeCartCard($details, 1); 
 
-		                    if ($details['discount']) {
+		                    if ($details['discount']) 
+		                    {
 		                        $discount_per = $details['price'] * $details['discount'] / 100; 
 		                        $price_tag = $details['price'] - $discount_per;
 		                        $amount = ($price_tag+$details['shipping']); 
-		                    } else { 
+		                    } 
+		                    else 
+		                    { 
 		                        $amount = ($details['price']+$details['shipping']); 
 		                    } 
 		                } 
@@ -691,29 +812,41 @@ function mainContent() {
 		            }
 		            $PTMPL['shopping_cart'] = $shopping_cart;
 
-		            if ($cd_input->post('status')) {
+		            if ($cd_input->post('status')) 
+		            {
 		            	$update = $collage->update_order($order['id']);
-		            	if ($update) {
+		            	if ($update) 
+		            	{
 		            		$PTMPL['notification'] = messageNotice($update, 3, 6); 
-		            	} else {
+		            	} 
+		            	else 
+		            	{
 		            		$PTMPL['notification'] = $cd_input->read_flashdata('msg'); 
 		            	}
 		            }
 
 					$theme = new themer('moderate/store_order_details');
-				} else {
+				} 
+				else 
+				{
 					$PTMPL['page_title'] = 'Manage Orders';
 
 					$collage->public	 = NULL;
 
-					if (isset($_GET['delete'])) {
+					if (isset($_GET['delete'])) 
+					{
 						$did = $cd_input->get('delete');
 						$delete = $collage->deleteContent($did, 3);
-						if ($delete === 1) {
+						if ($delete === 1) 
+						{
 							$PTMPL['notification'] = messageNotice('Order has been deleted successfully', 1, 6);
-						} elseif ($delete === 0) {
+						} 
+						elseif ($delete === 0) 
+						{
 							$PTMPL['notification'] = messageNotice('This order does not exist, or may have already been deleted', 2, 6);
-						} else {
+						} 
+						else 
+						{
 							$PTMPL['notification'] = messageNotice($delete, 3, 7);
 						}
 					}
@@ -728,7 +861,7 @@ function mainContent() {
 					$theme = new themer('moderate/store_orders');
 				}
 			} 
-			elseif ($_GET['view'] == 'add_store_item') 
+			elseif ($cd_input->get('view') == 'add_store_item') 
 			{   
 				$PTMPL['page_title'] = 'New '.$LANG['store'].' entry'; 
 				$PTMPL['up_btn'] = $store_item ? 'Update Item' : 'Create Item';
@@ -750,7 +883,8 @@ function mainContent() {
 				$PTMPL['store_image2'] 		= getImage($store_item['image2'], 1);
 				$PTMPL['store_image3'] 		= getImage($store_item['image3'], 1);
 
-				if (isset($_POST['create_item'])) {   
+				if (isset($_POST['create_item'])) 
+				{   
 					$collage->title 		= $cd_input->post('title');
 					$collage->artist 		= $cd_input->post('artist');
 					$collage->price 		= $cd_input->post('price');
@@ -785,7 +919,8 @@ function mainContent() {
 				$PTMPL['featured'] 			= $cd_input->post('featured') || $cd_input->post('featured') == 1 ? ' checked' : '';
 				$PTMPL['promote'] 			= $cd_input->post('promote') || $cd_input->post('promote') == 1 ? ' checked' : '';
 
-				if (isset($_POST['create_post'])) {   
+				if (isset($_POST['create_post'])) 
+				{   
 					$collage->image = $_FILES['image'];
 
 					$create = $collage->createPost();
@@ -809,7 +944,8 @@ function mainContent() {
             	'filemanager'	=>	'File Manager'
             ); 
             $categories = '';$i = 30;$ii = 1;
-            foreach ($category as $key => $row) {
+            foreach ($category as $key => $row) 
+            {
                 $i++;$ii++; 
                 $link = cleanUrls($SETT['url'].'/index.php?page=moderate&view='.$key);  
                 $categories .= '
@@ -835,7 +971,7 @@ function mainContent() {
 	} 
 	else 
 	{	
-		if (!$cd_session->userdata('redirect_to')) 
+		if ($cd_input->get('view') != 'access' && !$cd_session->userdata('redirect_to')) 
 		{
 			$page = $SETT['url'].$_SERVER['REQUEST_URI'];
 			$cd_session->set_userdata('redirect_to', $page);
@@ -844,59 +980,160 @@ function mainContent() {
 		$url = $SETT['url']; // 'http://admin.collageduceemos.te';
 		if (strpos($url, 'admin') !== NULL) 
 		{
-			if (!isset($_GET['view']) || isset($_GET['view']) && $_GET['view'] != 'access')
+			if (!$cd_input->get('view') || $cd_input->get('view') != 'access')
 			{
 				$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=moderate&view=access&login=admin'), 1);
 			}
 		}
 
-		if (isset($_GET['view']) && $_GET['view'] == 'access') 
+		// Check if this is a login attempt
+		if ($cd_input->get('view') == 'access') 
 		{ 
-			$PTMPL['return_btn']     = cleanUrls($SETT['url'].'/index.php?page=homepage');
+			$PTMPL['return_btn'] = cleanUrls($SETT['url'].'/index.php?page=homepage');
+			
+			if ($configuration['allow_login']) { 
+				$PTMPL['login_link'] = 'I ready have an account <a href="'.$PTMPL['set_login_url'].'" class="text-info font-weight-bold">Login</a>';
+			}
+			
+			if ($configuration['allow_reg']) { 
+				$PTMPL['register_link'] = 'I\'m new here <a href="'.$PTMPL['set_signup_url'].'" class="text-info font-weight-bold">Register</a> | ';
+			}
 
-			if (isset($_GET['login']) && $_GET['login'] == 'user') 
-			{
-				$PTMPL['page_title'] = 'User Login';
-				$PTMPL['user_login'] = ' checked';
+			// See is this is an admin or user login or registration
+			if ($cd_input->get('login') == 'user') 
+			{	
+				if ($configuration['allow_login']) { 
+					$PTMPL['page_title'] = 'User Login';
+					$PTMPL['user_login'] = '<input type="hidden" id="checkbox_user" name="user_login" value="1">';
+				}
+				else
+				{
+					$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=homepage'), 1);
+				}
 			} 
+			else if ($cd_input->get('login') == 'register') 
+			{
+				if ($configuration['allow_reg']) { 
+					$PTMPL['page_title'] = 'User Registration';
+					$PTMPL['user_login'] = '<input type="hidden" id="checkbox_user" name="user_login" value="1">';
+					$PTMPL['accepted'] = $cd_input->post('accepted') ? 'checked' : '';
+				}
+				else
+				{
+					$framework->redirect(cleanUrls($SETT['url'].'/index.php?page=moderate&view=access&login=user'), 1);
+				}
+			}
+			else if ($cd_input->get('login') == 'recovery') 
+			{
+				// Password Recovery
+				$PTMPL['page_title'] = 'Password Recovery'; 
+
+				if (!$cd_input->get('auth')) 
+				{
+					$PTMPL['set_recovery_username'] = '
+					<div class="mb-4 mx-0">
+						<label for="username">Email Address or Username</label>
+						<input type="text" id="username" class="form-control" placeholder="Email Address or Username" name="username" value="'.($cd_input->post('username')).'" required>
+						<div class="mt-0 invalid-feedback">
+							Please provide a valid Email Address or Username.
+						</div>
+					</div>';
+					$PTMPL['recovery_step_title'] = 'Send Request';
+				}
+				else
+				{
+					$PTMPL['set_recovery_username'] = '
+					<div class="mb-4 mx-0">
+						<label for="password">New Password</label>
+						<input type="password" id="password" class="form-control" placeholder="New Password" name="password" value="'.($cd_input->post('password')).'" required>
+						<div class="mt-0 invalid-feedback">
+							Password cannot be empty.
+						</div>
+					</div>
+					<div class="mb-4 mx-0">
+						<label for="repassword">Repeat Password</label>
+						<input type="password" id="repassword" class="form-control" placeholder="Repeat Password" name="repassword" value="'.($cd_input->post('repassword')).'" required>
+						<div class="mt-0 invalid-feedback">
+							Repeat Password cannot be empty.
+						</div>
+					</div>';
+					$PTMPL['recovery_step_title'] = 'Change Password';
+				}
+			}
 			else 
 			{
 				$PTMPL['page_title'] = 'Admin Login';
 				$PTMPL['u_secret']   = '-secret';
+
+				// Show a checkbox to allow to login as a user
+				$PTMPL['user_login'] = '
+					<div class="custom-control custom-checkbox mb-4 pr-5">
+						<input type="checkbox" class="custom-control-input" id="checkbox_user" name="user_login"'.($cd_input->post('user_login') ? 'checked' : '').'>
+						<label class="custom-control-label" for="checkbox_user">Login as user</label>
+					</div>';
 			}
 
-			if (isset($_POST['login'])) 
+			if ($cd_input->post('request_recovery') !== null)
 			{
-				$PTMPL['username']   = $username = $framework->db_prepare_input($_POST['username']);
-				$PTMPL['password']   = $password = $framework->db_prepare_input($_POST['password']);
-
-				if (isset($_POST['remember']) && $_POST['remember'] == 'on') 
+				$recovery->username = $framework->db_prepare_input($cd_input->post('username'));
+				if (!$cd_input->get('auth')) 
 				{
-					$PTMPL['remember'] 		   = ' checked';
-					$framework->remember 	   = 1;
+					$PTMPL['notification'] = $recovery->verify_user();
+				}
+				else
+				{
+					$PTMPL['notification'] = $recovery->changePassword($cd_input->get('username'), $cd_input->post('password'), $cd_input->get('auth'));
+				}
+			}
+
+			if ($cd_input->post('login') !== null || $cd_input->post('register') !== null)
+			{
+				$PTMPL['username'] = $username = $framework->db_prepare_input($cd_input->post('username'));
+				$PTMPL['password'] = $password = $framework->db_prepare_input($cd_input->post('password'));
+				$PTMPL['email']    = $email    = $framework->db_prepare_input($cd_input->post('email')); 
+
+				if ($cd_input->post('remember')) 
+				{
+					$PTMPL['remember']   = ' checked';
+					$framework->remember = 1;
 				}
 
-				$framework->username 		   = $username;
-				$framework->password 		   = hash('md5', $password); 
+				$framework->username = $username;
+				$framework->password = MD5($password); 
 
-				if ((isset($_GET['login']) && $_GET['login'] == 'user') || isset($_POST['user_login'])) {
-					$PTMPL['user_login']       = ' checked';
-					$login = $framework->authenticateUser();
-				} else {
-					$login = $framework->administrator(1);
-				}
-				if (isset($login['username']) && $login['username'] == $username) 
+				$login['username'] = '';
+				if ($cd_input->get('login') == 'user' || $cd_input->post('user_login')) 
+				{ 	
+					// Authenticate the user
+					$login = $framework->loginAccess($username);
+				} 
+				elseif ($cd_input->get('login') == 'register')
+				{ 
+					// Register the new user
+					$framework->email    = $email;
+					$framework->accepted = $cd_input->post('accepted');
+					$login = $framework->registrationCall();
+				} 
+				else 
 				{
-					$notice = messageNotice('Login Successful', 1);
-					if ((isset($_GET['login']) && $_GET['login'] == 'user') || isset($_POST['user_login'])) 
-					{
+					// Authenticate the admin
+					$login = $framework->loginAccess($username, 1);
+				} 
+ 				
+ 				// Set the notification
+				$PTMPL['notification'] = $login['msg']; 
+
+				if ($login['status'] === 1) 
+				{ 
+					if ($cd_input->get('login') == 'user' || $cd_input->get('login') == 'register' || $cd_input->post('user_login')) 
+					{ 
 						if ($cd_session->userdata('redirect_to')) 
 						{
 							$framework->redirect($cd_session->userdata('redirect_to'), 1);
 						} 
 						else 
 						{
-							$framework->redirect(cleanUrls('profile'));
+							$framework->redirect('profile');
 						}
 					} 
 					else 
@@ -907,17 +1144,28 @@ function mainContent() {
 						} 
 						else 
 						{
-							$framework->redirect(cleanUrls('moderate'));
+							$framework->redirect('moderate');
 						}
 					}
 				}
-				 else 
-				{
-					$notice = messageNotice($login, 3);
-				}
-				$PTMPL['notification'] = $notice; 
 			}
-			$theme = new themer('moderate/admin_login');
+
+			if ($cd_input->get('login') == 'register') 
+			{
+				// Registration attempt
+				$theme = new themer('moderate/admin_user_signup');
+			}
+			elseif ($cd_input->get('login') == 'recovery') 
+			{
+				// Registration attempt
+				$theme = new themer('moderate/admin_recover');
+			}
+			else 
+			{
+				// Login attempt
+				$theme = new themer('moderate/admin_login');
+			}
+
 			$PTMPL['content'] = $theme->make();
 		} 
 		else 

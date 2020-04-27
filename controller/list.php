@@ -1,7 +1,7 @@
 <?php
 
 function mainContent() {
-	global $PTMPL, $LANG, $SETT, $framework, $marxTime, $collage; 
+	global $PTMPL, $LANG, $SETT, $framework, $configuration, $marxTime, $collage; 
 	
 	$PTMPL['site_url'] = $SETT['url']; 
     $PTMPL['page_title'] = 'Blog Posts';  
